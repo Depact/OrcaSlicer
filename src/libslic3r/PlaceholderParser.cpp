@@ -765,6 +765,28 @@ namespace client
             }
         }
 
+        // Format the current local time using a strftime() format string.
+        // Functionally the analogue of .NET's DateTime.ToString(format), using the
+        // standard C strftime() conversion codes (%Y, %m, %d, %H, %M, %S, ...).
+        static void strftime(expr &value, expr &out)
+        {
+            if (value.type() == TYPE_EMPTY)
+                // Inside an if / else block to be skipped
+                return;
+            if (value.type() != TYPE_STRING)
+                value.throw_exception("strftime() first parameter must be a string.");
+            time_t rawtime = time(nullptr);
+            struct tm timeinfo;
+#ifdef _WIN32
+            localtime_s(&timeinfo, &rawtime);
+#else
+            localtime_r(&rawtime, &timeinfo);
+#endif
+            char buf[256];
+            std::strftime(buf, sizeof(buf), value.s().c_str(), &timeinfo);
+            out.set_s(std::string(buf));
+        }
+
         static void one_of_test_init(expr &out) {
             out.set_b(false);
         }
@@ -1252,6 +1274,16 @@ namespace client
                         size_t elem_index = (opt_vec->size() == 1) ? 0 : ctx->get_extruder_id();
                         resolve_float_or_percent(opt_vec->get_at(elem_index), elem_index);
                     }
+                    break;
+                }
+                case coInts: {
+                    const ConfigOptionInts *opt_ints = static_cast<const ConfigOptionInts *>(opt.opt);
+                    output.set_i(opt_ints->get_at((opt_ints->size() == 1) ? 0 : ctx->get_extruder_id()));
+                    break;
+                }
+                case coStrings: {
+                    const ConfigOptionStrings *opt_strings = static_cast<const ConfigOptionStrings *>(opt.opt);
+                    output.set_s(opt_strings->values[(opt_strings->size() == 1) ? 0 : ctx->get_extruder_id()]);
                     break;
                 }
                 default: ctx->throw_exception("Referencing a vector variable when scalar is expected", opt.it_range);
@@ -2379,7 +2411,8 @@ namespace client
                 |   (kw["zdigits"] > '(' > conditional_expression(_r1) [_val = _1] > ',' > conditional_expression(_r1) > optional_parameter(_r1))
                                                                     [ px::bind(&expr::digits<true>, _val, _2, _3) ]
                 |   (kw["regex_replace"] > '(' > conditional_expression(_r1) [_val = _1] > ',' > regular_expression > ',' > conditional_expression(_r1) > ')')
-                                                                    [ px::bind(&expr::regex_replace, _val, _2, _3) ]
+                                                                        [ px::bind(&expr::regex_replace, _val, _2, _3) ]
+                |   (kw["strftime"] > '(' > conditional_expression(_r1) > ')') [ px::bind(&expr::strftime, _1, _val) ]
                 |   (kw["int"]   > '(' > conditional_expression(_r1) > ')') [ px::bind(&FactorActions::to_int,  _1, _val) ]
                 |   (kw["round"] > '(' > conditional_expression(_r1) > ')') [ px::bind(&FactorActions::round,   _1, _val) ]
                 |   (kw["ceil"]  > '(' > conditional_expression(_r1) > ')') [ px::bind(&FactorActions::ceil,    _1, _val) ]
@@ -2462,6 +2495,7 @@ namespace client
                 ("max")
                 ("random")
                 ("regex_replace")
+                ("strftime")
                 ("filament_change")
                 ("repeat")
                 ("round")

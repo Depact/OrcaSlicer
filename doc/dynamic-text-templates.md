@@ -1,7 +1,7 @@
 # Dynamic Placeholder Text Templates for the Text Shape Tool
 
 Feature: let users type dynamic tags (e.g. `{timestamp}`, `{year}`, `{month}`, `{day}`,
-`{hour}`, `{minute}`, `{nozzle_temperature[0]}`) into the Text Shape tool, keep the raw
+`{hour}`, `{minute}`, `{nozzle_temperature}`) into the Text Shape tool, keep the raw
 template in the model configuration, and resolve + re-mesh the text into 3D geometry at
 slicing time in `libslic3r::Print::process()`.
 
@@ -278,6 +278,21 @@ PlaceholderParser::PlaceholderParser(const DynamicConfig *external_config) : m_e
 as `ConfigOptionInt`. Any date/time layout is composed by embedding these variables with
 literal separators, e.g. `{year}-{month}-{day} {hour}:{minute}:{second}`.
 
+**New `strftime()` function** - the analogue of .NET's `DateTime.ToString(format)` using
+the standard C `strftime()` codes. It is a plain function call in the expression grammar,
+so the format string may be any string expression:
+
+```cpp
+{strftime("%Y-%m-%d %H:%M")}   // e.g. 2026-08-23 21:30
+{strftime("%d.%m.%Y")}         // e.g. 23.08.2026
+```
+
+Implementation (three touches in `PlaceholderParser.cpp`): a static `expr::strftime`
+method next to `regex_replace` that formats the current local time (thread-safe
+`localtime_s`/`localtime_r`) into a `char` buffer via `std::strftime`; a grammar rule
+`| (kw["strftime"] > '(' > conditional_expression(_r1) > ')') [ px::bind(&expr::strftime, _1, _val) ]`
+next to the `regex_replace` rule; and `("strftime")` added to the keyword list.
+
 What the feature **adds**: a small, documented free function (or `Print` helper) that
 refreshes the clock and evaluates a template with clean fallback semantics. Place it next
 to `update_timestamp`:
@@ -289,7 +304,7 @@ to `update_timestamp`:
 // never throws for a bad template: the caller always gets a usable string back.
 //   templ      - raw template, e.g. "{year}-{month}-{day}"
 //   config     - optional config to apply first (print/filament values such as
-//                {nozzle_temperature[0]}); may be nullptr
+    //                {nozzle_temperature}); may be nullptr
 // Returns the resolved string, or `templ` unchanged when it cannot be resolved
 // (missing variable, malformed braces, ...).
 std::string resolve_text_template(const std::string &templ, const DynamicPrintConfig *config = nullptr) const;
@@ -314,7 +329,7 @@ std::string PlaceholderParser::resolve_text_template(const std::string &templ, c
     parser.config_writable() += clocks;      // {timestamp}, {year}, ...
     parser.apply_env_variables();
     if (config != nullptr)
-        parser.apply_config(*config);        // {nozzle_temperature[0]}, {filament_type[0]}, ...
+        parser.apply_config(*config);        // {nozzle_temperature}, {filament_type}, ...
 
     try {
         return parser.process(templ, 0 /* current_extruder_id */);
@@ -335,9 +350,12 @@ Notes for the implementer:
 - **Escaping.** The parser's macro syntax requires a literal `{` to be written `\{`. A text
   like `A {literal} brace` will throw and fall back to the raw string; document this in the
   UI tooltip (Section 4.2).
-- **Vector options need an index.** `{nozzle_temperature}` is a per-filament `ConfigOptionInts`;
-  reference it as `{nozzle_temperature[0]}` (extruder 0 / filament 0) in text. The parser
-  supports indexing exactly like G-code does.
+- **Vector options resolve to the first element without an index.** `{nozzle_temperature}`
+  is a per-filament `ConfigOptionInts`; addressed without an index the parser uses element 0
+  (the "current extruder" default), so the tags stay short and non-cryptic. Explicit
+  indexing (`{nozzle_temperature[1]}`) is still supported, exactly like G-code.
+- **`strftime()` for format-string dates.** `{strftime("%Y-%m-%d %H:%M")}` behaves like
+  .NET's `DateTime.ToString(format)` using C `strftime()` codes (see Section 3.2).
 - **Thread safety.** `PlaceholderParser::process` is `const` and designed to be called from
   multiple threads (see the `ContextData` comment, `PlaceholderParser.hpp:17`). Building a
   fresh instance per text volume avoids any shared-state questions.
@@ -433,9 +451,10 @@ static int text_insert_callback(ImGuiInputTextCallbackData *data, GLGizmoEmboss 
 }
 ```
 
-**Draw the controls.** Add the "Dynamic variables" block after the text depth control (in
-`draw_window`, after `draw_depth(...)` at `GLGizmoEmboss.cpp:1523`). All template
-parameters are grouped in one dropdown; picking an entry pastes its tag at the caret:
+**Draw the controls.** Add a collapsible "Templates" section after the text depth control
+(in `draw_window`, after `draw_depth(...)` at `GLGizmoEmboss.cpp:1523`), styled like the
+"Advanced" tree node. All template parameters are grouped in one dropdown; picking an
+entry pastes its tag at the caret:
 
 ```cpp
 // GLGizmoEmboss.cpp - new helper, called from draw_window() after draw_depth()
@@ -443,70 +462,74 @@ parameters are grouped in one dropdown; picking an entry pastes its tag at the c
 void GLGizmoEmboss::draw_text_template_controls()
 {
     ImGui::Spacing();
-    ImGui::TextUnformatted(_u8L("Dynamic variables").c_str());
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
+    if (ImGui::TreeNodeEx(_u8L("Templates").c_str(), flags)) {
+        // Disabled while previewing (the field is then read-only) so an insert would
+        // never apply and would pop up unexpectedly later.
+        const bool preview_read_only = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
 
-    // Disabled while previewing (the field is then read-only) so an insert would
-    // never apply and would pop up unexpectedly later.
-    const bool preview_read_only = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
+        // Vector options (nozzle_temperature, nozzle_diameter, filament_type) are
+        // addressed without an index - the parser resolves them to the first element.
+        static const char *template_tags[] = {
+            "{year}-{month}-{day}",
+            "{hour}:{minute}",
+            "{strftime(\"%Y-%m-%d %H:%M\")}",
+            "{nozzle_temperature}",
+            "{nozzle_diameter}",
+            "{layer_height}",
+            "{filament_type}",
+        };
 
-    // All template parameters grouped in one dropdown: picking an entry pastes its tag
-    // at the current caret position of the text field.
-    static const char *template_tags[] = {
-        "{year}-{month}-{day}",
-        "{hour}:{minute}",
-        "{nozzle_temperature[0]}",
-        "{nozzle_diameter[0]}",
-        "{layer_height}",
-        "{filament_type[0]}",
-    };
-
-    m_imgui->disabled_begin(preview_read_only);
-    if (ImGui::BeginCombo("##template_var", _u8L("Insert variable...").c_str())) {
-        for (const char *tag : template_tags) {
-            if (ImGui::Selectable(tag)) {
-                // Paste at the caret position tracked by the text input callback, so
-                // the tag lands where the cursor was last.
-                m_pending_insert_pos = m_text_cursor_pos;
-                m_pending_insert     = tag;
-                m_focus_text_field   = true; // focused at start of draw_text_input()
+        m_imgui->disabled_begin(preview_read_only);
+        if (ImGui::BeginCombo("##template_var", _u8L("Insert template...").c_str())) {
+            for (const char *tag : template_tags) {
+                if (ImGui::Selectable(tag)) {
+                    // Paste at the caret position tracked by the text input callback, so
+                    // the tag lands where the cursor was last.
+                    m_pending_insert_pos = m_text_cursor_pos;
+                    m_pending_insert     = tag;
+                    m_focus_text_field   = true; // focused at start of draw_text_input()
+                }
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("%s", tag);
             }
-            if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("%s", tag);
+            ImGui::EndCombo();
         }
-        ImGui::EndCombo();
+        m_imgui->disabled_end();
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("%s", _u8L("Insert a template at the cursor position").c_str());
+
+        ImGui::Spacing();
+
+        // Master toggle: when off, {placeholders} are printed literally and never
+        // resolved, both in the preview and at slice time.
+        bool &process_templates = m_volume->text_configuration->process_templates;
+        if (ImGui::Checkbox(_u8L("Process templates").c_str(), &process_templates)) {
+            if (!process_templates)
+                m_preview_template = false; // nothing to preview without resolution
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("%s", _u8L(
+                "When off, {placeholders} are printed literally instead of being resolved "
+                "to their values.").c_str());
+
+        ImGui::Spacing();
+
+        // Preview toggle: shows the *resolved* text as real 3D geometry in the prepare
+        // view (the text field keeps the raw, editable template). Requires template
+        // processing to be enabled.
+        m_imgui->disabled_begin(!process_templates);
+        if (ImGui::Checkbox(_u8L("Preview Resolved Text").c_str(), &m_preview_template))
+            process(); // refresh the live 3D mesh with the resolved text
+        m_imgui->disabled_end();
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("%s", _u8L(
+                "Show the resolved {placeholders} as 3D geometry in the prepare view. The "
+                "stored text keeps the raw template; resolution to geometry happens again "
+                "at slicing time. Literal braces must be escaped as \\{.").c_str());
+
+        ImGui::TreePop();
     }
-    m_imgui->disabled_end();
-    if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("%s", _u8L("Insert a template variable at the cursor position").c_str());
-
-    ImGui::Spacing();
-
-    // Master toggle: when off, {placeholders} are printed literally and never
-    // resolved, both in the preview and at slice time.
-    bool &process_templates = m_volume->text_configuration->process_templates;
-    if (ImGui::Checkbox(_u8L("Process templates").c_str(), &process_templates)) {
-        if (!process_templates)
-            m_preview_template = false; // nothing to preview without resolution
-    }
-    if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("%s", _u8L(
-            "When off, {placeholders} are printed literally instead of being resolved "
-            "to their values.").c_str());
-
-    ImGui::Spacing();
-
-    // Preview toggle: shows the *resolved* text as real 3D geometry in the prepare
-    // view (the text field keeps the raw, editable template). Requires template
-    // processing to be enabled.
-    m_imgui->disabled_begin(!process_templates);
-    if (ImGui::Checkbox(_u8L("Preview Resolved Text").c_str(), &m_preview_template))
-        process(); // refresh the live 3D mesh with the resolved text
-    m_imgui->disabled_end();
-    if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("%s", _u8L(
-            "Show the resolved {placeholders} as 3D geometry in the prepare view. The "
-            "stored text keeps the raw template; resolution to geometry happens again "
-            "at slicing time. Literal braces must be escaped as \\{.").c_str());
 }
 ```
 
@@ -744,7 +767,7 @@ void Print::resolve_text_templates()
     PlaceholderParser parser;
     parser.update_timestamp(); // ensure the clock reflects the slicing moment
 
-    // Make print/filament scoped values ({nozzle_temperature[0]}, {filament_type[0]}, ...)
+    // Make print/filament scoped values ({nozzle_temperature}, {filament_type}, ...)
     // resolvable from text templates.
     try {
         parser.apply_config(this->config());
@@ -859,7 +882,7 @@ rebuild. If you changed `TextConfiguration.hpp` expect a wide rebuild (it is inc
    ```
    {year}-{month}-{day}
    ```
-4. Pick `{year}-{month}-{day}` from the **Insert variable** dropdown and confirm the tag
+4. Pick `{year}-{month}-{day}` from the **Insert template** dropdown and confirm the tag
    is inserted at the current caret position (no keystroke needed).
 5. Enable **Preview Resolved Text** - the 3D (prepare) view shows today's date as real
    geometry, e.g. `2026-08-23`, while the text field keeps the raw

@@ -3,6 +3,8 @@
 #include "libslic3r/PlaceholderParser.hpp"
 #include "libslic3r/PrintConfig.hpp"
 
+#include <regex>
+
 using namespace Slic3r;
 
 SCENARIO("Placeholder parser scripting", "[PlaceholderParser]") {
@@ -355,4 +357,52 @@ SCENARIO("Placeholder parser coFloatsOrPercents vector access", "[PlaceholderPar
         // pressure_advance[2] = 3.0
         REQUIRE(std::stod(parser.process("{pressure_advance[2]}")) == Catch::Approx(3.0));
     }
+
+    SECTION("nozzle_temperature without index resolves to first element") {
+        // No index must behave exactly like an explicit [0], so the tags stay short.
+        REQUIRE(parser.process("{nozzle_temperature}") == parser.process("{nozzle_temperature[0]}"));
+    }
+
+    SECTION("nozzle_diameter without index resolves to first element") {
+        REQUIRE(parser.process("{nozzle_diameter}") == parser.process("{nozzle_diameter[0]}"));
+    }
+
+    SECTION("time template {hour}:{minute} resolves to HH:MM") {
+        // The clock variable template used by the emboss text tool. hour/minute are
+        // not zero-padded, so allow 1-2 digits.
+        REQUIRE(std::regex_match(parser.process("{hour}:{minute}"), std::regex(R"(\d{1,2}:\d{1,2})")));
+    }
+
+    SECTION("embossed text template with nozzle values resolves") {
+        // Mirrors the text tool template: literal text around no-index nozzle tags.
+        const std::string out = parser.process("Embossed text {nozzle_diameter} {nozzle_temperature} template");
+        const std::string expected =
+            "Embossed text " + parser.process("{nozzle_diameter[0]}") + " " + parser.process("{nozzle_temperature[0]}") + " template";
+        REQUIRE(out == expected);
+        // Sanity: the composed string actually contains the numeric values.
+        REQUIRE(std::regex_match(out, std::regex(R"(Embossed text \d+(\.\d+)? \d+ template)")));
+    }
+
+    SECTION("strftime formats current local time") {
+        const std::string out = parser.process("{strftime(\"%Y\")}");
+        // Four-digit current year.
+        REQUIRE(std::regex_match(out, std::regex(R"(\d{4})")));
+        const std::string out2 = parser.process("{strftime(\"%Y-%m-%d %H:%M\")}");
+        // YYYY-MM-DD HH:MM
+        REQUIRE(std::regex_match(out2, std::regex(R"(\d{4}-\d{2}-\d{2} \d{2}:\d{2})")));
+    }
+
+    SECTION("resolve_text_template falls back to raw template on error") {
+        // Unknown variable -> raw template is returned, never an exception.
+        REQUIRE(parser.resolve_text_template("Hello {does_not_exist}") == "Hello {does_not_exist}");
+        // A plain string without placeholders passes through unchanged.
+        REQUIRE(parser.resolve_text_template("Plain text") == "Plain text");
+    }
+
+    SECTION("mixed clock + config patterns in one string") {
+        // Multiple different tags in a single template must all resolve.
+        const std::string out = parser.process("{year}-{month}-{day} {hour}:{minute} {nozzle_diameter} {nozzle_temperature}");
+        REQUIRE(std::regex_match(out, std::regex(R"(\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2} \d+(\.\d+)? \d+)")));
+    }
 }
+

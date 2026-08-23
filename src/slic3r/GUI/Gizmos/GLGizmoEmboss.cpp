@@ -23,6 +23,7 @@
 #include "libslic3r/Model.hpp"
 #include "libslic3r/Preset.hpp"
 #include "libslic3r/PlaceholderParser.hpp"
+#include "libslic3r/Print.hpp"
 #include "libslic3r/ClipperUtils.hpp" // union_ex
 #include "libslic3r/AppConfig.hpp"    // store/load font list
 #include "libslic3r/Format/OBJ.hpp" // load obj file for default object
@@ -1428,9 +1429,12 @@ std::string GLGizmoEmboss::resolve_text_template(const std::string &templ) const
         !m_volume->text_configuration->process_templates)
         return templ;
 
-    // GUI preview only needs the clock variables ({year}, {month}, ...) which the
-    // parser constructor registers and refresh_timestamp() re-stamps; no print config.
-    return Slic3r::PlaceholderParser().resolve_text_template(templ, nullptr);
+    // Resolve against the current print config so config-scoped tags
+    // ({nozzle_temperature}, {nozzle_diameter}, {layer_height}, {filament_type}, ...)
+    // work in the preview too - a template mixing clock + config tags must resolve all
+    // of them, not fall back to raw because one tag needs the config.
+    const DynamicPrintConfig &print_config = wxGetApp().plater()->fff_print().full_print_config();
+    return Slic3r::PlaceholderParser().resolve_text_template(templ, &print_config);
 }
 
 int GLGizmoEmboss::text_insert_callback(ImGuiInputTextCallbackData *data)
@@ -1462,70 +1466,77 @@ int GLGizmoEmboss::text_insert_callback(ImGuiInputTextCallbackData *data)
 void GLGizmoEmboss::draw_text_template_controls()
 {
     ImGui::Spacing();
-    ImGui::TextUnformatted(_u8L("Dynamic variables").c_str());
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
+    if (ImGui::TreeNodeEx(_u8L("Templates").c_str(), flags)) {
+        // Disabled while previewing (the field is then read-only) so an insert would
+        // never apply and would pop up unexpectedly later.
+        const bool preview_read_only = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
 
-    // Disabled while previewing (the field is then read-only) so an insert would
-    // never apply and would pop up unexpectedly later.
-    const bool preview_read_only = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
+        // All template parameters grouped in one dropdown: picking an entry pastes its
+        // tag at the current caret position of the text field. Vector options
+        // (nozzle_temperature, nozzle_diameter, filament_type) are addressed without
+        // an index, which the parser resolves to the first element. strftime() is the
+        // analogue of .NET's DateTime.ToString(format), using C strftime() codes.
+        static const char *template_tags[] = {
+            "{year}-{month}-{day}",
+            "{hour}:{minute}",
+            "{strftime(\"%Y-%m-%d %H:%M\")}",
+            "{nozzle_temperature}",
+            "{nozzle_diameter}",
+            "{layer_height}",
+            "{filament_type}",
+        };
 
-    // All template parameters grouped in one dropdown: picking an entry pastes its tag
-    // at the current caret position of the text field.
-    static const char *template_tags[] = {
-        "{year}-{month}-{day}",
-        "{hour}:{minute}",
-        "{nozzle_temperature[0]}",
-        "{nozzle_diameter[0]}",
-        "{layer_height}",
-        "{filament_type[0]}",
-    };
-
-    m_imgui->disabled_begin(preview_read_only);
-    if (ImGui::BeginCombo("##template_var", _u8L("Insert variable...").c_str())) {
-        for (const char *tag : template_tags) {
-            if (ImGui::Selectable(tag)) {
-                // Paste at the caret position tracked by the text input callback, so
-                // the tag lands where the cursor was last.
-                m_pending_insert_pos = m_text_cursor_pos;
-                m_pending_insert     = tag;
-                m_focus_text_field   = true; // focused at start of draw_text_input()
+        m_imgui->disabled_begin(preview_read_only);
+        if (ImGui::BeginCombo("##template_var", _u8L("Insert template...").c_str())) {
+            for (const char *tag : template_tags) {
+                if (ImGui::Selectable(tag)) {
+                    // Paste at the caret position tracked by the text input callback, so
+                    // the tag lands where the cursor was last.
+                    m_pending_insert_pos = m_text_cursor_pos;
+                    m_pending_insert     = tag;
+                    m_focus_text_field   = true; // focused at start of draw_text_input()
+                }
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("%s", tag);
             }
-            if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("%s", tag);
+            ImGui::EndCombo();
         }
-        ImGui::EndCombo();
+        m_imgui->disabled_end();
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("%s", _u8L("Insert a template at the cursor position").c_str());
+
+        ImGui::Spacing();
+
+        // Master toggle: when off, {placeholders} are printed literally and never
+        // resolved, both in the preview and at slice time.
+        bool &process_templates = m_volume->text_configuration->process_templates;
+        if (ImGui::Checkbox(_u8L("Process templates").c_str(), &process_templates)) {
+            if (!process_templates)
+                m_preview_template = false; // nothing to preview without resolution
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("%s", _u8L(
+                "When off, {placeholders} are printed literally instead of being resolved "
+                "to their values.").c_str());
+
+        ImGui::Spacing();
+
+        // Preview toggle: shows the *resolved* text as real 3D geometry in the prepare
+        // view (the text field keeps the raw, editable template). Requires template
+        // processing to be enabled.
+        m_imgui->disabled_begin(!process_templates);
+        if (ImGui::Checkbox(_u8L("Preview Resolved Text").c_str(), &m_preview_template))
+            process(); // refresh the live 3D mesh with the resolved text
+        m_imgui->disabled_end();
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("%s", _u8L(
+                "Show the resolved {placeholders} as 3D geometry in the prepare view. The "
+                "stored text keeps the raw template; resolution to geometry happens again "
+                "at slicing time. Literal braces must be escaped as \\{.").c_str());
+
+        ImGui::TreePop();
     }
-    m_imgui->disabled_end();
-    if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("%s", _u8L("Insert a template variable at the cursor position").c_str());
-
-    ImGui::Spacing();
-
-    // Master toggle: when off, {placeholders} are printed literally and never
-    // resolved, both in the preview and at slice time.
-    bool &process_templates = m_volume->text_configuration->process_templates;
-    if (ImGui::Checkbox(_u8L("Process templates").c_str(), &process_templates)) {
-        if (!process_templates)
-            m_preview_template = false; // nothing to preview without resolution
-    }
-    if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("%s", _u8L(
-            "When off, {placeholders} are printed literally instead of being resolved "
-            "to their values.").c_str());
-
-    ImGui::Spacing();
-
-    // Preview toggle: shows the *resolved* text as real 3D geometry in the prepare
-    // view (the text field keeps the raw, editable template). Requires template
-    // processing to be enabled.
-    m_imgui->disabled_begin(!process_templates);
-    if (ImGui::Checkbox(_u8L("Preview Resolved Text").c_str(), &m_preview_template))
-        process(); // refresh the live 3D mesh with the resolved text
-    m_imgui->disabled_end();
-    if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("%s", _u8L(
-            "Show the resolved {placeholders} as 3D geometry in the prepare view. The "
-            "stored text keeps the raw template; resolution to geometry happens again "
-            "at slicing time. Literal braces must be escaped as \\{.").c_str());
 }
 
 void GLGizmoEmboss::draw_window(float x, float y)
