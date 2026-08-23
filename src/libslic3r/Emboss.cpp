@@ -1,4 +1,11 @@
 #include <numeric>
+#ifdef _WIN32
+// Emboss.cpp uses Win32 GDI (CreateCompatibleDC/SelectObject/GetFontData/DeleteDC) to
+// read the raw font bytes from an HFONT. Include windows.h BEFORE anything that may
+// pull in glu-libtess's gluos.h, which defines NOGDI (strips wingdi.h) - otherwise the
+// GDI symbols used below are unavailable.
+#include <windows.h>
+#endif // _WIN32
 #include "Emboss.hpp"
 #include <stdio.h>
 #include <numeric>
@@ -7,6 +14,7 @@
 #include <boost/log/trivial.hpp>
 #include <ClipperUtils.hpp> // union_ex + for boldness(polygon extend(offset))
 #include "IntersectionPoints.hpp"
+#include "Model.hpp" // ModelVolume (text_configuration, emboss_shape, set_mesh)
 
 #define STB_TRUETYPE_IMPLEMENTATION // force following include to generate implementation
 #include "imgui/imstb_truetype.h" // stbtt_fontinfo
@@ -2179,3 +2187,114 @@ void remove_spikes(ExPolygons &expolygons, const SpikeDesc &spike_desc)
 }
 
 #endif // REMOVE_SPIKES
+
+namespace {
+// Offset of closed side to the surface, mirrors SAFE_SURFACE_OFFSET from the GUI
+// EmbossJob.cpp so slice-time geometry matches the live preview.
+constexpr float SAFE_SURFACE_OFFSET = 0.015f; // [in mm]
+
+// Load the font used by a text volume, headlessly.
+// Priority: 1) raw font bytes captured by the GUI (works for every style type),
+//           2) style.path when the style is a plain file_path.
+std::unique_ptr<Emboss::FontFile> load_volume_font(const TextConfiguration &tc)
+{
+    if (tc.font_data != nullptr && !tc.font_data->empty())
+        return Emboss::create_font_file(
+            std::make_unique<std::vector<unsigned char>>(*tc.font_data));
+
+    if (tc.style.type == EmbossStyle::Type::file_path && !tc.style.path.empty())
+        return Emboss::create_font_file(tc.style.path.c_str());
+
+    // wx font descriptors (wx_win_font_descr / wx_lin_font_descr / wx_mac_font_descr)
+    // can only be decoded into a usable font through wxWidgets, which must not run on
+    // the slicing thread. Without the font_data cache this case cannot be re-meshed.
+    BOOST_LOG_TRIVIAL(warning)
+        << "No font data for text template re-meshing; keeping previous mesh.";
+    return nullptr;
+}
+} // namespace
+
+bool Emboss::regenerate_text_mesh(ModelVolume &volume, const std::string &resolved_text,
+                                  const std::function<bool()> &was_canceled)
+{
+    if (resolved_text.empty() || was_canceled())
+        return false;
+
+    const std::optional<TextConfiguration> &tc_opt = volume.text_configuration;
+    const std::optional<EmbossShape>       &es_opt = volume.emboss_shape;
+    if (!tc_opt.has_value() || !es_opt.has_value())
+        return false; // not a text volume
+
+    const TextConfiguration &tc = *tc_opt;
+    const EmbossShape       &es = *es_opt;
+
+    // The headless path below only reproduces flat, non-per-glyph text. On-surface
+    // text (wrapped around a cylinder / cut into a surface) and per-glyph text need
+    // the surface mesh, TextLinesModel and raycaster from the GUI Job pipeline, which
+    // are unavailable on the slicing thread. Keep the previous mesh for those.
+    if (es.projection.use_surface || tc.style.prop.per_glyph) {
+        BOOST_LOG_TRIVIAL(warning)
+            << "Dynamic text template: on-surface / per-glyph text cannot be re-meshed "
+               "headlessly, keeping previous mesh.";
+        return false;
+    }
+
+    std::unique_ptr<FontFile> font_file = load_volume_font(tc);
+    if (font_file == nullptr || was_canceled())
+        return false;
+
+    // The glyph cache inside FontFileWithCache is scratch space; the shared FontFile
+    // carries the byte data.
+    FontFileWithCache font(std::move(font_file));
+
+    // Build the glyph shapes from the resolved string.
+    EmbossShape text_shape;
+    {
+        std::wstring text_w = boost::nowide::widen(resolved_text);
+        text_shape.shapes_with_ids = text2vshapes(font, text_w, tc.style.prop, was_canceled);
+    }
+    if (text_shape.shapes_with_ids.empty() || was_canceled())
+        return false;
+
+    // Reuse the stored scale + projection so the rebuilt geometry matches the GUI
+    // preview exactly (scale == get_text_shape_scale(prop, font), stored at creation).
+    text_shape.scale      = es.scale;
+    text_shape.projection = es.projection;
+
+    // Boolean-union the per-glyph shapes exactly like the GUI try_create_mesh() does.
+    ExPolygons shapes = union_with_delta(text_shape, UNION_DELTA, UNION_MAX_ITERATIN);
+    if (shapes.empty() || was_canceled())
+        return false;
+
+    // Replicate the transform math of the GUI path (EmbossJob.cpp try_create_mesh).
+    double scale = text_shape.scale;
+    double depth = text_shape.projection.depth / scale;
+
+    bool  is_outside = volume.is_model_part(); // MODEL_PART == raised text
+    float offset = is_outside ? -SAFE_SURFACE_OFFSET : (SAFE_SURFACE_OFFSET - static_cast<float>(depth));
+    // NOTE: the GUI additionally adds the (non-persisted) style "distance from surface"
+    // here via DataBase::from_surface. It defaults to 0 for new text objects, so the
+    // slice-time mesh matches the common case exactly.
+
+    Transform3d tr = Eigen::Translation<double, 3>(0., 0., offset) * Eigen::Scaling(scale);
+    auto projectZ = std::make_unique<ProjectZ>(depth);
+    ProjectTransform project(std::move(projectZ), tr);
+    TriangleMesh mesh(polygons2model(shapes, project));
+    if (mesh.empty() || was_canceled())
+        return false;
+
+    // If this volume was loaded from a .3mf the stored transform carries a baked-in
+    // fix matrix; undo it exactly like the GUI UpdateJob::finalize does so the
+    // canonical local mesh + canonical transform agree again.
+    if (es.fix_3mf_tr.has_value()) {
+        volume.set_transformation(volume.get_matrix() * es.fix_3mf_tr->inverse());
+        volume.emboss_shape->fix_3mf_tr.reset();
+    }
+
+    volume.set_mesh(std::move(mesh));
+    volume.calculate_convex_hull();
+
+    // Remember what this mesh was built from so Print::process() can skip redundant work.
+    volume.text_configuration->last_rendered_text = resolved_text;
+    return true;
+}

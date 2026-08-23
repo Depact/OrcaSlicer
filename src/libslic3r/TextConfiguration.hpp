@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <optional>
+#include <memory>
 #include <cereal/cereal.hpp>
 #include <cereal/types/optional.hpp>
 #include <cereal/types/string.hpp>
@@ -175,12 +176,42 @@ struct TextConfiguration
     // Style of embossed text
     EmbossStyle style;
 
-    // Embossed text value
+    // Embossed text value.
+    // RAW TEMPLATE: exactly what the user typed, e.g. "{year}-{month}-{day}".
+    // This is the field persisted to .3mf (backward compatible) and the string
+    // the emboss gizmo edits.
     std::string text = "None";
 
+    // Raw unparsed template string, the single source for slicing-time resolution.
+    // Kept in sync with `text` by set_text(). Empty for volumes that were never
+    // processed by the dynamic-template code (e.g. loaded from an older .3mf), in
+    // which case callers fall back to `text`.
+    // NOT serialized: adding it to the cereal archive would invalidate existing
+    // .3mf project files.
+    std::string text_template;
+
+    // Resolved text that the CURRENT volume mesh was generated from.
+    // Transient cache only - never serialized. Lets Print::process() skip
+    // redundant re-meshing when the evaluated template is unchanged.
+    mutable std::string last_rendered_text;
+
+    // Raw TTF/TTC font bytes captured by the GUI at edit time, so libslic3r can
+    // rebuild the glyph shapes headlessly on the slicing thread.
+    // Transient cache only - never serialized (font files are large and fonts are
+    // intentionally not persisted into .3mf for privacy).
+    std::shared_ptr<std::vector<unsigned char>> font_data;
+
+    // Single entry point for assigning text, keeps `text` and `text_template` in sync.
+    void set_text(const std::string &value)
+    {
+        text          = value;
+        text_template = value;
+    }
+
     // undo / redo stack recovery
+    // Deliberately serializes ONLY (style, text) - see notes above.
     template<class Archive> void serialize(Archive &ar) { ar(style, text); }
-};    
+};
 
 } // namespace Slic3r
 

@@ -22,6 +22,7 @@
 
 #include "libslic3r/Model.hpp"
 #include "libslic3r/Preset.hpp"
+#include "libslic3r/PlaceholderParser.hpp"
 #include "libslic3r/ClipperUtils.hpp" // union_ex
 #include "libslic3r/AppConfig.hpp"    // store/load font list
 #include "libslic3r/Format/OBJ.hpp" // load obj file for default object
@@ -110,12 +111,15 @@ static const float SELECTABLE_INNER_OFFSET = 8.0f;
 /// <summary>
 /// Prepare data for emboss
 /// </summary>
-/// <param name="text">Text to emboss</param>
+/// <param name="text">Text to emboss (also used for the volume name)</param>
 /// <param name="style_manager">Keep actual selected style</param>
 /// <param name="text_lines">Needed when transform per glyph</param>
 /// <param name="selection">Needed for transform per glyph</param>
 /// <param name="type">Define type of volume - side of surface(in / out)</param>
 /// <param name="cancel">Cancel for previous job</param>
+/// <param name="shape_text">Optional string to RENDER (mesh/shape) when it differs from
+/// `text`, e.g. resolved template in "Preview Resolved Text" mode. The volume keeps the
+/// raw `text` in its configuration.</param>
 /// <returns>Base data for emboss text</returns>
 std::unique_ptr<DataBase> create_emboss_data_base(
     const std::string& text,
@@ -123,7 +127,8 @@ std::unique_ptr<DataBase> create_emboss_data_base(
     TextLinesModel& text_lines,
     const Selection& selection,
     ModelVolumeType type,
-    std::shared_ptr<std::atomic<bool>>& cancel);
+    std::shared_ptr<std::atomic<bool>>& cancel,
+    const std::string &shape_text = {});
 CreateVolumeParams create_input(GLCanvas3D &canvas, const StyleManager::Style &style, RaycastManager &raycaster, ModelVolumeType volume_type);
 
 /// <summary>
@@ -135,7 +140,8 @@ ImVec2 calc_fine_position(const Selection &selection, const ImVec2 &windows_size
 struct TextDataBase : public DataBase
 {
     TextDataBase(DataBase &&parent, const FontFileWithCache &font_file, 
-        TextConfiguration &&text_configuration, const EmbossProjection& projection);
+        TextConfiguration &&text_configuration, const EmbossProjection& projection,
+        const std::string &shape_text = {});
     // Create shape from text + font configuration
     EmbossShape &create_shape() override;
     void write(ModelVolume &volume) const override;
@@ -145,6 +151,9 @@ private:
     FontFileWithCache m_font_file;
     // font item is not used for create object
     TextConfiguration m_text_configuration;
+    // Optional string to RENDER when it differs from m_text_configuration.text.
+    // Empty == render the persisted text. See create_shape().
+    std::string m_shape_text;
 };
 
 // Loaded icons enum
@@ -1358,14 +1367,23 @@ bool GLGizmoEmboss::process(bool make_snapshot)
     assert(m_volume != nullptr);
     if (m_volume == nullptr) return false;
 
+    // The mesh that gets generated uses the *resolved* text while "Preview Resolved
+    // Text" is on, but the volume keeps the raw template (create_emboss_data_base is
+    // always fed the raw m_text; shape_text only drives rendering).
+    // Per-glyph ("text along a curve") cannot be previewed: its text_lines are derived
+    // from the raw text and the resolved string may not match line-for-line.
+    const bool per_glyph = m_style_manager.get_font_prop().per_glyph;
+    const std::string &text_to_emboss = (m_preview_template && !per_glyph) ? m_resolved_text : m_text;
+
     // without text there is nothing to emboss
-    if (is_text_empty(m_text)) return false;
+    if (is_text_empty(text_to_emboss)) return false;
 
     // exist loaded font file?
     if (!m_style_manager.is_active_font()) return false;
 
     const Selection& selection = m_parent.get_selection();
-    DataBasePtr base = create_emboss_data_base(m_text, m_style_manager, m_text_lines, selection, m_volume->type(), m_job_cancel);
+    DataBasePtr base = create_emboss_data_base(m_text, m_style_manager, m_text_lines, selection, m_volume->type(), m_job_cancel,
+                                               per_glyph ? std::string() : (m_preview_template ? text_to_emboss : std::string()));
     DataUpdate  data{std::move(base), m_volume->id(), make_snapshot};
 
     // check valid count of text lines
@@ -1402,6 +1420,76 @@ void GLGizmoEmboss::close()
         mng.open_gizmo(GLGizmosManager::Emboss);
 }
 
+std::string GLGizmoEmboss::resolve_text_template(const std::string &templ) const
+{
+    // GUI preview only needs the clock variables ({timestamp}, {year}, ...) which the
+    // parser constructor registers and refresh_timestamp() re-stamps; no print config.
+    return Slic3r::PlaceholderParser().resolve_text_template(templ, nullptr);
+}
+
+int GLGizmoEmboss::text_insert_callback(ImGuiInputTextCallbackData *data)
+{
+    if (data == nullptr || data->EventFlag != ImGuiInputTextFlags_CallbackEdit)
+        return 0;
+
+    // data->UserData was passed to InputTextMultiline as `this`.
+    GLGizmoEmboss *gizmo = static_cast<GLGizmoEmboss *>(data->UserData);
+    if (gizmo == nullptr || gizmo->m_pending_insert.empty())
+        return 0;
+
+    // Insert the queued template tag at the real cursor position; ImGui keeps its
+    // internal buffer/undo in sync because we go through InsertChars.
+    data->InsertChars(data->CursorPos, gizmo->m_pending_insert.c_str());
+    gizmo->m_pending_insert.clear();
+    return 1; // handled
+}
+
+void GLGizmoEmboss::draw_text_template_controls()
+{
+    ImGui::Spacing();
+    ImGui::TextUnformatted(_u8L("Dynamic variables").c_str());
+
+    // Preset quick-buttons: insert a tag at the text-field cursor. The tag is queued
+    // into m_pending_insert and actually inserted by the InputText callback on the next
+    // edit event, preserving the field's undo history.
+    // Disabled while previewing (and the field is read-only) so an insert would never
+    // apply and would pop up unexpectedly later.
+    bool preview_read_only = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
+    auto insert_button = [this, preview_read_only](const char *label, const char *tag) {
+        if (preview_read_only) {
+            ImGui::SmallButton(label); // dimmed placeholder, no action
+        } else if (ImGui::SmallButton(label)) {
+            m_pending_insert    = tag;
+            m_focus_text_field  = true; // focused at start of draw_text_input()
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("%s", _u8L("Insert at cursor position").c_str());
+    };
+
+    insert_button("[+ {timestamp}]", "{timestamp}");
+    ImGui::SameLine();
+    insert_button("[+ {year}-{month}-{day}]", "{year}-{month}-{day}");
+    ImGui::SameLine();
+    insert_button("[+ {hour}:{minute}]", "{hour}:{minute}");
+
+    ImGui::Spacing();
+
+    // Preview toggle: shows the resolved string in the field while keeping the
+    // underlying raw template untouched.
+    if (ImGui::Checkbox(_u8L("Preview Resolved Text").c_str(), &m_preview_template)) {
+        // Compute the resolved text before the mesh refresh: draw_text_input() runs
+        // later in the frame, but process() needs it right now.
+        if (m_preview_template)
+            m_resolved_text = resolve_text_template(m_text);
+        process(); // refresh the live mesh immediately
+    }
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("%s", _u8L(
+            "Resolve {placeholders} for a live preview. The stored text keeps the raw "
+            "template; resolution to geometry happens again at slicing time. "
+            "Literal braces must be escaped as \\{.").c_str());
+}
+
 void GLGizmoEmboss::draw_window(float x, float y)
 {
 #ifdef ALLOW_DEBUG_MODE
@@ -1416,6 +1504,7 @@ void GLGizmoEmboss::draw_window(float x, float y)
     m_imgui->disabled_begin(m_is_unknown_font);
     ScopeGuard unknown_font_sc([imgui = m_imgui]() { imgui->disabled_end(/*m_is_unknown_font*/); });
 
+    draw_text_template_controls();
     draw_text_input();
 
     // subtract 4.0f to counteract weird additional spacing/padding of the revert buttons
@@ -1538,6 +1627,13 @@ void GLGizmoEmboss::draw_window(float x, float y)
 
 void GLGizmoEmboss::draw_text_input()
 {
+    // Move keyboard focus onto the text field when a quick-button queued an insert,
+    // so the pending tag is applied on the user's next edit.
+    if (m_focus_text_field) {
+        ImGui::SetKeyboardFocusHere(0);
+        m_focus_text_field = false;
+    }
+
     auto create_range_text_prep = [&mng = m_style_manager, &text = m_text, &exist_unknown = m_text_contain_unknown_glyph]() {
         auto& ff = mng.get_font_file_with_cache();
         assert(ff.has_value());
@@ -1597,9 +1693,34 @@ void GLGizmoEmboss::draw_text_input()
     // flag for extend font ranges if neccessary
     // ranges can't be extend during font is activ(pushed)
     std::string range_text;
+
+    // The tag inserted by the quick-buttons is applied through the edit callback so
+    // ImGui's internal undo buffer and cursor stay coherent.
+    ImGuiInputTextFlags flags = ImGuiInputTextFlags_AllowTabInput |
+                                ImGuiInputTextFlags_AutoSelectAll |
+                                ImGuiInputTextFlags_CallbackEdit;
+
+    // While "Preview Resolved Text" is on, show the resolved string and make the field
+    // read-only: editing a resolved string would corrupt the template.
+    // Per-glyph ("text along a curve") text cannot preview resolved output, so the
+    // toggle has no effect there.
+    const bool can_preview = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
+    std::string display_text = m_text;
+    if (can_preview) {
+        m_resolved_text = resolve_text_template(m_text);
+        display_text    = m_resolved_text;
+        flags          |= ImGuiInputTextFlags_ReadOnly;
+    } else {
+        m_resolved_text.clear();
+    }
+
     ImVec2 input_size(m_gui_cfg->text_size.x, m_gui_cfg->text_size.y);
-    const ImGuiInputTextFlags flags = ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_AutoSelectAll;
-    if (ImGui::InputTextMultiline("##Text", &m_text, input_size, flags)) {
+    if (ImGui::InputTextMultiline("##Text", &display_text, input_size, flags,
+                                  text_insert_callback, this)) {
+        // The callback may have inserted a tag; only accept the buffer into m_text when
+        // we are NOT in read-only preview mode.
+        if (!can_preview)
+            m_text = display_text;
         if (m_style_manager.get_font_prop().per_glyph) {
             unsigned count_lines = get_count_lines(m_text);
             if (count_lines != m_text_lines.get_lines().size()) 
@@ -3336,8 +3457,10 @@ bool draw_button(const IconManager::VIcons &icons, IconType type, bool disable){
 TextDataBase::TextDataBase(DataBase               &&parent,
                            const FontFileWithCache &font_file,
                            TextConfiguration      &&text_configuration,
-                           const EmbossProjection  &projection)
+                           const EmbossProjection  &projection,
+                           const std::string      &shape_text)
     : DataBase(std::move(parent)), m_font_file(font_file) /* copy */, m_text_configuration(std::move(text_configuration))
+    , m_shape_text(shape_text)
 {
     assert(m_font_file.has_value());
     shape.projection = projection; // copy
@@ -3353,7 +3476,10 @@ EmbossShape &TextDataBase::create_shape()
         return shape;
 
     // create shape by configuration
-    const char *text = m_text_configuration.text.c_str();
+    // m_shape_text overrides the rendered string when it differs from the persisted
+    // one (e.g. "Preview Resolved Text" mode: mesh shows resolved glyphs while the
+    // volume keeps the raw template).
+    const char *text = m_shape_text.empty() ? m_text_configuration.text.c_str() : m_shape_text.c_str();
     std::wstring text_w = boost::nowide::widen(text);
     const FontProp &fp = m_text_configuration.style.prop;
     auto was_canceled = [&c = cancel](){ return c->load(); };
@@ -3366,6 +3492,15 @@ void TextDataBase::write(ModelVolume &volume) const
 {
     DataBase::write(volume);
     volume.text_configuration = m_text_configuration; // copy
+    // Keep the raw-template alias in sync: `text` is what .3mf persists and it stays
+    // raw; `text_template` is what slicing-time resolution reads.
+    volume.text_configuration->text_template = m_text_configuration.text;
+
+    // Cache the raw font bytes so the slicing thread can re-mesh headlessly without
+    // touching wxWidgets (wx font descriptors cannot be decoded on the worker thread).
+    if (m_font_file.font_file != nullptr && m_font_file.font_file->data != nullptr)
+        volume.text_configuration->font_data =
+            std::make_shared<std::vector<unsigned char>>(*m_font_file.font_file->data);
     assert(volume.emboss_shape.has_value());
 }
 
@@ -3374,7 +3509,8 @@ std::unique_ptr<DataBase> create_emboss_data_base(const std::string             
                                        TextLinesModel                     &text_lines,
                                        const Selection                    &selection,
                                        ModelVolumeType                     type,
-                                       std::shared_ptr<std::atomic<bool>> &cancel)
+                                       std::shared_ptr<std::atomic<bool>> &cancel,
+                                       const std::string                  &shape_text)
 {
     // create volume_name
     std::string volume_name = text; // copy
@@ -3419,7 +3555,8 @@ std::unique_ptr<DataBase> create_emboss_data_base(const std::string             
 
     FontFileWithCache &font = style_manager.get_font_file_with_cache();
     TextConfiguration tc{static_cast<EmbossStyle>(style), text};
-    return std::make_unique<TextDataBase>(std::move(base), font, std::move(tc), style.projection);
+    tc.text_template = text; // keep raw-template alias in sync
+    return std::make_unique<TextDataBase>(std::move(base), font, std::move(tc), style.projection, shape_text);
 }
 
 CreateVolumeParams create_input(GLCanvas3D &canvas, const StyleManager::Style &style, RaycastManager& raycaster, ModelVolumeType volume_type)

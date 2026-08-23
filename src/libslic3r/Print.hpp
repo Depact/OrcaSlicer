@@ -902,6 +902,11 @@ private: // Prevents erroneous use by other classes.
     // Bool indicates if supports of PrintObject are top-level contour.
     typedef std::pair<PrintObject *, bool>         PrintObjectInfo;
 
+    // Resolve every text volume's dynamic template on this print's private model copy
+    // and regenerate the affected meshes. Called at the very start of process(), before
+    // any slicing / shared-object bookkeeping so the dedup logic sees resolved meshes.
+    void resolve_text_templates();
+
 public:
     using SlicingPipelineHookFn = std::function<void(Print&, const PrintObject*, SlicingPipelineStepPlugin)>;
     // Cross-layer injection (mirrors ConfigBase::set_resolve_capability_fn): the GUI/plugin

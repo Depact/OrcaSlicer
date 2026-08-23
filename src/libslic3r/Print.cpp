@@ -18,6 +18,8 @@
 #include "PrintConfig.hpp"
 #include "MaterialType.hpp"
 #include "Model.hpp"
+#include "Emboss.hpp"
+#include "PlaceholderParser.hpp"
 #include "format.hpp"
 #include <float.h>
 
@@ -2234,6 +2236,52 @@ std::map<ObjectID, unsigned int> getObjectExtruderMap(const Print& print) {
 }
 
 // Slicing process, running at a background thread.
+void Print::resolve_text_templates()
+{
+    // Operating on m_model (the print's private copy from PrintBase::apply) so the
+    // GUI model keeps showing the raw templates. A fresh parser is used: the clock
+    // variables are registered by its constructor and refreshed below.
+    PlaceholderParser parser;
+    parser.update_timestamp(); // ensure the clock reflects the slicing moment
+
+    for (ModelObject *object : m_model.objects) {
+        if (object == nullptr) continue;
+        for (ModelVolume *volume : object->volumes) {
+            if (volume == nullptr || !volume->is_text()) continue;
+
+            std::optional<TextConfiguration> &tc = volume->text_configuration;
+            assert(tc.has_value());
+
+            // Raw template is the source of truth; text_template is the explicit alias.
+            const std::string &templ = tc->text_template.empty() ? tc->text : tc->text_template;
+
+            // Skip plain text - nothing to resolve.
+            if (templ.find('{') == std::string::npos) {
+                tc->last_rendered_text = templ;
+                continue;
+            }
+
+            // Evaluate. Falls back to the raw template on any parse error. The merged
+            // full print config is passed so print/filament values
+            // ({nozzle_temperature[0]}, ...) are resolvable from text templates.
+            std::string resolved = parser.resolve_text_template(templ, &this->full_print_config());
+
+            // Re-mesh only when the resolved string actually changed. This keeps
+            // repeated preview / re-slice cycles cheap and avoids needlessly replacing
+            // shared meshes (which would defeat the shared-object dedup).
+            if (!tc->last_rendered_text.empty() && tc->last_rendered_text == resolved)
+                continue;
+
+            BOOST_LOG_TRIVIAL(debug) << "Re-meshing text volume '" << volume->name
+                                     << "': '" << templ << "' -> '" << resolved << "'";
+
+            Emboss::regenerate_text_mesh(*volume, resolved);
+            // On failure (missing font, empty shape) the previous mesh is kept and
+            // last_rendered_text is not updated, so the next slice retries.
+        }
+    }
+}
+
 void Print::process(long long *time_cost_with_cache, bool use_cache)
 {
     long long start_time = 0, end_time = 0;
@@ -2251,6 +2299,12 @@ void Print::process(long long *time_cost_with_cache, bool use_cache)
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(": this=%1%, enter, use_cache=%2%, object size=%3%")%this%use_cache%m_objects.size();
     if (m_objects.empty())
         return;
+
+    // Resolve dynamic text templates before any slicing bookkeeping, so shared-object
+    // detection and every downstream step (slice -> perimeters -> infill) consume the
+    // resolved geometry. Operates on m_model, the print's private copy from apply(),
+    // so the GUI model keeps showing the raw templates.
+    resolve_text_templates();
 
     for (PrintObject *obj : m_objects)
         obj->clear_shared_object();

@@ -28,6 +28,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/nowide/convert.hpp>
 #include <boost/nowide/cstdlib.hpp>
+#include <boost/log/trivial.hpp>
 
 // Spirit v2.5 allows you to suppress automatic generation
 // of predefined terminals to speed up complation. With
@@ -104,6 +105,38 @@ void PlaceholderParser::update_user_name(DynamicConfig &config)
 {
     const char* user = boost::nowide::getenv("USER") ? boost::nowide::getenv("USER") : boost::nowide::getenv("USERNAME") ? boost::nowide::getenv("USERNAME") : "unknown";
     config.set_key_value("user", new ConfigOptionString(user));
+}
+
+std::string PlaceholderParser::resolve_text_template(const std::string &templ, const DynamicPrintConfig *config) const
+{
+    if (templ.find('{') == std::string::npos)
+        return templ; // fast path: no placeholders at all
+
+    // Slicing can run for a long time; always refresh the wall-clock so the
+    // resolved text is stamped with "now" at the moment of slicing.
+    DynamicConfig clocks;
+    update_timestamp(clocks);
+
+    // Work on a private copy so the shared parser state is never mutated from a
+    // worker thread.
+    PlaceholderParser parser(this->external_config());
+    parser.config_writable() += clocks; // {timestamp}, {year}, {month}, {day}, {hour}, {minute}, {second}
+    parser.apply_env_variables();
+    if (config != nullptr)
+        parser.apply_config(*config); // {nozzle_temperature[0]}, {filament_type[0]}, ...
+
+    try {
+        return parser.process(templ, 0 /* current_extruder_id */);
+    } catch (const std::exception &ex) {
+        // A literal '{' that is not a valid placeholder (escaping with "\{" was not
+        // used), an unknown variable, or a vector option without an index. Rather
+        // than aborting the slice, fall back to the raw template so the user sees
+        // the tag in the printed text and can fix it.
+        BOOST_LOG_TRIVIAL(warning) << "Failed to resolve text template '" << templ
+                                   << "' (" << ex.what()
+                                   << "), keeping raw template. Escape literal braces as \\{";
+        return templ;
+    }
 }
 
 static inline bool opts_equal(const DynamicConfig &config_old, const DynamicConfig &config_new, const std::string &opt_key)

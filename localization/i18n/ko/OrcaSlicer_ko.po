@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-19 14:07-0300\n"
+"POT-Creation-Date: 2026-08-23 13:25+0200\n"
 "PO-Revision-Date: 2025-06-02 17:12+0900\n"
 "Last-Translator: crwusiz <crwusiz@gmail.com>\n"
 "Language-Team: \n"
@@ -1259,6 +1259,18 @@ msgstr "첫 번째 글꼴"
 
 msgid "Default font"
 msgstr "기본 글꼴"
+
+msgid "Dynamic variables"
+msgstr ""
+
+msgid "Insert at cursor position"
+msgstr ""
+
+msgid "Preview Resolved Text"
+msgstr ""
+
+msgid "Resolve {placeholders} for a live preview. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
+msgstr ""
 
 msgid "Advanced"
 msgstr "고급"
@@ -6033,7 +6045,7 @@ msgstr "용량:"
 msgid "Size:"
 msgstr "크기:"
 
-#, boost-format
+#, c-format, boost-format
 msgid "Conflicts of G-code paths have been found at layer %d, Z = %.2lfmm. Please separate the conflicted objects farther (%s <-> %s)."
 msgstr "레이어 %d, Z = %.2lf mm에서 Gcode 경로 충돌이 발견되었습니다. 충돌하는 객체를 더 멀리 분리하세요 (%s <-> %s)."
 

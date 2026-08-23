@@ -117,6 +117,7 @@ private:
     void close();
     void draw_window(float x, float y);
     void draw_text_input();
+    void draw_text_template_controls();
     void draw_model_type();
     void draw_style_list();
     void draw_delete_style_button();
@@ -186,6 +187,28 @@ private:
 
     // Text to emboss
     std::string m_text; // Sequence of Unicode UTF8 symbols
+
+    // Dynamic template controls (see draw_text_template_controls()).
+    // When true the text field and live mesh show the *resolved* string while the
+    // stored configuration keeps the raw template.
+    bool m_preview_template = false;
+    // Cached resolved string while m_preview_template is on.
+    std::string m_resolved_text;
+    // Template tag queued by a quick-button, inserted at the cursor by the text
+    // input callback so ImGui's undo buffer stays coherent.
+    std::string m_pending_insert;
+    // Set by a quick-button; consumed at the start of draw_text_input() to move
+    // keyboard focus onto the text field so the queued insert applies on the next edit.
+    bool m_focus_text_field = false;
+
+    // Resolve {placeholders} in a template using PlaceholderParser.
+    // Returns the input unchanged when it cannot be resolved.
+    std::string resolve_text_template(const std::string &templ) const;
+
+    // ImGui InputText callback: inserts the queued template tag (m_pending_insert,
+    // stored in data->UserData's gizmo) at the real cursor position so the field's
+    // internal undo buffer stays coherent. See draw_text_template_controls().
+    static int text_insert_callback(ImGuiInputTextCallbackData *data);
 
     // When true keep up vector otherwise relative rotation
     bool m_keep_up = true;

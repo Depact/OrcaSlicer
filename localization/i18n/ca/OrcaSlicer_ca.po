@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-19 14:07-0300\n"
+"POT-Creation-Date: 2026-08-23 13:25+0200\n"
 "PO-Revision-Date: 2025-03-15 10:55+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1299,6 +1299,18 @@ msgstr "Primer tipus de lletra"
 
 msgid "Default font"
 msgstr "Tipus de lletra predeterminat"
+
+msgid "Dynamic variables"
+msgstr ""
+
+msgid "Insert at cursor position"
+msgstr ""
+
+msgid "Preview Resolved Text"
+msgstr ""
+
+msgid "Resolve {placeholders} for a live preview. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
+msgstr ""
 
 msgid "Advanced"
 msgstr "Avançat"
@@ -6099,7 +6111,7 @@ msgstr "Volum:"
 msgid "Size:"
 msgstr "Mida:"
 
-#, boost-format
+#, c-format, boost-format
 msgid "Conflicts of G-code paths have been found at layer %d, Z = %.2lfmm. Please separate the conflicted objects farther (%s <-> %s)."
 msgstr "S'han trobat conflictes de rutes gcode a la capa %d, Z = %.2lfmm. Si us plau, separeu els objectes conflictius més lluny ( %s <-> %s )."
 

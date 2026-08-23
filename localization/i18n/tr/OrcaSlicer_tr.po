@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-19 14:07-0300\n"
+"POT-Creation-Date: 2026-08-23 13:25+0200\n"
 "PO-Revision-Date: 2026-08-04 19:36+0300\n"
 "Last-Translator: GlauTech\n"
 "Language-Team: \n"
@@ -1281,6 +1281,18 @@ msgstr "İlk yazı tipi"
 
 msgid "Default font"
 msgstr "Varsayılan yazı tipi"
+
+msgid "Dynamic variables"
+msgstr ""
+
+msgid "Insert at cursor position"
+msgstr ""
+
+msgid "Preview Resolved Text"
+msgstr ""
+
+msgid "Resolve {placeholders} for a live preview. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
+msgstr ""
 
 msgid "Advanced"
 msgstr "Gelişmiş"
@@ -6077,7 +6089,7 @@ msgstr "Hacim:"
 msgid "Size:"
 msgstr "Boyut:"
 
-#, boost-format
+#, c-format, boost-format
 msgid "Conflicts of G-code paths have been found at layer %d, Z = %.2lfmm. Please separate the conflicted objects farther (%s <-> %s)."
 msgstr "%d katmanında gcode yollarında çakışmalar bulundu, Z = %.2lfmm. Lütfen çakışan nesneleri daha uzağa ayırın (%s <-> %s)."
 

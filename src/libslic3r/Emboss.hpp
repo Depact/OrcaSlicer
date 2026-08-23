@@ -5,6 +5,7 @@
 #include <set>
 #include <optional>
 #include <memory>
+#include <functional>
 #include <admesh/stl.h> // indexed_triangle_set
 #include "Polygon.hpp"
 #include "ExPolygon.hpp"
@@ -13,6 +14,8 @@
 #include "TextConfiguration.hpp"
 
 namespace Slic3r {
+
+class ModelVolume; // fwd - defined in Model.hpp, only used as a pointer here
 
 /// <summary>
 /// class with only static function add ability to engraved OR raised
@@ -458,6 +461,21 @@ namespace Emboss
     /// <returns>angle(atan2) of normal in polygon point</returns>
     double calculate_angle(int32_t distance, PolygonPoint polygon_point, const Polygon &polygon);
     std::vector<double> calculate_angles(int32_t distance, const PolygonPoints& polygon_points, const Polygon &polygon);
+
+    /// <summary>
+    /// Rebuild the triangle mesh of a text ModelVolume from an already-resolved string.
+    /// Uses the data stored on the volume: TextConfiguration (style + raw font bytes)
+    /// and EmbossShape (scale + projection).
+    /// This is the slicing-time equivalent of the GUI EmbossUpdateJob, kept free of any
+    /// wxWidgets / Job / GUI dependency so it can run on the background slicing thread.
+    /// </summary>
+    /// <param name="volume">Text volume to re-mesh (in/out)</param>
+    /// <param name="resolved_text">Resolved string to render</param>
+    /// <param name="was_canceled">Cancellation probe; return true to abort early</param>
+    /// <returns>True when the mesh was regenerated, false when it was not possible
+    /// (font unavailable, empty shape) - the previous mesh is then kept.</returns>
+    bool regenerate_text_mesh(ModelVolume &volume, const std::string &resolved_text,
+                             const std::function<bool()> &was_canceled = []() { return false; });
 
 } // namespace Emboss
 
