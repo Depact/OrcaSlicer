@@ -28,7 +28,11 @@ orcaslicer_add_cmake_project(
     GIT_SHALLOW ON
     GIT_SUBMODULES 3rdparty/catch 3rdparty/pcre 3rdparty/libwebp
     DEPENDS ${PNG_PKG} ${ZLIB_PKG} ${EXPAT_PKG} ${JPEG_PKG}
-    PATCH_COMMAND git apply --verbose --ignore-space-change --whitespace=fix ${CMAKE_CURRENT_LIST_DIR}/0001-Clang-CL-fix.patch
+    # NOTE: the historical 0001-Clang-CL-fix.patch (adds the Clang/CL lib-dir branch to
+    # wxWidgetsConfig.cmake.in) is already merged into the SoftFever fork at tag
+    # orca-3.3.2, so applying it here fails ("patch does not apply"). Kept as a comment
+    # for reference in case the pinned tag is ever moved backwards.
+    # PATCH_COMMAND git apply --verbose --ignore-space-change --whitespace=fix ${CMAKE_CURRENT_LIST_DIR}/0001-Clang-CL-fix.patch
     CMAKE_ARGS
         -DwxBUILD_PRECOMP=ON
         ${_wx_toolkit}
