@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-23 13:25+0200\n"
+"POT-Creation-Date: 2026-08-23 21:04+0200\n"
 "PO-Revision-Date: 2026-06-19 13:40+0700\n"
 "Last-Translator: Icezaza\n"
 "Language-Team: Thai\n"
@@ -1265,6 +1265,12 @@ msgid "Dynamic variables"
 msgstr ""
 
 msgid "Insert at cursor position"
+msgstr ""
+
+msgid "Process templates"
+msgstr ""
+
+msgid "When off, {placeholders} are printed literally instead of being resolved to their values."
 msgstr ""
 
 msgid "Preview Resolved Text"

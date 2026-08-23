@@ -275,7 +275,8 @@ PlaceholderParser::PlaceholderParser(const DynamicConfig *external_config) : m_e
 
 `update_timestamp(DynamicConfig&)` (`PlaceholderParser.cpp:78`) sets:
 `timestamp` = `YYYYMMDD-HHMMSS` (string), and `year`/`month`/`day`/`hour`/`minute`/`second`
-as `ConfigOptionInt`.
+as `ConfigOptionInt`. Any date/time layout is composed by embedding these variables with
+literal separators, e.g. `{year}-{month}-{day} {hour}:{minute}:{second}`.
 
 What the feature **adds**: a small, documented free function (or `Print` helper) that
 refreshes the clock and evaluates a template with clean fallback semantics. Place it next
@@ -400,6 +401,11 @@ Implementation in `GLGizmoEmboss.cpp`:
 ```cpp
 std::string GLGizmoEmboss::resolve_text_template(const std::string &templ) const
 {
+    // Template processing can be disabled per volume - then placeholders are literal.
+    if (m_volume != nullptr && m_volume->text_configuration.has_value() &&
+        !m_volume->text_configuration->process_templates)
+        return templ;
+
     // libslic3r::PlaceholderParser::resolve_text_template (see Section 3.2).
     // GUI preview only needs the clock variables; pass nullptr for the print config.
     return Slic3r::PlaceholderParser().resolve_text_template(templ, nullptr);
@@ -450,17 +456,33 @@ void GLGizmoEmboss::draw_text_template_controls()
             ImGui::SetTooltip("%s", _u8L("Insert at cursor position").c_str());
     };
 
-    insert_button("[+ {timestamp}]", "{timestamp}");
+    insert_button("{year}-{month}-{day}", "{year}-{month}-{day}");
     ImGui::SameLine();
-    insert_button("[+ {year}-{month}-{day}]", "{year}-{month}-{day}");
-    ImGui::SameLine();
-    insert_button("[+ {hour}:{minute}]", "{hour}:{minute}");
+    insert_button("{hour}:{minute}", "{hour}:{minute}");
+
+    ImGui::Spacing();
+
+    ImGui::Spacing();
+
+    // Master toggle: when off, {placeholders} are printed literally and never
+    // resolved, both in the preview and at slice time.
+    bool &process_templates = m_volume->text_configuration->process_templates;
+    if (ImGui::Checkbox(_u8L("Process templates").c_str(), &process_templates)) {
+        if (!process_templates)
+            m_preview_template = false; // nothing to preview without resolution
+    }
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("%s", _u8L(
+            "When off, {placeholders} are printed literally instead of being resolved "
+            "to their values.").c_str());
 
     ImGui::Spacing();
 
     // Preview toggle: shows the resolved string in the field while keeping the
-    // underlying raw template untouched.
-    ImGui::Checkbox(_u8L("Preview Resolved Text"), &m_preview_template);
+    // underlying raw template untouched. Requires template processing to be enabled.
+    m_imgui->disabled_begin(!process_templates);
+    ImGui::Checkbox(_u8L("Preview Resolved Text").c_str(), &m_preview_template);
+    m_imgui->disabled_end();
     if (ImGui::IsItemHovered())
         ImGui::SetTooltip("%s", _u8L(
             "Resolve {placeholders} for a live preview. The stored text keeps the raw "
@@ -740,16 +762,11 @@ void Print::resolve_text_templates()
                 continue;
             }
 
-            // Evaluate. Falls back to the raw template on any parse error.
-            std::string resolved;
-            try {
-                resolved = parser.process(templ, 0 /* current_extruder_id */);
-            } catch (const std::exception &ex) {
-                BOOST_LOG_TRIVIAL(warning)
-                    << "Text template '" << templ << "' could not be resolved ("
-                    << ex.what() << "); keeping raw template.";
-                resolved = templ;
-            }
+            // When template processing is disabled for this volume, render the raw
+            // template literally instead of resolving placeholders.
+            std::string resolved = tc->process_templates
+                ? parser.resolve_text_template(templ, &this->full_print_config())
+                : templ;
 
             // Re-mesh only when the resolved string actually changed. This keeps
             // repeated preview / re-slice cycles cheap and avoids needlessly
@@ -835,8 +852,8 @@ rebuild. If you changed `TextConfiguration.hpp` expect a wide rebuild (it is inc
    ```
    {year}-{month}-{day}
    ```
-4. Press one of the quick-buttons, e.g. `[+ {timestamp}]`, and confirm the tag is inserted
-   at the cursor (not appended).
+4. Press one of the quick-buttons, e.g. `{year}-{month}-{day}`, and confirm the tag is
+   inserted at the current caret position (no keystroke needed).
 5. Enable **Preview Resolved Text** - the field should show today's date, e.g.
    `2026-08-23`; disable it again and confirm the field reverts to `{year}-{month}-{day}`.
 6. Exit the tool (a text object now exists whose `text_configuration.text` is the raw

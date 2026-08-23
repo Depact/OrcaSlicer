@@ -2261,10 +2261,13 @@ void Print::resolve_text_templates()
                 continue;
             }
 
-            // Evaluate. Falls back to the raw template on any parse error. The merged
-            // full print config is passed so print/filament values
+            // When template processing is disabled for this volume, render the raw
+            // template literally instead of resolving placeholders. The merged full
+            // print config is otherwise passed so print/filament values
             // ({nozzle_temperature[0]}, ...) are resolvable from text templates.
-            std::string resolved = parser.resolve_text_template(templ, &this->full_print_config());
+            std::string resolved = tc->process_templates
+                                       ? parser.resolve_text_template(templ, &this->full_print_config())
+                                       : templ;
 
             // Re-mesh only when the resolved string actually changed. This keeps
             // repeated preview / re-slice cycles cheap and avoids needlessly replacing

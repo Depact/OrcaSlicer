@@ -1422,24 +1422,38 @@ void GLGizmoEmboss::close()
 
 std::string GLGizmoEmboss::resolve_text_template(const std::string &templ) const
 {
-    // GUI preview only needs the clock variables ({timestamp}, {year}, ...) which the
+    // Template processing can be disabled per volume - then placeholders are literal.
+    if (m_volume != nullptr && m_volume->text_configuration.has_value() &&
+        !m_volume->text_configuration->process_templates)
+        return templ;
+
+    // GUI preview only needs the clock variables ({year}, {month}, ...) which the
     // parser constructor registers and refresh_timestamp() re-stamps; no print config.
     return Slic3r::PlaceholderParser().resolve_text_template(templ, nullptr);
 }
 
 int GLGizmoEmboss::text_insert_callback(ImGuiInputTextCallbackData *data)
 {
-    if (data == nullptr || data->EventFlag != ImGuiInputTextFlags_CallbackEdit)
+    if (data == nullptr)
         return 0;
 
     // data->UserData was passed to InputTextMultiline as `this`.
     GLGizmoEmboss *gizmo = static_cast<GLGizmoEmboss *>(data->UserData);
-    if (gizmo == nullptr || gizmo->m_pending_insert.empty())
+    if (gizmo == nullptr)
         return 0;
 
-    // Insert the queued template tag at the real cursor position; ImGui keeps its
-    // internal buffer/undo in sync because we go through InsertChars.
-    data->InsertChars(data->CursorPos, gizmo->m_pending_insert.c_str());
+    // Keep the caret position so quick-buttons can paste at the current cursor even
+    // when the field is not focused at the moment the button is clicked.
+    gizmo->m_text_cursor_pos = data->CursorPos;
+
+    if (gizmo->m_pending_insert.empty())
+        return 0;
+
+    // Insert the queued template tag at the cursor position captured when the button
+    // was clicked. ImGui keeps its internal buffer/undo in sync because we go through
+    // InsertChars. Fires on the first CallbackAlways after the field regains focus,
+    // so the paste is immediate.
+    data->InsertChars(gizmo->m_pending_insert_pos, gizmo->m_pending_insert.c_str());
     gizmo->m_pending_insert.clear();
     return 1; // handled
 }
@@ -1449,33 +1463,60 @@ void GLGizmoEmboss::draw_text_template_controls()
     ImGui::Spacing();
     ImGui::TextUnformatted(_u8L("Dynamic variables").c_str());
 
-    // Preset quick-buttons: insert a tag at the text-field cursor. The tag is queued
-    // into m_pending_insert and actually inserted by the InputText callback on the next
-    // edit event, preserving the field's undo history.
-    // Disabled while previewing (and the field is read-only) so an insert would never
+    // Preset quick-buttons: paste a tag at the current caret position of the text
+    // field. Styled as subtle text chips (transparent frame, faint hover) so they
+    // blend into the panel instead of sticking out like a toolbar row.
+    // Disabled while previewing (the field is then read-only) so an insert would never
     // apply and would pop up unexpectedly later.
-    bool preview_read_only = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
+    const bool preview_read_only = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
+
     auto insert_button = [this, preview_read_only](const char *label, const char *tag) {
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(6.0f, 2.0f));
         if (preview_read_only) {
-            ImGui::SmallButton(label); // dimmed placeholder, no action
-        } else if (ImGui::SmallButton(label)) {
-            m_pending_insert    = tag;
-            m_focus_text_field  = true; // focused at start of draw_text_input()
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 1.f, 1.f, 0.25f));
+        } else {
+            ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(1.f, 1.f, 1.f, 0.03f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.f, 1.f, 1.f, 0.10f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(1.f, 1.f, 1.f, 0.18f));
+        }
+        const bool clicked = ImGui::SmallButton(label);
+        ImGui::PopStyleColor(preview_read_only ? 1 : 3);
+        ImGui::PopStyleVar();
+
+        if (!preview_read_only && clicked) {
+            // Paste at the caret position tracked by the text input callback, so the
+            // tag lands where the cursor was last.
+            m_pending_insert_pos = m_text_cursor_pos;
+            m_pending_insert     = tag;
+            m_focus_text_field   = true; // focused at start of draw_text_input()
         }
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("%s", _u8L("Insert at cursor position").c_str());
     };
 
-    insert_button("[+ {timestamp}]", "{timestamp}");
+    insert_button("{year}-{month}-{day}", "{year}-{month}-{day}");
     ImGui::SameLine();
-    insert_button("[+ {year}-{month}-{day}]", "{year}-{month}-{day}");
-    ImGui::SameLine();
-    insert_button("[+ {hour}:{minute}]", "{hour}:{minute}");
+    insert_button("{hour}:{minute}", "{hour}:{minute}");
+
+    ImGui::Spacing();
+
+    // Master toggle: when off, {placeholders} are printed literally and never
+    // resolved, both in the preview and at slice time.
+    bool &process_templates = m_volume->text_configuration->process_templates;
+    if (ImGui::Checkbox(_u8L("Process templates").c_str(), &process_templates)) {
+        if (!process_templates)
+            m_preview_template = false; // nothing to preview without resolution
+    }
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("%s", _u8L(
+            "When off, {placeholders} are printed literally instead of being resolved "
+            "to their values.").c_str());
 
     ImGui::Spacing();
 
     // Preview toggle: shows the resolved string in the field while keeping the
-    // underlying raw template untouched.
+    // underlying raw template untouched. Requires template processing to be enabled.
+    m_imgui->disabled_begin(!process_templates);
     if (ImGui::Checkbox(_u8L("Preview Resolved Text").c_str(), &m_preview_template)) {
         // Compute the resolved text before the mesh refresh: draw_text_input() runs
         // later in the frame, but process() needs it right now.
@@ -1483,6 +1524,7 @@ void GLGizmoEmboss::draw_text_template_controls()
             m_resolved_text = resolve_text_template(m_text);
         process(); // refresh the live mesh immediately
     }
+    m_imgui->disabled_end();
     if (ImGui::IsItemHovered())
         ImGui::SetTooltip("%s", _u8L(
             "Resolve {placeholders} for a live preview. The stored text keeps the raw "
@@ -1504,7 +1546,6 @@ void GLGizmoEmboss::draw_window(float x, float y)
     m_imgui->disabled_begin(m_is_unknown_font);
     ScopeGuard unknown_font_sc([imgui = m_imgui]() { imgui->disabled_end(/*m_is_unknown_font*/); });
 
-    draw_text_template_controls();
     draw_text_input();
 
     // subtract 4.0f to counteract weird additional spacing/padding of the revert buttons
@@ -1521,6 +1562,10 @@ void GLGizmoEmboss::draw_window(float x, float y)
     bool use_inch = wxGetApp().app_config->get_bool("use_inches");
     draw_height(use_inch);
     draw_depth(use_inch);
+
+    // Dynamic template quick-buttons + preview toggle, grouped with the other text
+    // size/depth controls so they don't look out of place.
+    draw_text_template_controls();
 
     ImGui::Spacing();
 
@@ -1695,10 +1740,11 @@ void GLGizmoEmboss::draw_text_input()
     std::string range_text;
 
     // The tag inserted by the quick-buttons is applied through the edit callback so
-    // ImGui's internal undo buffer and cursor stay coherent.
+    // ImGui's internal undo buffer and cursor stay coherent. CallbackAlways fires on
+    // the frame the field regains focus, making the paste immediate.
     ImGuiInputTextFlags flags = ImGuiInputTextFlags_AllowTabInput |
                                 ImGuiInputTextFlags_AutoSelectAll |
-                                ImGuiInputTextFlags_CallbackEdit;
+                                ImGuiInputTextFlags_CallbackAlways;
 
     // While "Preview Resolved Text" is on, show the resolved string and make the field
     // read-only: editing a resolved string would corrupt the template.
@@ -3490,11 +3536,18 @@ EmbossShape &TextDataBase::create_shape()
 
 void TextDataBase::write(ModelVolume &volume) const
 {
+    // Preserve the user's "Process templates" toggle across edits: the config is
+    // replaced wholesale below and process_templates is transient (defaults to true).
+    const bool process_templates = volume.text_configuration.has_value()
+                                       ? volume.text_configuration->process_templates
+                                       : true;
+
     DataBase::write(volume);
     volume.text_configuration = m_text_configuration; // copy
     // Keep the raw-template alias in sync: `text` is what .3mf persists and it stays
     // raw; `text_template` is what slicing-time resolution reads.
     volume.text_configuration->text_template = m_text_configuration.text;
+    volume.text_configuration->process_templates = process_templates;
 
     // Cache the raw font bytes so the slicing thread can re-mesh headlessly without
     // touching wxWidgets (wx font descriptors cannot be decoded on the worker thread).

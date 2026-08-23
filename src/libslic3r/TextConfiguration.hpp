@@ -201,6 +201,12 @@ struct TextConfiguration
     // intentionally not persisted into .3mf for privacy).
     std::shared_ptr<std::vector<unsigned char>> font_data;
 
+    // When false, {placeholders} in `text` are rendered literally (no template
+    // resolution), both in the GUI and at slice time.
+    // Transient (not serialized): defaults to true so loaded .3mf volumes keep the
+    // existing behavior. Persisting it would require a cereal version migration.
+    bool process_templates = true;
+
     // Single entry point for assigning text, keeps `text` and `text_template` in sync.
     void set_text(const std::string &value)
     {

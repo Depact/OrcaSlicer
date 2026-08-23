@@ -194,9 +194,13 @@ private:
     bool m_preview_template = false;
     // Cached resolved string while m_preview_template is on.
     std::string m_resolved_text;
-    // Template tag queued by a quick-button, inserted at the cursor by the text
-    // input callback so ImGui's undo buffer stays coherent.
+    // Template tag queued by a quick-button, inserted by the text input callback so
+    // ImGui's undo buffer stays coherent.
     std::string m_pending_insert;
+    // Cursor position (byte offset) the queued tag should be inserted at.
+    int m_pending_insert_pos = 0;
+    // Last known caret position of the text field, tracked via the InputText callback.
+    int m_text_cursor_pos = 0;
     // Set by a quick-button; consumed at the start of draw_text_input() to move
     // keyboard focus onto the text field so the queued insert applies on the next edit.
     bool m_focus_text_field = false;
