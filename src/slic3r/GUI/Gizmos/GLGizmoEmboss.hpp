@@ -189,11 +189,9 @@ private:
     std::string m_text; // Sequence of Unicode UTF8 symbols
 
     // Dynamic template controls (see draw_text_template_controls()).
-    // When true the text field and live mesh show the *resolved* string while the
+    // When true the 3D (prepare) view shows the *resolved* text as geometry while the
     // stored configuration keeps the raw template.
     bool m_preview_template = false;
-    // Cached resolved string while m_preview_template is on.
-    std::string m_resolved_text;
     // Template tag queued by a quick-button, inserted by the text input callback so
     // ImGui's undo buffer stays coherent.
     std::string m_pending_insert;

@@ -1368,12 +1368,13 @@ bool GLGizmoEmboss::process(bool make_snapshot)
     if (m_volume == nullptr) return false;
 
     // The mesh that gets generated uses the *resolved* text while "Preview Resolved
-    // Text" is on, but the volume keeps the raw template (create_emboss_data_base is
-    // always fed the raw m_text; shape_text only drives rendering).
+    // Text" is on - the 3D (prepare) view shows the resolved geometry - but the volume
+    // keeps the raw template (create_emboss_data_base is always fed the raw m_text;
+    // shape_text only drives rendering).
     // Per-glyph ("text along a curve") cannot be previewed: its text_lines are derived
     // from the raw text and the resolved string may not match line-for-line.
     const bool per_glyph = m_style_manager.get_font_prop().per_glyph;
-    const std::string &text_to_emboss = (m_preview_template && !per_glyph) ? m_resolved_text : m_text;
+    const std::string text_to_emboss = (m_preview_template && !per_glyph) ? resolve_text_template(m_text) : m_text;
 
     // without text there is nothing to emboss
     if (is_text_empty(text_to_emboss)) return false;
@@ -1463,40 +1464,39 @@ void GLGizmoEmboss::draw_text_template_controls()
     ImGui::Spacing();
     ImGui::TextUnformatted(_u8L("Dynamic variables").c_str());
 
-    // Preset quick-buttons: paste a tag at the current caret position of the text
-    // field. Styled as subtle text chips (transparent frame, faint hover) so they
-    // blend into the panel instead of sticking out like a toolbar row.
-    // Disabled while previewing (the field is then read-only) so an insert would never
-    // apply and would pop up unexpectedly later.
+    // Disabled while previewing (the field is then read-only) so an insert would
+    // never apply and would pop up unexpectedly later.
     const bool preview_read_only = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
 
-    auto insert_button = [this, preview_read_only](const char *label, const char *tag) {
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(6.0f, 2.0f));
-        if (preview_read_only) {
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 1.f, 1.f, 0.25f));
-        } else {
-            ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(1.f, 1.f, 1.f, 0.03f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.f, 1.f, 1.f, 0.10f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(1.f, 1.f, 1.f, 0.18f));
-        }
-        const bool clicked = ImGui::SmallButton(label);
-        ImGui::PopStyleColor(preview_read_only ? 1 : 3);
-        ImGui::PopStyleVar();
-
-        if (!preview_read_only && clicked) {
-            // Paste at the caret position tracked by the text input callback, so the
-            // tag lands where the cursor was last.
-            m_pending_insert_pos = m_text_cursor_pos;
-            m_pending_insert     = tag;
-            m_focus_text_field   = true; // focused at start of draw_text_input()
-        }
-        if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("%s", _u8L("Insert at cursor position").c_str());
+    // All template parameters grouped in one dropdown: picking an entry pastes its tag
+    // at the current caret position of the text field.
+    static const char *template_tags[] = {
+        "{year}-{month}-{day}",
+        "{hour}:{minute}",
+        "{nozzle_temperature[0]}",
+        "{nozzle_diameter[0]}",
+        "{layer_height}",
+        "{filament_type[0]}",
     };
 
-    insert_button("{year}-{month}-{day}", "{year}-{month}-{day}");
-    ImGui::SameLine();
-    insert_button("{hour}:{minute}", "{hour}:{minute}");
+    m_imgui->disabled_begin(preview_read_only);
+    if (ImGui::BeginCombo("##template_var", _u8L("Insert variable...").c_str())) {
+        for (const char *tag : template_tags) {
+            if (ImGui::Selectable(tag)) {
+                // Paste at the caret position tracked by the text input callback, so
+                // the tag lands where the cursor was last.
+                m_pending_insert_pos = m_text_cursor_pos;
+                m_pending_insert     = tag;
+                m_focus_text_field   = true; // focused at start of draw_text_input()
+            }
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("%s", tag);
+        }
+        ImGui::EndCombo();
+    }
+    m_imgui->disabled_end();
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("%s", _u8L("Insert a template variable at the cursor position").c_str());
 
     ImGui::Spacing();
 
@@ -1514,22 +1514,18 @@ void GLGizmoEmboss::draw_text_template_controls()
 
     ImGui::Spacing();
 
-    // Preview toggle: shows the resolved string in the field while keeping the
-    // underlying raw template untouched. Requires template processing to be enabled.
+    // Preview toggle: shows the *resolved* text as real 3D geometry in the prepare
+    // view (the text field keeps the raw, editable template). Requires template
+    // processing to be enabled.
     m_imgui->disabled_begin(!process_templates);
-    if (ImGui::Checkbox(_u8L("Preview Resolved Text").c_str(), &m_preview_template)) {
-        // Compute the resolved text before the mesh refresh: draw_text_input() runs
-        // later in the frame, but process() needs it right now.
-        if (m_preview_template)
-            m_resolved_text = resolve_text_template(m_text);
-        process(); // refresh the live mesh immediately
-    }
+    if (ImGui::Checkbox(_u8L("Preview Resolved Text").c_str(), &m_preview_template))
+        process(); // refresh the live 3D mesh with the resolved text
     m_imgui->disabled_end();
     if (ImGui::IsItemHovered())
         ImGui::SetTooltip("%s", _u8L(
-            "Resolve {placeholders} for a live preview. The stored text keeps the raw "
-            "template; resolution to geometry happens again at slicing time. "
-            "Literal braces must be escaped as \\{.").c_str());
+            "Show the resolved {placeholders} as 3D geometry in the prepare view. The "
+            "stored text keeps the raw template; resolution to geometry happens again "
+            "at slicing time. Literal braces must be escaped as \\{.").c_str());
 }
 
 void GLGizmoEmboss::draw_window(float x, float y)
@@ -1746,27 +1742,11 @@ void GLGizmoEmboss::draw_text_input()
                                 ImGuiInputTextFlags_AutoSelectAll |
                                 ImGuiInputTextFlags_CallbackAlways;
 
-    // While "Preview Resolved Text" is on, show the resolved string and make the field
-    // read-only: editing a resolved string would corrupt the template.
-    // Per-glyph ("text along a curve") text cannot preview resolved output, so the
-    // toggle has no effect there.
-    const bool can_preview = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
-    std::string display_text = m_text;
-    if (can_preview) {
-        m_resolved_text = resolve_text_template(m_text);
-        display_text    = m_resolved_text;
-        flags          |= ImGuiInputTextFlags_ReadOnly;
-    } else {
-        m_resolved_text.clear();
-    }
-
+    // The field always shows and edits the raw template. Resolved-text preview happens
+    // only in the 3D (prepare) view via process().
     ImVec2 input_size(m_gui_cfg->text_size.x, m_gui_cfg->text_size.y);
-    if (ImGui::InputTextMultiline("##Text", &display_text, input_size, flags,
+    if (ImGui::InputTextMultiline("##Text", &m_text, input_size, flags,
                                   text_insert_callback, this)) {
-        // The callback may have inserted a tag; only accept the buffer into m_text when
-        // we are NOT in read-only preview mode.
-        if (!can_preview)
-            m_text = display_text;
         if (m_style_manager.get_font_prop().per_glyph) {
             unsigned count_lines = get_count_lines(m_text);
             if (count_lines != m_text_lines.get_lines().size()) 

@@ -377,15 +377,17 @@ a slice shows the template, not resolved text). This already happens -
 `m_text = tc.text;` at `GLGizmoEmboss.cpp:1245` - and since `text` stays raw, no change is
 needed here. Leave it as is.
 
-### 4.2 Step 2 - Template quick-buttons + "Preview Resolved Text" toggle
+### 4.2 Step 2 - Template variable dropdown + "Preview Resolved Text" toggle
 
-Add two members to `GLGizmoEmboss` (`GLGizmoEmboss.hpp`):
+Add these members to `GLGizmoEmboss` (`GLGizmoEmboss.hpp`):
 
 ```cpp
 // GLGizmoEmboss.hpp (private members)
-bool        m_preview_template = false; // "Preview Resolved Text" toggle
-std::string m_resolved_text;            // cached resolved string while previewing
-std::string m_pending_insert;           // template tag awaiting insertion into the text field
+bool        m_preview_template = false;   // "Preview Resolved Text" toggle (3D preview)
+std::string m_pending_insert;             // template tag awaiting insertion into the text field
+int         m_pending_insert_pos = 0;     // caret position the queued tag is inserted at
+int         m_text_cursor_pos = 0;        // last known caret of the text field
+bool        m_focus_text_field = false;   // focus the field so the queued insert applies
 ```
 
 Add one helper declaration (private):
@@ -431,36 +433,51 @@ static int text_insert_callback(ImGuiInputTextCallbackData *data, GLGizmoEmboss 
 }
 ```
 
-**Draw the controls.** Add a row of preset buttons _above_ the text input (in
-`draw_window`, just before `draw_text_input()` at `GLGizmoEmboss.cpp:1419`), and wire the
-toggle into the text input path:
+**Draw the controls.** Add the "Dynamic variables" block after the text depth control (in
+`draw_window`, after `draw_depth(...)` at `GLGizmoEmboss.cpp:1523`). All template
+parameters are grouped in one dropdown; picking an entry pastes its tag at the caret:
 
 ```cpp
-// GLGizmoEmboss.cpp - new helper, called from draw_window() before draw_text_input()
+// GLGizmoEmboss.cpp - new helper, called from draw_window() after draw_depth()
 
 void GLGizmoEmboss::draw_text_template_controls()
 {
     ImGui::Spacing();
     ImGui::TextUnformatted(_u8L("Dynamic variables").c_str());
 
-    // Preset quick-buttons: insert a tag at the text-field cursor.
-    // The tag is queued into m_pending_insert and actually inserted by the
-    // InputText callback on the next edit event, preserving the undo history.
-    auto insert_button = [this](const char *label, const char *tag) {
-        if (ImGui::SmallButton(label)) {
-            m_pending_insert = tag;
-            // Refocus the text field so the callback fires on the next keystroke.
-            ImGui::SetKeyboardFocusHere(-1);
-        }
-        if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("%s", _u8L("Insert at cursor position").c_str());
+    // Disabled while previewing (the field is then read-only) so an insert would
+    // never apply and would pop up unexpectedly later.
+    const bool preview_read_only = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
+
+    // All template parameters grouped in one dropdown: picking an entry pastes its tag
+    // at the current caret position of the text field.
+    static const char *template_tags[] = {
+        "{year}-{month}-{day}",
+        "{hour}:{minute}",
+        "{nozzle_temperature[0]}",
+        "{nozzle_diameter[0]}",
+        "{layer_height}",
+        "{filament_type[0]}",
     };
 
-    insert_button("{year}-{month}-{day}", "{year}-{month}-{day}");
-    ImGui::SameLine();
-    insert_button("{hour}:{minute}", "{hour}:{minute}");
-
-    ImGui::Spacing();
+    m_imgui->disabled_begin(preview_read_only);
+    if (ImGui::BeginCombo("##template_var", _u8L("Insert variable...").c_str())) {
+        for (const char *tag : template_tags) {
+            if (ImGui::Selectable(tag)) {
+                // Paste at the caret position tracked by the text input callback, so
+                // the tag lands where the cursor was last.
+                m_pending_insert_pos = m_text_cursor_pos;
+                m_pending_insert     = tag;
+                m_focus_text_field   = true; // focused at start of draw_text_input()
+            }
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("%s", tag);
+        }
+        ImGui::EndCombo();
+    }
+    m_imgui->disabled_end();
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("%s", _u8L("Insert a template variable at the cursor position").c_str());
 
     ImGui::Spacing();
 
@@ -478,50 +495,39 @@ void GLGizmoEmboss::draw_text_template_controls()
 
     ImGui::Spacing();
 
-    // Preview toggle: shows the resolved string in the field while keeping the
-    // underlying raw template untouched. Requires template processing to be enabled.
+    // Preview toggle: shows the *resolved* text as real 3D geometry in the prepare
+    // view (the text field keeps the raw, editable template). Requires template
+    // processing to be enabled.
     m_imgui->disabled_begin(!process_templates);
-    ImGui::Checkbox(_u8L("Preview Resolved Text").c_str(), &m_preview_template);
+    if (ImGui::Checkbox(_u8L("Preview Resolved Text").c_str(), &m_preview_template))
+        process(); // refresh the live 3D mesh with the resolved text
     m_imgui->disabled_end();
     if (ImGui::IsItemHovered())
         ImGui::SetTooltip("%s", _u8L(
-            "Resolve {placeholders} for a live preview. The stored text keeps the raw "
-            "template; resolution to geometry happens again at slicing time.").c_str());
+            "Show the resolved {placeholders} as 3D geometry in the prepare view. The "
+            "stored text keeps the raw template; resolution to geometry happens again "
+            "at slicing time. Literal braces must be escaped as \\{.").c_str());
 }
 ```
 
-Then modify `draw_text_input()` (`GLGizmoEmboss.cpp:1539`) to (a) register the callback and
-(b) display + mesh the resolved string while the toggle is on:
+Then modify `draw_text_input()` (`GLGizmoEmboss.cpp:1539`) to register the insert
+callback. The field always shows and edits the raw template - resolved text is previewed
+only as 3D geometry, never inside the field:
 
 ```cpp
 // GLGizmoEmboss.cpp - inside draw_text_input(), replace the flags + InputTextMultiline block
-// (currently lines ~1600-1611) with:
 
-// The tag inserted by the quick-buttons is applied through the edit callback so
-// ImGui's internal undo buffer and cursor stay coherent.
+// The tag picked from the dropdown is applied through the edit callback so ImGui's
+// internal undo buffer and cursor stay coherent. CallbackAlways fires on the frame
+// the field regains focus, making the paste immediate.
 ImGuiInputTextFlags flags = ImGuiInputTextFlags_AllowTabInput |
                             ImGuiInputTextFlags_AutoSelectAll |
-                            ImGuiInputTextFlags_CallbackEdit;
-
-// While "Preview Resolved Text" is on, show the resolved string and make the field
-// read-only: editing a resolved string would corrupt the template.
-std::string display_text = m_text;
-if (m_preview_template) {
-    m_resolved_text = resolve_text_template(m_text);
-    display_text    = m_resolved_text;
-    flags          |= ImGuiInputTextFlags_ReadOnly;
-} else {
-    m_resolved_text.clear();
-}
+                            ImGuiInputTextFlags_CallbackAlways;
 
 ImVec2 input_size(m_gui_cfg->text_size.x, m_gui_cfg->text_size.y);
-if (ImGui::InputTextMultiline("##Text", &display_text, input_size, flags,
+if (ImGui::InputTextMultiline("##Text", &m_text, input_size, flags,
                               text_insert_callback, this)) {
-    // The callback may have inserted a tag; only accept the buffer into m_text when
-    // we are NOT in read-only preview mode.
-    if (!m_preview_template)
-        m_text = display_text;
-    process(); // (re)generate the live preview mesh - see process() change below
+    process(); // (re)generate the live mesh - see process() change below
 }
 ```
 
@@ -529,15 +535,16 @@ if (ImGui::InputTextMultiline("##Text", &display_text, input_size, flags,
 the resolved string into the volume config (the raw template is what persists):
 
 ```cpp
-// GLGizmoEmboss.cpp - GLGizmoEmboss::process() (~line 1355)
+// GLGizmoEmboss.cpp - GLGizmoEmboss::process() (~line 1364)
 
-// The mesh that gets generated uses the *resolved* text while previewing, but the
-// volume keeps the raw template (create_emboss_data_base is always fed the raw m_text;
-// shape_text only drives rendering).
+// The mesh that gets generated uses the *resolved* text while "Preview Resolved Text"
+// is on - the 3D (prepare) view shows the resolved geometry - but the volume keeps the
+// raw template (create_emboss_data_base is always fed the raw m_text; shape_text only
+// drives rendering).
 // Per-glyph ("text along a curve") cannot be previewed: its text_lines are derived
 // from the raw text and the resolved string may not match line-for-line.
 const bool per_glyph = m_style_manager.get_font_prop().per_glyph;
-const std::string &text_to_emboss = (m_preview_template && !per_glyph) ? m_resolved_text : m_text;
+const std::string text_to_emboss = (m_preview_template && !per_glyph) ? resolve_text_template(m_text) : m_text;
 if (is_text_empty(text_to_emboss)) return false;
 // ... existing checks ...
 
@@ -547,11 +554,11 @@ DataBasePtr base = create_emboss_data_base(m_text, m_style_manager, m_text_lines
                                                      : (m_preview_template ? text_to_emboss : std::string()));
 ```
 
-> The preview toggle is additionally ignored for per-glyph text in `draw_text_input()`
-> (display stays read-only raw) so the on-screen text never disagrees with the mesh.
+> The preview toggle is additionally ignored for per-glyph text so the geometry stays
+> consistent.
 
 Because `TextDataBase::write` writes `m_text_configuration` (which is built from the
-**raw** `m_text` in `create_emboss_data_base` at line 3421), the volume keeps the template
+**raw** `m_text` in `create_emboss_data_base` at line 3431), the volume keeps the template
 even while the preview mesh shows resolved glyphs.
 
 > Note on the legacy `GLGizmoText`: it is dead code in this fork. Do not spend time on it.
@@ -852,10 +859,11 @@ rebuild. If you changed `TextConfiguration.hpp` expect a wide rebuild (it is inc
    ```
    {year}-{month}-{day}
    ```
-4. Press one of the quick-buttons, e.g. `{year}-{month}-{day}`, and confirm the tag is
-   inserted at the current caret position (no keystroke needed).
-5. Enable **Preview Resolved Text** - the field should show today's date, e.g.
-   `2026-08-23`; disable it again and confirm the field reverts to `{year}-{month}-{day}`.
+4. Pick `{year}-{month}-{day}` from the **Insert variable** dropdown and confirm the tag
+   is inserted at the current caret position (no keystroke needed).
+5. Enable **Preview Resolved Text** - the 3D (prepare) view shows today's date as real
+   geometry, e.g. `2026-08-23`, while the text field keeps the raw
+   `{year}-{month}-{day}` template; disable it again and the 3D view reverts.
 6. Exit the tool (a text object now exists whose `text_configuration.text` is the raw
    template). Save the project as `.3mf`, close, reopen - the text field must still show the
    **raw** template (proves `text` stayed raw and `.3mf` round-trips).
