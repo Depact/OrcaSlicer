@@ -1475,90 +1475,101 @@ int GLGizmoEmboss::text_insert_callback(ImGuiInputTextCallbackData *data)
 
 void GLGizmoEmboss::draw_text_template_controls()
 {
+    // Uncollapsible section, like the "Text" section above.
     ImGui::Spacing();
-    if (draw_section_header(static_cast<size_t>(IconType::section_templates), _u8L("Templates").c_str(), "##templates")) {
-        // Disabled while previewing (the field is then read-only) so an insert would
-        // never apply and would pop up unexpectedly later.
-        const bool preview_read_only = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
+    ImGui::Separator();
+    draw_section_header(static_cast<size_t>(IconType::section_templates), _u8L("Templates").c_str());
+    ImGui::Spacing();
 
-        // All template parameters grouped in one dropdown: picking an entry pastes its
-        // tag at the current caret position of the text field. Vector options
-        // (nozzle_temperature, nozzle_diameter, filament_type) are addressed without
-        // an index, which the parser resolves to the first element. strftime() is the
-        // analogue of .NET's DateTime.ToString(format), using C strftime() codes.
-        static const char *template_tags[] = {
-            "{year}-{month}-{day}",
-            "{hour}:{minute}",
-            "{strftime(\"%Y-%m-%d %H:%M\")}",
-            "{nozzle_temperature}",
-            "{nozzle_diameter}",
-            "{layer_height}",
-            "{filament_type}",
-        };
+    // Master toggle: when off, {placeholders} are printed literally and never
+    // resolved, both in the preview and at slice time.
+    bool &process_templates = m_volume->text_configuration->process_templates;
+    if (ImGui::Checkbox(_u8L("Resolve templates").c_str(), &process_templates)) {
+        if (!process_templates)
+            m_preview_template = false; // nothing to preview without resolution
+    }
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("%s", _u8L(
+            "When off, {placeholders} are printed literally instead of being resolved "
+            "to their values.").c_str());
 
-        m_imgui->disabled_begin(preview_read_only);
-        if (ImGui::BeginCombo("##template_var", _u8L("Insert template...").c_str())) {
-            for (const char *tag : template_tags) {
-                if (ImGui::Selectable(tag)) {
-                    // Paste at the caret position tracked by the text input callback,
-                    // so the tag lands where the cursor was last. When the field was
-                    // never focused (no cursor known), append to the end instead.
-                    m_pending_insert_pos = (m_text_cursor_pos >= 0) ? m_text_cursor_pos : static_cast<int>(m_text.size());
-                    m_pending_insert     = tag;
-                    m_focus_text_field   = true; // focused at start of draw_text_input()
-                }
-                if (ImGui::IsItemHovered()) {
-                    // Tooltip shows what the tag resolves to, not just the tag itself.
-                    const std::string resolved = resolve_text_template(tag);
-                    if (resolved == tag)
-                        ImGui::SetTooltip("%s", _u8L("This tag cannot be resolved.").c_str());
-                    else
-                        ImGui::SetTooltip("%s", resolved.c_str());
-                }
+    ImGui::Spacing();
+
+    // Preview toggle: shows the *resolved* text as real 3D geometry in the prepare
+    // tab (the text field keeps the raw, editable template). Requires template
+    // processing to be enabled.
+    m_imgui->disabled_begin(!process_templates);
+    if (ImGui::Checkbox(_u8L("Preview in Prepare Tab").c_str(), &m_preview_template))
+        process(); // refresh the live 3D mesh with the resolved text
+    m_imgui->disabled_end();
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("%s", _u8L(
+            "Show the resolved {placeholders} as 3D geometry in the Prepare tab. The "
+            "stored text keeps the raw template; resolution to geometry happens again "
+            "at slicing time. Literal braces must be escaped as \\{.").c_str());
+
+    ImGui::Spacing();
+
+    // All template parameters grouped in one dropdown - last in the section. Picking
+    // an entry pastes its tag at the current caret position of the text field. Vector
+    // options (nozzle_temperature, nozzle_diameter, filament_type) are addressed
+    // without an index, which the parser resolves to the first element. strftime() is
+    // the analogue of .NET's DateTime.ToString(format), using C strftime() codes.
+    static const char *template_tags[] = {
+        "{year}-{month}-{day}",
+        "{hour}:{minute}",
+        "{strftime(\"%Y-%m-%d %H:%M\")}",
+        "{nozzle_temperature}",
+        "{nozzle_diameter}",
+        "{layer_height}",
+        "{filament_type}",
+    };
+
+    // Disabled while previewing (the field is then read-only) so an insert would
+    // never apply and would pop up unexpectedly later.
+    const bool preview_read_only = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
+    m_imgui->disabled_begin(preview_read_only);
+    if (ImGui::BeginCombo("##template_var", _u8L("Insert template...").c_str())) {
+        for (const char *tag : template_tags) {
+            if (ImGui::Selectable(tag)) {
+                // Paste at the caret position tracked by the text input callback,
+                // so the tag lands where the cursor was last. When the field was
+                // never focused (no cursor known), append to the end instead.
+                m_pending_insert_pos = (m_text_cursor_pos >= 0) ? m_text_cursor_pos : static_cast<int>(m_text.size());
+                m_pending_insert     = tag;
+                m_focus_text_field   = true; // focused at start of draw_text_input()
             }
-            ImGui::EndCombo();
+            if (ImGui::IsItemHovered()) {
+                // Tooltip shows what the tag resolves to, not just the tag itself.
+                const std::string resolved = resolve_text_template(tag);
+                if (resolved == tag)
+                    ImGui::SetTooltip("%s", _u8L("This tag cannot be resolved.").c_str());
+                else
+                    ImGui::SetTooltip("%s", resolved.c_str());
+            }
         }
-        m_imgui->disabled_end();
-        if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("%s", _u8L("Insert a template at the cursor position").c_str());
+        ImGui::EndCombo();
+    }
+    m_imgui->disabled_end();
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("%s", _u8L("Insert a template at the cursor position").c_str());
 
-        ImGui::Spacing();
+    ImGui::Spacing();
 
-        // Master toggle: when off, {placeholders} are printed literally and never
-        // resolved, both in the preview and at slice time.
-        bool &process_templates = m_volume->text_configuration->process_templates;
-        if (ImGui::Checkbox(_u8L("Resolve placeholders").c_str(), &process_templates)) {
-            if (!process_templates)
-                m_preview_template = false; // nothing to preview without resolution
+    // Collapsible live preview of what the template resolves to. Only shown when there
+    // is something to resolve.
+    if (process_templates && m_text.find('{') != std::string::npos) {
+        if (ImGui::TreeNodeEx(_u8L("Resolved preview").c_str(), ImGuiTreeNodeFlags_SpanAvailWidth)) {
+            draw_text_resolved_preview();
+            ImGui::TreePop();
         }
-        if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("%s", _u8L(
-                "When off, {placeholders} are printed literally instead of being resolved "
-                "to their values.").c_str());
-
-        ImGui::Spacing();
-
-        // Preview toggle: shows the *resolved* text as real 3D geometry in the prepare
-        // view (the text field keeps the raw, editable template). Requires template
-        // processing to be enabled.
-        m_imgui->disabled_begin(!process_templates);
-        if (ImGui::Checkbox(_u8L("Preview in 3D").c_str(), &m_preview_template))
-            process(); // refresh the live 3D mesh with the resolved text
-        m_imgui->disabled_end();
-        if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("%s", _u8L(
-                "Show the resolved {placeholders} as 3D geometry in the prepare view. The "
-                "stored text keeps the raw template; resolution to geometry happens again "
-                "at slicing time. Literal braces must be escaped as \\{.").c_str());
-
-        ImGui::TreePop();
     }
 }
 
 void GLGizmoEmboss::draw_text_resolved_preview()
 {
-    // Live feedback right under the text field: show what the template currently
-    // resolves to, without needing the "Preview in 3D" toggle or a slice.
+    // Live feedback: show what the template currently resolves to, without needing the
+    // "Preview in Prepare Tab" toggle or a slice.
     if (m_text.find('{') == std::string::npos)
         return; // no placeholders to resolve
     if (m_volume == nullptr || !m_volume->text_configuration.has_value() ||
@@ -1570,10 +1581,18 @@ void GLGizmoEmboss::draw_text_resolved_preview()
         return; // nothing actually resolved (e.g. only unknown tags)
 
     const bool unresolved = resolved.find('{') != std::string::npos;
-    ImGuiWrapper::text_colored(unresolved ? ImGuiWrapper::COL_ORANGE_DARK : ImGuiWrapper::COL_GREY_LIGHT, resolved);
-    if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("%s", unresolved ? _u8L("Some placeholders could not be resolved and stay literal.").c_str()
-                                           : _u8L("Resolved value of the template placeholders.").c_str());
+
+    // Scrollable, height-bounded area so a long resolved value does not blow up the
+    // panel; long lines scroll horizontally, many lines scroll vertically.
+    const float preview_height = ImGui::GetTextLineHeightWithSpacing() * 3.f + ImGui::GetStyle().FramePadding.y * 2.f;
+    const float avail_width    = ImGui::GetContentRegionAvail().x;
+    if (ImGui::BeginChild("##resolved_preview_scroll", ImVec2(avail_width, preview_height), true, ImGuiWindowFlags_HorizontalScrollbar)) {
+        ImGuiWrapper::text_colored(unresolved ? ImGuiWrapper::COL_ORANGE_DARK : ImGuiWrapper::COL_GREY_LIGHT, resolved);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("%s", unresolved ? _u8L("Some placeholders could not be resolved and stay literal.").c_str()
+                                               : _u8L("Resolved value of the template placeholders.").c_str());
+    }
+    ImGui::EndChild();
 }
 
 bool GLGizmoEmboss::draw_section_header(size_t icon_type, const char *title, const char *tree_id)
@@ -1591,14 +1610,13 @@ bool GLGizmoEmboss::draw_section_header(size_t icon_type, const char *title, con
     }
 
     // Collapsible section header: tree arrow + icon + title. The label is hidden
-    // (##id) so the icon/title are rendered inline after the arrow.
+    // (##id) so the icon/title are rendered inline after the arrow. The title must be
+    // drawn even when collapsed, otherwise only the bare arrow would be visible.
     const bool open = ImGui::TreeNodeEx(tree_id, ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding);
-    if (open) {
-        ImGui::SameLine();
-        ImGui::Image((void *)(intptr_t)icon.tex_id, icon_size, icon.tl, icon.br);
-        ImGui::SameLine();
-        ImGui::TextUnformatted(title);
-    }
+    ImGui::SameLine();
+    ImGui::Image((void *)(intptr_t)icon.tex_id, icon_size, icon.tl, icon.br);
+    ImGui::SameLine();
+    ImGui::TextUnformatted(title);
     return open;
 }
 
@@ -1618,15 +1636,12 @@ void GLGizmoEmboss::draw_window(float x, float y)
 
     draw_text_input();
 
-    draw_text_resolved_preview();
-
     // subtract 4.0f to counteract weird additional spacing/padding of the revert buttons
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(10.0f, 10.0f - 4.0f));
     ScopeGuard spacing_sc([](){ ImGui::PopStyleVar(/*ImGuiStyleVar_ItemSpacing*/); });
 
     // Style / Font / Height / Depth presented like the settings pages: a
-    // non-collapsible section header with the settings grouped beneath (Style, Font,
-    // Quality), instead of a collapsible tree node.
+    // non-collapsible section header with all the text parameters grouped beneath.
     ImGui::Separator();
     draw_section_header(static_cast<size_t>(IconType::section_text), _u8L("Text").c_str());
     ImGui::Spacing();
@@ -1638,11 +1653,7 @@ void GLGizmoEmboss::draw_window(float x, float y)
     draw_font_list_line();
     m_imgui->disabled_begin(m_is_unknown_font);
 
-    // Height / Depth grouped under a "Quality" sub-heading, matching the print
-    // settings hierarchy where "Layer Height" lives on the Quality page.
-    draw_section_header(static_cast<size_t>(IconType::section_quality), _u8L("Quality").c_str());
     ImGui::Spacing();
-
     bool use_inch = wxGetApp().app_config->get_bool("use_inches");
     draw_height(use_inch);
     draw_depth(use_inch);

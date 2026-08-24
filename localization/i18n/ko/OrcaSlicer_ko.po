@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 21:55+0200\n"
+"POT-Creation-Date: 2026-08-24 22:22+0200\n"
 "PO-Revision-Date: 2025-06-02 17:12+0900\n"
 "Last-Translator: crwusiz <crwusiz@gmail.com>\n"
 "Language-Team: \n"
@@ -1263,6 +1263,18 @@ msgstr "기본 글꼴"
 msgid "Templates"
 msgstr ""
 
+msgid "Resolve templates"
+msgstr ""
+
+msgid "When off, {placeholders} are printed literally instead of being resolved to their values."
+msgstr ""
+
+msgid "Preview in Prepare Tab"
+msgstr ""
+
+msgid "Show the resolved {placeholders} as 3D geometry in the Prepare tab. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
+msgstr ""
+
 msgid "Insert template..."
 msgstr ""
 
@@ -1272,16 +1284,7 @@ msgstr ""
 msgid "Insert a template at the cursor position"
 msgstr ""
 
-msgid "Resolve placeholders"
-msgstr ""
-
-msgid "When off, {placeholders} are printed literally instead of being resolved to their values."
-msgstr ""
-
-msgid "Preview in 3D"
-msgstr ""
-
-msgid "Show the resolved {placeholders} as 3D geometry in the prepare view. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
+msgid "Resolved preview"
 msgstr ""
 
 msgid "Some placeholders could not be resolved and stay literal."
@@ -1292,9 +1295,6 @@ msgstr ""
 
 msgid "Text"
 msgstr "텍스트"
-
-msgid "Quality"
-msgstr "품질"
 
 msgid "Advanced"
 msgstr "고급"
@@ -2609,6 +2609,9 @@ msgstr "Orca Slicer GUI 초기화 실패"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "치명적 오류, 예외 발견: %1%"
+
+msgid "Quality"
+msgstr "품질"
 
 msgid "Shell"
 msgstr "쉘"

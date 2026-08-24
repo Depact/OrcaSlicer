@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: orcaslicerua\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 21:55+0200\n"
+"POT-Creation-Date: 2026-08-24 22:22+0200\n"
 "PO-Revision-Date: 2026-07-17 16:25+0300\n"
 "Last-Translator: Andrij Mizyk <andm1zyk@proton.me>\n"
 "Language-Team: Ukrainian\n"
@@ -1237,6 +1237,18 @@ msgstr "Типовий шрифт"
 msgid "Templates"
 msgstr ""
 
+msgid "Resolve templates"
+msgstr ""
+
+msgid "When off, {placeholders} are printed literally instead of being resolved to their values."
+msgstr ""
+
+msgid "Preview in Prepare Tab"
+msgstr ""
+
+msgid "Show the resolved {placeholders} as 3D geometry in the Prepare tab. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
+msgstr ""
+
 msgid "Insert template..."
 msgstr ""
 
@@ -1246,16 +1258,7 @@ msgstr ""
 msgid "Insert a template at the cursor position"
 msgstr ""
 
-msgid "Resolve placeholders"
-msgstr ""
-
-msgid "When off, {placeholders} are printed literally instead of being resolved to their values."
-msgstr ""
-
-msgid "Preview in 3D"
-msgstr ""
-
-msgid "Show the resolved {placeholders} as 3D geometry in the prepare view. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
+msgid "Resolved preview"
 msgstr ""
 
 msgid "Some placeholders could not be resolved and stay literal."
@@ -1266,9 +1269,6 @@ msgstr ""
 
 msgid "Text"
 msgstr "Текст"
-
-msgid "Quality"
-msgstr "Якість"
 
 msgid "Advanced"
 msgstr "Розширені"
@@ -2549,6 +2549,9 @@ msgstr "Помилка ініціалізації графічного інте�
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "Критична помилка, виявлено виняток: %1%"
+
+msgid "Quality"
+msgstr "Якість"
 
 msgid "Shell"
 msgstr "Оболонка"

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 21:55+0200\n"
+"POT-Creation-Date: 2026-08-24 22:22+0200\n"
 "PO-Revision-Date: 2026-07-26 11:14-0300\n"
 "Last-Translator: Alexandre Folle de Menezes\n"
 "Language-Team: Portuguese, Brazilian\n"
@@ -1187,6 +1187,18 @@ msgstr "Fonte padrão"
 msgid "Templates"
 msgstr ""
 
+msgid "Resolve templates"
+msgstr ""
+
+msgid "When off, {placeholders} are printed literally instead of being resolved to their values."
+msgstr ""
+
+msgid "Preview in Prepare Tab"
+msgstr ""
+
+msgid "Show the resolved {placeholders} as 3D geometry in the Prepare tab. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
+msgstr ""
+
 msgid "Insert template..."
 msgstr ""
 
@@ -1196,16 +1208,7 @@ msgstr ""
 msgid "Insert a template at the cursor position"
 msgstr ""
 
-msgid "Resolve placeholders"
-msgstr ""
-
-msgid "When off, {placeholders} are printed literally instead of being resolved to their values."
-msgstr ""
-
-msgid "Preview in 3D"
-msgstr ""
-
-msgid "Show the resolved {placeholders} as 3D geometry in the prepare view. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
+msgid "Resolved preview"
 msgstr ""
 
 msgid "Some placeholders could not be resolved and stay literal."
@@ -1216,9 +1219,6 @@ msgstr ""
 
 msgid "Text"
 msgstr "Texto"
-
-msgid "Quality"
-msgstr "Qualidade"
 
 msgid "Advanced"
 msgstr "Avançado"
@@ -2479,6 +2479,9 @@ msgstr "Falha na inicialização da interface do OrcaSlicer"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "Erro fatal, exceção: %1%"
+
+msgid "Quality"
+msgstr "Qualidade"
 
 msgid "Shell"
 msgstr "Casca"

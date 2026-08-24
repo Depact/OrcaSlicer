@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Slic3rPE\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 21:55+0200\n"
+"POT-Creation-Date: 2026-08-24 22:22+0200\n"
 "PO-Revision-Date: 2026-06-11 12:37-0300\n"
 "Last-Translator: Handle <mail@bysb.net>\n"
 "Language-Team: \n"
@@ -1188,6 +1188,18 @@ msgstr "默认字体"
 msgid "Templates"
 msgstr ""
 
+msgid "Resolve templates"
+msgstr ""
+
+msgid "When off, {placeholders} are printed literally instead of being resolved to their values."
+msgstr ""
+
+msgid "Preview in Prepare Tab"
+msgstr ""
+
+msgid "Show the resolved {placeholders} as 3D geometry in the Prepare tab. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
+msgstr ""
+
 msgid "Insert template..."
 msgstr ""
 
@@ -1197,16 +1209,7 @@ msgstr ""
 msgid "Insert a template at the cursor position"
 msgstr ""
 
-msgid "Resolve placeholders"
-msgstr ""
-
-msgid "When off, {placeholders} are printed literally instead of being resolved to their values."
-msgstr ""
-
-msgid "Preview in 3D"
-msgstr ""
-
-msgid "Show the resolved {placeholders} as 3D geometry in the prepare view. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
+msgid "Resolved preview"
 msgstr ""
 
 msgid "Some placeholders could not be resolved and stay literal."
@@ -1217,9 +1220,6 @@ msgstr ""
 
 msgid "Text"
 msgstr "文字浮雕"
-
-msgid "Quality"
-msgstr "质量"
 
 msgid "Advanced"
 msgstr "高级"
@@ -2483,6 +2483,9 @@ msgstr "逆戟鲸切片器图形界面初始化失败"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "致命错误，捕获到异常：%1%"
+
+msgid "Quality"
+msgstr "质量"
 
 msgid "Shell"
 msgstr "外壳"

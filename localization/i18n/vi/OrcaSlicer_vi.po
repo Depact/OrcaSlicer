@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 21:55+0200\n"
+"POT-Creation-Date: 2026-08-24 22:22+0200\n"
 "PO-Revision-Date: 2025-10-02 17:43+0700\n"
 "Last-Translator: \n"
 "Language-Team: hainguyen.ts13@gmail.com\n"
@@ -1317,6 +1317,18 @@ msgstr "Font mặc định"
 msgid "Templates"
 msgstr ""
 
+msgid "Resolve templates"
+msgstr ""
+
+msgid "When off, {placeholders} are printed literally instead of being resolved to their values."
+msgstr ""
+
+msgid "Preview in Prepare Tab"
+msgstr ""
+
+msgid "Show the resolved {placeholders} as 3D geometry in the Prepare tab. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
+msgstr ""
+
 msgid "Insert template..."
 msgstr ""
 
@@ -1326,16 +1338,7 @@ msgstr ""
 msgid "Insert a template at the cursor position"
 msgstr ""
 
-msgid "Resolve placeholders"
-msgstr ""
-
-msgid "When off, {placeholders} are printed literally instead of being resolved to their values."
-msgstr ""
-
-msgid "Preview in 3D"
-msgstr ""
-
-msgid "Show the resolved {placeholders} as 3D geometry in the prepare view. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
+msgid "Resolved preview"
 msgstr ""
 
 msgid "Some placeholders could not be resolved and stay literal."
@@ -1346,9 +1349,6 @@ msgstr ""
 
 msgid "Text"
 msgstr "Chữ"
-
-msgid "Quality"
-msgstr "Chất lượng"
 
 msgid "Advanced"
 msgstr "Nâng cao"
@@ -2696,6 +2696,9 @@ msgstr "Khởi tạo giao diện Orca Slicer thất bại"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "Lỗi nghiêm trọng, ngoại lệ bắt được: %1%"
+
+msgid "Quality"
+msgstr "Chất lượng"
 
 # AI Translated
 msgid "Shell"
