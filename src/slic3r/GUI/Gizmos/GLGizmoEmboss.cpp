@@ -1559,7 +1559,7 @@ void GLGizmoEmboss::draw_text_template_controls()
     // Collapsible live preview of what the template resolves to. Only shown when there
     // is something to resolve.
     if (process_templates && m_text.find('{') != std::string::npos) {
-        if (ImGui::TreeNodeEx(_u8L("Resolved preview").c_str(), ImGuiTreeNodeFlags_SpanAvailWidth)) {
+        if (ImGui::TreeNodeEx(_u8L("Template resolved preview").c_str(), ImGuiTreeNodeFlags_SpanAvailWidth)) {
             draw_text_resolved_preview();
             ImGui::TreePop();
         }
@@ -1597,25 +1597,31 @@ void GLGizmoEmboss::draw_text_resolved_preview()
 
 bool GLGizmoEmboss::draw_section_header(size_t icon_type, const char *title, const char *tree_id)
 {
-    const IconManager::Icon &icon = get_icon(m_icons, static_cast<IconType>(icon_type), IconState::activable);
+    // static_cast<size_t>(-1) means "no icon" - the header is just the title.
+    const bool has_icon = icon_type != static_cast<size_t>(-1);
     const float icon_h = ImGui::GetTextLineHeight();
-    const ImVec2 icon_size(icon_h, icon_h);
 
     if (tree_id == nullptr) {
-        // Static (non-collapsible) header: icon + title.
-        ImGui::Image((void *)(intptr_t)icon.tex_id, icon_size, icon.tl, icon.br);
-        ImGui::SameLine();
+        // Static (non-collapsible) header: optional icon + title.
+        if (has_icon) {
+            const IconManager::Icon &icon = get_icon(m_icons, static_cast<IconType>(icon_type), IconState::activable);
+            ImGui::Image((void *)(intptr_t)icon.tex_id, ImVec2(icon_h, icon_h), icon.tl, icon.br);
+            ImGui::SameLine();
+        }
         ImGui::TextUnformatted(title);
         return true;
     }
 
-    // Collapsible section header: tree arrow + icon + title. The label is hidden
-    // (##id) so the icon/title are rendered inline after the arrow. The title must be
-    // drawn even when collapsed, otherwise only the bare arrow would be visible.
+    // Collapsible section header: tree arrow + optional icon + title. The label is
+    // hidden (##id) so the icon/title are rendered inline after the arrow. The title
+    // must be drawn even when collapsed, otherwise only the bare arrow would show.
     const bool open = ImGui::TreeNodeEx(tree_id, ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding);
-    ImGui::SameLine();
-    ImGui::Image((void *)(intptr_t)icon.tex_id, icon_size, icon.tl, icon.br);
-    ImGui::SameLine();
+    if (has_icon) {
+        const IconManager::Icon &icon = get_icon(m_icons, static_cast<IconType>(icon_type), IconState::activable);
+        ImGui::SameLine();
+        ImGui::Image((void *)(intptr_t)icon.tex_id, ImVec2(icon_h, icon_h), icon.tl, icon.br);
+        ImGui::SameLine();
+    }
     ImGui::TextUnformatted(title);
     return open;
 }
@@ -1669,7 +1675,7 @@ void GLGizmoEmboss::draw_window(float x, float y)
         ImGui::SetNextTreeNodeOpen(false);
 
     // ImGui Bug: After switching to another window and switching back, clicking the text doesnt open/close the TreeNode anymore
-    if (draw_section_header(static_cast<size_t>(IconType::section_advanced), _u8L("Advanced").c_str(), "##advanced")) {
+    if (draw_section_header(static_cast<size_t>(-1), _u8L("Advanced").c_str(), "##advanced")) {
         if (!m_is_advanced_edit_style) {
             m_is_advanced_edit_style = true;
             m_imgui->set_requires_extra_frame();
@@ -1846,7 +1852,7 @@ void GLGizmoEmboss::draw_text_input()
     // visible without scrolling, then clamp to a comfortable range.
     const float line_height = ImGui::GetTextLineHeightWithSpacing();
     const unsigned count_lines = get_count_lines(m_text);
-    const unsigned min_lines = 3;
+    const unsigned min_lines = 2;
     const unsigned max_lines = 10;
     const unsigned lines = std::clamp<unsigned>(std::max(count_lines, min_lines), min_lines, max_lines);
     ImVec2 input_size(m_gui_cfg->text_size.x, line_height * lines);
