@@ -1566,23 +1566,28 @@ void GLGizmoEmboss::draw_window(float x, float y)
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(10.0f, 10.0f - 4.0f));
     ScopeGuard spacing_sc([](){ ImGui::PopStyleVar(/*ImGuiStyleVar_ItemSpacing*/); });
 
-    // Style / Font / Height / Depth grouped in their own collapsible section, like the
-    // other setting groups in this panel.
-    ImGuiTreeNodeFlags text_flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
-    if (ImGui::TreeNodeEx(_u8L("Text").c_str(), text_flags)) {
-        draw_style_list();
+    // Style / Font / Height / Depth presented like the settings pages: a
+    // non-collapsible section header with the settings grouped beneath (Style, Font,
+    // Quality), instead of a collapsible tree node.
+    ImGui::Separator();
+    ImGui::TextUnformatted(_u8L("Text").c_str());
+    ImGui::Spacing();
 
-        // When unknown font is inside .3mf only font selection is allowed
-        m_imgui->disabled_end(/*m_is_unknown_font*/);
-        draw_font_list_line();
-        m_imgui->disabled_begin(m_is_unknown_font);
+    draw_style_list();
 
-        bool use_inch = wxGetApp().app_config->get_bool("use_inches");
-        draw_height(use_inch);
-        draw_depth(use_inch);
+    // When unknown font is inside .3mf only font selection is allowed
+    m_imgui->disabled_end(/*m_is_unknown_font*/);
+    draw_font_list_line();
+    m_imgui->disabled_begin(m_is_unknown_font);
 
-        ImGui::TreePop();
-    }
+    // Height / Depth grouped under a "Quality" sub-heading, matching the print
+    // settings hierarchy where "Layer Height" lives on the Quality page.
+    ImGui::TextUnformatted(_u8L("Quality").c_str());
+    ImGui::Spacing();
+
+    bool use_inch = wxGetApp().app_config->get_bool("use_inches");
+    draw_height(use_inch);
+    draw_depth(use_inch);
 
     // Dynamic template quick-buttons + preview toggle, grouped with the other text
     // size/depth controls so they don't look out of place.

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Slic3rPE\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 16:43+0200\n"
+"POT-Creation-Date: 2026-08-24 21:46+0200\n"
 "PO-Revision-Date: 2026-06-11 12:37-0300\n"
 "Last-Translator: Handle <mail@bysb.net>\n"
 "Language-Team: \n"
@@ -1208,6 +1208,9 @@ msgstr ""
 
 msgid "Text"
 msgstr "文字浮雕"
+
+msgid "Quality"
+msgstr "质量"
 
 msgid "Advanced"
 msgstr "高级"
@@ -2471,9 +2474,6 @@ msgstr "逆戟鲸切片器图形界面初始化失败"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "致命错误，捕获到异常：%1%"
-
-msgid "Quality"
-msgstr "质量"
 
 msgid "Shell"
 msgstr "外壳"

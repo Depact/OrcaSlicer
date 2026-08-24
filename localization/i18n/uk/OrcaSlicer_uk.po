@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: orcaslicerua\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 16:43+0200\n"
+"POT-Creation-Date: 2026-08-24 21:46+0200\n"
 "PO-Revision-Date: 2026-07-17 16:25+0300\n"
 "Last-Translator: Andrij Mizyk <andm1zyk@proton.me>\n"
 "Language-Team: Ukrainian\n"
@@ -1257,6 +1257,9 @@ msgstr ""
 
 msgid "Text"
 msgstr "Текст"
+
+msgid "Quality"
+msgstr "Якість"
 
 msgid "Advanced"
 msgstr "Розширені"
@@ -2537,9 +2540,6 @@ msgstr "Помилка ініціалізації графічного інте�
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "Критична помилка, виявлено виняток: %1%"
-
-msgid "Quality"
-msgstr "Якість"
 
 msgid "Shell"
 msgstr "Оболонка"

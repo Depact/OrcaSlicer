@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 16:43+0200\n"
+"POT-Creation-Date: 2026-08-24 21:46+0200\n"
 "PO-Revision-Date: 2026-07-26 11:14-0300\n"
 "Last-Translator: Alexandre Folle de Menezes\n"
 "Language-Team: Portuguese, Brazilian\n"
@@ -1207,6 +1207,9 @@ msgstr ""
 
 msgid "Text"
 msgstr "Texto"
+
+msgid "Quality"
+msgstr "Qualidade"
 
 msgid "Advanced"
 msgstr "Avançado"
@@ -2467,9 +2470,6 @@ msgstr "Falha na inicialização da interface do OrcaSlicer"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "Erro fatal, exceção: %1%"
-
-msgid "Quality"
-msgstr "Qualidade"
 
 msgid "Shell"
 msgstr "Casca"

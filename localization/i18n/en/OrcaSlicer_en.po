@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 16:43+0200\n"
+"POT-Creation-Date: 2026-08-24 21:46+0200\n"
 "PO-Revision-Date: 2026-06-17 15:44-0300\n"
 "Last-Translator: Alexandre Folle de Menezes\n"
 "Language-Team: \n"
@@ -1193,6 +1193,9 @@ msgid "Show the resolved {placeholders} as 3D geometry in the prepare view. The 
 msgstr ""
 
 msgid "Text"
+msgstr ""
+
+msgid "Quality"
 msgstr ""
 
 msgid "Advanced"
@@ -2393,9 +2396,6 @@ msgstr ""
 
 #, boost-format
 msgid "Fatal error, exception: %1%"
-msgstr ""
-
-msgid "Quality"
 msgstr ""
 
 msgid "Shell"

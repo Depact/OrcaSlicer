@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OrcaSlicer 2.3.0-rc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 16:43+0200\n"
+"POT-Creation-Date: 2026-08-24 21:46+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Krzysztof Morga <<tlumaczeniebs@gmail.com>>\n"
 "Language-Team: \n"
@@ -1289,6 +1289,9 @@ msgstr ""
 
 msgid "Text"
 msgstr "Tekst"
+
+msgid "Quality"
+msgstr "Jakość"
 
 msgid "Advanced"
 msgstr "Zaawansowane"
@@ -2628,9 +2631,6 @@ msgstr "Nie udało się zainicjować interfejsu graficznego Orca Slicer"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "Krytyczny błąd, przechwycono wyjątek: %1%"
-
-msgid "Quality"
-msgstr "Jakość"
 
 msgid "Shell"
 msgstr "Powłoka"

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 16:43+0200\n"
+"POT-Creation-Date: 2026-08-24 21:46+0200\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -1271,6 +1271,9 @@ msgstr ""
 
 msgid "Text"
 msgstr "Szöveg"
+
+msgid "Quality"
+msgstr "Minőség"
 
 msgid "Advanced"
 msgstr "Haladó"
@@ -2576,9 +2579,6 @@ msgstr "Nem sikerült inicializálni az Orca Slicer grafikus felületét"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "Súlyos hiba, a következő kivételt találtuk: %1%"
-
-msgid "Quality"
-msgstr "Minőség"
 
 msgid "Shell"
 msgstr "Héj"

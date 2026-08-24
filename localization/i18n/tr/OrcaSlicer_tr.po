@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 16:43+0200\n"
+"POT-Creation-Date: 2026-08-24 21:46+0200\n"
 "PO-Revision-Date: 2026-08-04 19:36+0300\n"
 "Last-Translator: GlauTech\n"
 "Language-Team: \n"
@@ -1305,6 +1305,9 @@ msgstr ""
 
 msgid "Text"
 msgstr "Metin"
+
+msgid "Quality"
+msgstr "Kalite"
 
 msgid "Advanced"
 msgstr "Gelişmiş"
@@ -2622,9 +2625,6 @@ msgstr "Orca Dilimleyici GUI'si başlatılamadı"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "Önemli hata, istisna yakalandı: %1%"
-
-msgid "Quality"
-msgstr "Kalite"
 
 msgid "Shell"
 msgstr "Kabuk"

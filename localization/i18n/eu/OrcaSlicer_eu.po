@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 16:43+0200\n"
+"POT-Creation-Date: 2026-08-24 21:46+0200\n"
 "PO-Revision-Date: 2026-07-20 13:33+0200\n"
 "Last-Translator: Manu Goiogana <mgoiogana@gmail.com>\n"
 "Language-Team: \n"
@@ -1238,6 +1238,9 @@ msgstr ""
 
 msgid "Text"
 msgstr "Testua"
+
+msgid "Quality"
+msgstr "Kalitatea"
 
 msgid "Advanced"
 msgstr "Aurreratua"
@@ -2500,9 +2503,6 @@ msgstr "OrcaSlicer-en interfaze grafikoaren hasieratzeak huts egin du"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "Errore oso larria, salbuespena: %1%"
-
-msgid "Quality"
-msgstr "Kalitatea"
 
 msgid "Shell"
 msgstr "Oskola"

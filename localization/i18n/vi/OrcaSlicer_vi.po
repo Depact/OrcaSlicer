@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 16:43+0200\n"
+"POT-Creation-Date: 2026-08-24 21:46+0200\n"
 "PO-Revision-Date: 2025-10-02 17:43+0700\n"
 "Last-Translator: \n"
 "Language-Team: hainguyen.ts13@gmail.com\n"
@@ -1337,6 +1337,9 @@ msgstr ""
 
 msgid "Text"
 msgstr "Chữ"
+
+msgid "Quality"
+msgstr "Chất lượng"
 
 msgid "Advanced"
 msgstr "Nâng cao"
@@ -2684,9 +2687,6 @@ msgstr "Khởi tạo giao diện Orca Slicer thất bại"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "Lỗi nghiêm trọng, ngoại lệ bắt được: %1%"
-
-msgid "Quality"
-msgstr "Chất lượng"
 
 # AI Translated
 msgid "Shell"

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 16:43+0200\n"
+"POT-Creation-Date: 2026-08-24 21:46+0200\n"
 "PO-Revision-Date: 2025-11-28 13:48-0600\n"
 "Last-Translator: tntchn <15895303+tntchn@users.noreply.github.com>\n"
 "Language-Team: \n"
@@ -1261,6 +1261,9 @@ msgstr ""
 
 msgid "Text"
 msgstr "文字"
+
+msgid "Quality"
+msgstr "品質"
 
 msgid "Advanced"
 msgstr "進階"
@@ -2541,9 +2544,6 @@ msgstr "Orca Slicer 圖形介面初始化失敗"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "致命錯誤，遭遇到異常：%1%"
-
-msgid "Quality"
-msgstr "品質"
 
 msgid "Shell"
 msgstr "外殼"

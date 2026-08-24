@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 16:43+0200\n"
+"POT-Creation-Date: 2026-08-24 21:46+0200\n"
 "PO-Revision-Date: 2026-07-02 14:13+0300\n"
 "Last-Translator: Gintaras Kučinskas <sharanchius@gmail.com>\n"
 "Language-Team: \n"
@@ -1288,6 +1288,9 @@ msgstr ""
 msgid "Text"
 msgstr "Tesktas"
 
+msgid "Quality"
+msgstr "Kokybė"
+
 msgid "Advanced"
 msgstr "Išplėstiniai"
 
@@ -2566,9 +2569,6 @@ msgstr "Nepavyko inicijuoti „OrcaSlicer“ grafinės naudotojo sąsajos"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "Lemtingoji klaida, sugauta išimtis: %1%"
-
-msgid "Quality"
-msgstr "Kokybė"
 
 msgid "Shell"
 msgstr "Apvalkalas"

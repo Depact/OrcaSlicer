@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 16:43+0200\n"
+"POT-Creation-Date: 2026-08-24 21:46+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -1278,6 +1278,9 @@ msgstr ""
 
 msgid "Text"
 msgstr "Testo"
+
+msgid "Quality"
+msgstr "Qualità"
 
 msgid "Advanced"
 msgstr "Avanzate"
@@ -2582,9 +2585,6 @@ msgstr "Inizializzazione della GUI di OrcaSlicer non riuscita"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "Errore irreversibile, eccezione: %1%"
-
-msgid "Quality"
-msgstr "Qualità"
 
 msgid "Shell"
 msgstr "Guscio"

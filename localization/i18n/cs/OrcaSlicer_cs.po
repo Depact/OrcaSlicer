@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 16:43+0200\n"
+"POT-Creation-Date: 2026-08-24 21:46+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Jakub Hencl\n"
 "Language-Team: \n"
@@ -1291,6 +1291,9 @@ msgstr ""
 # AI Translated
 msgid "Text"
 msgstr "Text"
+
+msgid "Quality"
+msgstr "Kvalita"
 
 msgid "Advanced"
 msgstr "Pokročilé"
@@ -2599,9 +2602,6 @@ msgstr "Inicializace grafického rozhraní Orca Slicer selhala"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "Fatální chyba, zachycena výjimka: %1%"
-
-msgid "Quality"
-msgstr "Kvalita"
 
 msgid "Shell"
 msgstr "Plášť"

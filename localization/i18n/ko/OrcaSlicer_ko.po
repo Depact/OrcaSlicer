@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 16:43+0200\n"
+"POT-Creation-Date: 2026-08-24 21:46+0200\n"
 "PO-Revision-Date: 2025-06-02 17:12+0900\n"
 "Last-Translator: crwusiz <crwusiz@gmail.com>\n"
 "Language-Team: \n"
@@ -1283,6 +1283,9 @@ msgstr ""
 
 msgid "Text"
 msgstr "텍스트"
+
+msgid "Quality"
+msgstr "품질"
 
 msgid "Advanced"
 msgstr "고급"
@@ -2597,9 +2600,6 @@ msgstr "Orca Slicer GUI 초기화 실패"
 #, boost-format
 msgid "Fatal error, exception: %1%"
 msgstr "치명적 오류, 예외 발견: %1%"
-
-msgid "Quality"
-msgstr "품질"
 
 msgid "Shell"
 msgstr "쉘"
