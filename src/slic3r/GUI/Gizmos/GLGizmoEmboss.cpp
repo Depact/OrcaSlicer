@@ -183,9 +183,7 @@ enum class IconType : unsigned {
     align_vertical_center,
     align_vertical_bottom,
     section_text,
-    section_quality,
     section_templates,
-    section_advanced,
     // automatic calc of icon's count
     _count
 };
@@ -1515,6 +1513,8 @@ void GLGizmoEmboss::draw_text_template_controls()
     // options (nozzle_temperature, nozzle_diameter, filament_type) are addressed
     // without an index, which the parser resolves to the first element. strftime() is
     // the analogue of .NET's DateTime.ToString(format), using C strftime() codes.
+    // Layout mirrors the Font select: a label to the side of the combo, and a
+    // two-column popup with the resolved value as the second (preview) column.
     static const char *template_tags[] = {
         "{year}-{month}-{day}",
         "{hour}:{minute}",
@@ -1525,13 +1525,24 @@ void GLGizmoEmboss::draw_text_template_controls()
         "{filament_type}",
     };
 
+    // Second (preview) column offset: just after the widest tag label.
+    float tag_column_width = 0.f;
+    for (const char *tag : template_tags)
+        tag_column_width = std::max(tag_column_width, ImGui::CalcTextSize(tag).x);
+    const ImGuiStyle &style    = ImGui::GetStyle();
+    const float preview_offset = tag_column_width + style.FramePadding.x + style.ItemSpacing.x;
+
     // Disabled while previewing (the field is then read-only) so an insert would
     // never apply and would pop up unexpectedly later.
     const bool preview_read_only = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
+
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted(_u8L("Insert template").c_str());
+    ImGui::SameLine(m_gui_cfg->input_offset);
     m_imgui->disabled_begin(preview_read_only);
     if (ImGui::BeginCombo("##template_var", _u8L("Insert template...").c_str())) {
         for (const char *tag : template_tags) {
-            if (ImGui::Selectable(tag)) {
+            if (ImGui::Selectable(tag, false)) {
                 // Paste at the caret position tracked by the text input callback,
                 // so the tag lands where the cursor was last. When the field was
                 // never focused (no cursor known), append to the end instead.
@@ -1539,14 +1550,12 @@ void GLGizmoEmboss::draw_text_template_controls()
                 m_pending_insert     = tag;
                 m_focus_text_field   = true; // focused at start of draw_text_input()
             }
-            if (ImGui::IsItemHovered()) {
-                // Tooltip shows what the tag resolves to, not just the tag itself.
-                const std::string resolved = resolve_text_template(tag);
-                if (resolved == tag)
-                    ImGui::SetTooltip("%s", _u8L("This tag cannot be resolved.").c_str());
-                else
-                    ImGui::SetTooltip("%s", resolved.c_str());
-            }
+            // Second column: resolved value as the preview.
+            ImGui::SameLine(preview_offset);
+            const std::string resolved = resolve_text_template(tag);
+            ImGui::TextUnformatted(resolved.c_str());
+            if (ImGui::IsItemHovered() && resolved == tag)
+                ImGui::SetTooltip("%s", _u8L("This tag cannot be resolved.").c_str());
         }
         ImGui::EndCombo();
     }
@@ -1556,9 +1565,9 @@ void GLGizmoEmboss::draw_text_template_controls()
 
     ImGui::Spacing();
 
-    // Collapsible live preview of what the template resolves to. Only shown when there
-    // is something to resolve.
-    if (process_templates && m_text.find('{') != std::string::npos) {
+    // Collapsible live preview of what the template resolves to. Always shown when the
+    // text contains placeholders, regardless of the checkbox states.
+    if (m_text.find('{') != std::string::npos) {
         if (ImGui::TreeNodeEx(_u8L("Template resolved preview").c_str(), ImGuiTreeNodeFlags_SpanAvailWidth)) {
             draw_text_resolved_preview();
             ImGui::TreePop();
@@ -1572,22 +1581,21 @@ void GLGizmoEmboss::draw_text_resolved_preview()
     // "Preview in Prepare Tab" toggle or a slice.
     if (m_text.find('{') == std::string::npos)
         return; // no placeholders to resolve
-    if (m_volume == nullptr || !m_volume->text_configuration.has_value() ||
-        !m_volume->text_configuration->process_templates)
-        return; // template processing disabled - nothing to preview
+    if (m_volume == nullptr || !m_volume->text_configuration.has_value())
+        return;
 
+    // Resolve regardless of the "Resolve templates" checkbox: with the toggle off the
+    // preview shows the raw template, i.e. what actually gets printed.
     const std::string resolved = resolve_text_template(m_text);
-    if (resolved == m_text)
-        return; // nothing actually resolved (e.g. only unknown tags)
-
     const bool unresolved = resolved.find('{') != std::string::npos;
 
     // Scrollable, height-bounded area so a long resolved value does not blow up the
-    // panel; long lines scroll horizontally, many lines scroll vertically.
+    // panel; long lines scroll horizontally, many lines scroll vertically. The text
+    // uses the default (white) color; unresolved placeholders are flagged in the tooltip.
     const float preview_height = ImGui::GetTextLineHeightWithSpacing() * 3.f + ImGui::GetStyle().FramePadding.y * 2.f;
     const float avail_width    = ImGui::GetContentRegionAvail().x;
     if (ImGui::BeginChild("##resolved_preview_scroll", ImVec2(avail_width, preview_height), true, ImGuiWindowFlags_HorizontalScrollbar)) {
-        ImGuiWrapper::text_colored(unresolved ? ImGuiWrapper::COL_ORANGE_DARK : ImGuiWrapper::COL_GREY_LIGHT, resolved);
+        ImGui::TextUnformatted(resolved.c_str());
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("%s", unresolved ? _u8L("Some placeholders could not be resolved and stay literal.").c_str()
                                                : _u8L("Resolved value of the template placeholders.").c_str());
@@ -1854,7 +1862,7 @@ void GLGizmoEmboss::draw_text_input()
     // visible without scrolling, then clamp to a comfortable range.
     const float line_height = ImGui::GetTextLineHeightWithSpacing();
     const unsigned count_lines = get_count_lines(m_text);
-    const unsigned min_lines = 2;
+    const unsigned min_lines = 1;
     const unsigned max_lines = 10;
     const unsigned lines = std::clamp<unsigned>(std::max(count_lines, min_lines), min_lines, max_lines);
     ImVec2 input_size(m_gui_cfg->text_size.x, line_height * lines);
@@ -3537,10 +3545,8 @@ void GLGizmoEmboss::init_icons()
         "align_vertical_top.svg",
         "align_vertical_center.svg",
         "align_vertical_bottom.svg",
-        "add_text_part.svg",        // section_text
-        "custom-gcode_quality.svg", // section_quality
-        "edit.svg",                 // section_templates
-        "advanced.svg"              // section_advanced
+        "add_text_part.svg", // section_text
+        "edit.svg"           // section_templates
     };
     assert(filenames.size() == static_cast<size_t>(IconType::_count));
     std::string path = resources_dir() + "/images/";

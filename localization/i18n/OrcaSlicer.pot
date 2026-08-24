@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 22:35+0200\n"
+"POT-Creation-Date: 2026-08-24 23:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1188,6 +1188,9 @@ msgid "Preview in Prepare Tab"
 msgstr ""
 
 msgid "Show the resolved {placeholders} as 3D geometry in the Prepare tab. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
+msgstr ""
+
+msgid "Insert template"
 msgstr ""
 
 msgid "Insert template..."
