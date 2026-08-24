@@ -1537,7 +1537,7 @@ void GLGizmoEmboss::draw_text_template_controls()
     const bool preview_read_only = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
 
     ImGui::AlignTextToFramePadding();
-    ImGui::TextUnformatted(_u8L("Insert template").c_str());
+    ImGui::TextUnformatted(_u8L("Template").c_str());
     ImGui::SameLine(m_gui_cfg->input_offset);
     m_imgui->disabled_begin(preview_read_only);
     if (ImGui::BeginCombo("##template_var", _u8L("Insert template...").c_str())) {
@@ -1595,7 +1595,7 @@ void GLGizmoEmboss::draw_text_resolved_preview()
     const float preview_height = ImGui::GetTextLineHeightWithSpacing() * 3.f + ImGui::GetStyle().FramePadding.y * 2.f;
     const float avail_width    = ImGui::GetContentRegionAvail().x;
     if (ImGui::BeginChild("##resolved_preview_scroll", ImVec2(avail_width, preview_height), true, ImGuiWindowFlags_HorizontalScrollbar)) {
-        ImGui::TextUnformatted(resolved.c_str());
+        ImGuiWrapper::text_colored(ImGuiWrapper::COL_GREY_LIGHT, resolved);
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("%s", unresolved ? _u8L("Some placeholders could not be resolved and stay literal.").c_str()
                                                : _u8L("Resolved value of the template placeholders.").c_str());
