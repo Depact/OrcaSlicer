@@ -1429,12 +1429,14 @@ std::string GLGizmoEmboss::resolve_text_template(const std::string &templ) const
         !m_volume->text_configuration->process_templates)
         return templ;
 
-    // Resolve against the current print config so config-scoped tags
+    // Resolve against the current preset config so config-scoped tags
     // ({nozzle_temperature}, {nozzle_diameter}, {layer_height}, {filament_type}, ...)
-    // work in the preview too - a template mixing clock + config tags must resolve all
-    // of them, not fall back to raw because one tag needs the config.
-    const DynamicPrintConfig &print_config = wxGetApp().plater()->fff_print().full_print_config();
-    return Slic3r::PlaceholderParser().resolve_text_template(templ, &print_config);
+    // work in the preview too. The preset bundle config is stable and always
+    // populated (the print's own full_print_config is only set by apply() and is
+    // written by the slicing thread, so it must not be read from here).
+    // full_config() returns by value, so keep a local copy before taking its address.
+    const DynamicPrintConfig config = wxGetApp().preset_bundle->full_config();
+    return Slic3r::PlaceholderParser().resolve_text_template(templ, &config);
 }
 
 int GLGizmoEmboss::text_insert_callback(ImGuiInputTextCallbackData *data)

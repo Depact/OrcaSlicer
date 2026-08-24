@@ -123,20 +123,52 @@ std::string PlaceholderParser::resolve_text_template(const std::string &templ, c
     parser.config_writable() += clocks; // {timestamp}, {year}, {month}, {day}, {hour}, {minute}, {second}
     parser.apply_env_variables();
     if (config != nullptr)
-        parser.apply_config(*config); // {nozzle_temperature[0]}, {filament_type[0]}, ...
+        parser.apply_config(*config); // {nozzle_temperature}, {filament_type}, ...
 
     try {
         return parser.process(templ, 0 /* current_extruder_id */);
     } catch (const std::exception &ex) {
-        // A literal '{' that is not a valid placeholder (escaping with "\{" was not
-        // used), an unknown variable, or a vector option without an index. Rather
-        // than aborting the slice, fall back to the raw template so the user sees
-        // the tag in the printed text and can fix it.
-        BOOST_LOG_TRIVIAL(warning) << "Failed to resolve text template '" << templ
-                                   << "' (" << ex.what()
-                                   << "), keeping raw template. Escape literal braces as \\{";
-        return templ;
+        BOOST_LOG_TRIVIAL(warning) << "Failed to fully resolve text template '" << templ
+                                   << "' (" << ex.what() << "); resolving what is possible.";
     }
+
+    // Partial resolution: the whole-template process() threw (a literal '{' that was
+    // not escaped, an unknown variable, or an unresolvable tag). Instead of keeping the
+    // raw template verbatim - which would also blank out tags that DO resolve - resolve
+    // each {tag} group on its own and leave the unresolvable ones literal, so e.g.
+    // "{hour}:{minute} {does_not_exist}" still resolves to "21:30 {does_not_exist}".
+    // Conditional blocks ({if}/{else}/{elsif}/{endif}) span multiple groups and must
+    // be processed atomically, so templates using them keep the previous behavior.
+    if (templ.find("{if")   != std::string::npos ||
+        templ.find("{else") != std::string::npos ||
+        templ.find("{elsif") != std::string::npos ||
+        templ.find("{endif") != std::string::npos)
+        return templ;
+
+    std::string result;
+    result.reserve(templ.size());
+    size_t pos = 0;
+    while (pos < templ.size()) {
+        const size_t open = templ.find('{', pos);
+        if (open == std::string::npos) {
+            result += templ.substr(pos); // trailing literal text
+            break;
+        }
+        result += templ.substr(pos, open - pos); // literal text before the tag
+        const size_t close = templ.find('}', open + 1);
+        if (close == std::string::npos) {
+            result += templ.substr(open); // unbalanced brace - keep the rest literal
+            break;
+        }
+        const std::string tag = templ.substr(open, close - open + 1);
+        try {
+            result += parser.process(tag, 0);
+        } catch (const std::exception &) {
+            result += tag; // unresolvable - keep it literal so the user can fix it
+        }
+        pos = close + 1;
+    }
+    return result;
 }
 
 static inline bool opts_equal(const DynamicConfig &config_old, const DynamicConfig &config_new, const std::string &opt_key)

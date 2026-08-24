@@ -357,52 +357,82 @@ SCENARIO("Placeholder parser coFloatsOrPercents vector access", "[PlaceholderPar
         // pressure_advance[2] = 3.0
         REQUIRE(std::stod(parser.process("{pressure_advance[2]}")) == Catch::Approx(3.0));
     }
+}
 
-    SECTION("nozzle_temperature without index resolves to first element") {
+// ----- Per-template tags used by the emboss text tool -----
+
+TEST_CASE("Emboss text template tags resolve", "[PlaceholderParser][TextTemplate]") {
+    PlaceholderParser parser;
+    auto config = DynamicPrintConfig::full_print_config();
+    config.set_deserialize_strict({
+        { "nozzle_temperature", "357,359,363,378" },
+        { "nozzle_diameter", "0.6,0.6,0.6,0.6" },
+        { "layer_height", "0.3" }
+    });
+    // coStrings deserialization keeps commas inside one value, so set the array directly.
+    config.option<ConfigOptionStrings>("filament_type")->values = { "PLA", "ABS", "PETG", "TPU" };
+    parser.apply_config(config);
+
+    SECTION("template {year}-{month}-{day}") {
+        REQUIRE(std::regex_match(parser.process("{year}-{month}-{day}"), std::regex(R"(\d{4}-\d{1,2}-\d{1,2})")));
+    }
+
+    SECTION("template {hour}:{minute}") {
+        // hour/minute are not zero-padded, so allow 1-2 digits.
+        REQUIRE(std::regex_match(parser.process("{hour}:{minute}"), std::regex(R"(\d{1,2}:\d{1,2})")));
+    }
+
+    SECTION("template {strftime}") {
+        // Four-digit current year.
+        REQUIRE(std::regex_match(parser.process("{strftime(\"%Y\")}"), std::regex(R"(\d{4})")));
+        // YYYY-MM-DD HH:MM
+        REQUIRE(std::regex_match(parser.process("{strftime(\"%Y-%m-%d %H:%M\")}"), std::regex(R"(\d{4}-\d{2}-\d{2} \d{2}:\d{2})")));
+    }
+
+    SECTION("template {nozzle_temperature}") {
         // No index must behave exactly like an explicit [0], so the tags stay short.
         REQUIRE(parser.process("{nozzle_temperature}") == parser.process("{nozzle_temperature[0]}"));
+        REQUIRE(parser.process("{nozzle_temperature}") == "357");
     }
 
-    SECTION("nozzle_diameter without index resolves to first element") {
+    SECTION("template {nozzle_diameter}") {
         REQUIRE(parser.process("{nozzle_diameter}") == parser.process("{nozzle_diameter[0]}"));
+        REQUIRE(parser.process("{nozzle_diameter}") == "0.6");
     }
 
-    SECTION("time template {hour}:{minute} resolves to HH:MM") {
-        // The clock variable template used by the emboss text tool. hour/minute are
-        // not zero-padded, so allow 1-2 digits.
-        REQUIRE(std::regex_match(parser.process("{hour}:{minute}"), std::regex(R"(\d{1,2}:\d{1,2})")));
+    SECTION("template {layer_height}") {
+        REQUIRE(parser.process("{layer_height}") == "0.3");
+    }
+
+    SECTION("template {filament_type}") {
+        REQUIRE(parser.process("{filament_type}") == parser.process("{filament_type[0]}"));
+        REQUIRE(parser.process("{filament_type}") == "PLA");
+    }
+
+    SECTION("combined {hour}:{minute} {filament_type} resolves fully") {
+        // Mixed clock + config tags in one string must all resolve (not fall back to
+        // raw because one tag is config-scoped).
+        const std::string combined = parser.resolve_text_template("{hour}:{minute} {filament_type}", &config);
+        REQUIRE(std::regex_match(combined, std::regex(R"(\d{1,2}:\d{1,2} PLA)")));
     }
 
     SECTION("embossed text template with nozzle values resolves") {
         // Mirrors the text tool template: literal text around no-index nozzle tags.
         const std::string out = parser.process("Embossed text {nozzle_diameter} {nozzle_temperature} template");
-        const std::string expected =
-            "Embossed text " + parser.process("{nozzle_diameter[0]}") + " " + parser.process("{nozzle_temperature[0]}") + " template";
-        REQUIRE(out == expected);
-        // Sanity: the composed string actually contains the numeric values.
-        REQUIRE(std::regex_match(out, std::regex(R"(Embossed text \d+(\.\d+)? \d+ template)")));
+        REQUIRE(out == "Embossed text 0.6 357 template");
     }
 
-    SECTION("strftime formats current local time") {
-        const std::string out = parser.process("{strftime(\"%Y\")}");
-        // Four-digit current year.
-        REQUIRE(std::regex_match(out, std::regex(R"(\d{4})")));
-        const std::string out2 = parser.process("{strftime(\"%Y-%m-%d %H:%M\")}");
-        // YYYY-MM-DD HH:MM
-        REQUIRE(std::regex_match(out2, std::regex(R"(\d{4}-\d{2}-\d{2} \d{2}:\d{2})")));
+    SECTION("partial resolution: unresolvable tag stays literal, rest resolves") {
+        // One bad tag must not blank out the whole template - {hour}:{minute} still
+        // resolves while the unknown tag is kept literal so the user can fix it.
+        const std::string out = parser.resolve_text_template("{hour}:{minute} {does_not_exist}");
+        REQUIRE(std::regex_match(out, std::regex(R"(\d{1,2}:\d{1,2} \{does_not_exist\})")));
     }
 
-    SECTION("resolve_text_template falls back to raw template on error") {
-        // Unknown variable -> raw template is returned, never an exception.
+    SECTION("resolve_text_template keeps single unknown tag literal without throwing") {
         REQUIRE(parser.resolve_text_template("Hello {does_not_exist}") == "Hello {does_not_exist}");
         // A plain string without placeholders passes through unchanged.
         REQUIRE(parser.resolve_text_template("Plain text") == "Plain text");
-    }
-
-    SECTION("mixed clock + config patterns in one string") {
-        // Multiple different tags in a single template must all resolve.
-        const std::string out = parser.process("{year}-{month}-{day} {hour}:{minute} {nozzle_diameter} {nozzle_temperature}");
-        REQUIRE(std::regex_match(out, std::regex(R"(\d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2} \d+(\.\d+)? \d+)")));
     }
 }
 
