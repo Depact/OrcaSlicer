@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-23 23:34+0200\n"
+"POT-Creation-Date: 2026-08-24 16:43+0200\n"
 "PO-Revision-Date: 2025-06-02 17:12+0900\n"
 "Last-Translator: crwusiz <crwusiz@gmail.com>\n"
 "Language-Team: \n"
@@ -1269,17 +1269,20 @@ msgstr ""
 msgid "Insert a template at the cursor position"
 msgstr ""
 
-msgid "Process templates"
+msgid "Resolve placeholders"
 msgstr ""
 
 msgid "When off, {placeholders} are printed literally instead of being resolved to their values."
 msgstr ""
 
-msgid "Preview Resolved Text"
+msgid "Preview in 3D"
 msgstr ""
 
 msgid "Show the resolved {placeholders} as 3D geometry in the prepare view. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
 msgstr ""
+
+msgid "Text"
+msgstr "텍스트"
 
 msgid "Advanced"
 msgstr "고급"
@@ -2768,9 +2771,6 @@ msgstr ""
 
 msgid "Suggestion"
 msgstr "제안"
-
-msgid "Text"
-msgstr "텍스트"
 
 msgid "Height Range Modifier"
 msgstr "높이 범위 수정자"

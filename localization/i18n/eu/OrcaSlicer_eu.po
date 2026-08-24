@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-23 23:34+0200\n"
+"POT-Creation-Date: 2026-08-24 16:43+0200\n"
 "PO-Revision-Date: 2026-07-20 13:33+0200\n"
 "Last-Translator: Manu Goiogana <mgoiogana@gmail.com>\n"
 "Language-Team: \n"
@@ -1224,17 +1224,20 @@ msgstr ""
 msgid "Insert a template at the cursor position"
 msgstr ""
 
-msgid "Process templates"
+msgid "Resolve placeholders"
 msgstr ""
 
 msgid "When off, {placeholders} are printed literally instead of being resolved to their values."
 msgstr ""
 
-msgid "Preview Resolved Text"
+msgid "Preview in 3D"
 msgstr ""
 
 msgid "Show the resolved {placeholders} as 3D geometry in the prepare view. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
 msgstr ""
+
+msgid "Text"
+msgstr "Testua"
 
 msgid "Advanced"
 msgstr "Aurreratua"
@@ -2669,9 +2672,6 @@ msgstr ""
 
 msgid "Suggestion"
 msgstr "Iradokizuna"
-
-msgid "Text"
-msgstr "Testua"
 
 msgid "Height Range Modifier"
 msgstr "Altuera-tartearen aldatzailea"

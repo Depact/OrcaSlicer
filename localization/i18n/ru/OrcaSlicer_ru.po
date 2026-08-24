@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OrcaSlicer V2.5.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-23 23:34+0200\n"
+"POT-Creation-Date: 2026-08-24 16:43+0200\n"
 "PO-Revision-Date: 2026-02-25 13:38+0300\n"
 "Last-Translator: Felix14_v2\n"
 "Language-Team: Felix14_v2 (ДС/ТГ: @felix14_v2, почта: aleks111001@list.ru), Andylg <andylg@yandex.ru>\n"
@@ -1226,17 +1226,20 @@ msgstr ""
 msgid "Insert a template at the cursor position"
 msgstr ""
 
-msgid "Process templates"
+msgid "Resolve placeholders"
 msgstr ""
 
 msgid "When off, {placeholders} are printed literally instead of being resolved to their values."
 msgstr ""
 
-msgid "Preview Resolved Text"
+msgid "Preview in 3D"
 msgstr ""
 
 msgid "Show the resolved {placeholders} as 3D geometry in the prepare view. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
 msgstr ""
+
+msgid "Text"
+msgstr "Текст"
 
 msgid "Advanced"
 msgstr "Расширенные"
@@ -2708,9 +2711,6 @@ msgstr ""
 
 msgid "Suggestion"
 msgstr "Рекомендация"
-
-msgid "Text"
-msgstr "Текст"
 
 msgid "Height Range Modifier"
 msgstr "Добавить модификатор по высоте"

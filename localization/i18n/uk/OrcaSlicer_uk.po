@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: orcaslicerua\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-23 23:34+0200\n"
+"POT-Creation-Date: 2026-08-24 16:43+0200\n"
 "PO-Revision-Date: 2026-07-17 16:25+0300\n"
 "Last-Translator: Andrij Mizyk <andm1zyk@proton.me>\n"
 "Language-Team: Ukrainian\n"
@@ -1243,17 +1243,20 @@ msgstr ""
 msgid "Insert a template at the cursor position"
 msgstr ""
 
-msgid "Process templates"
+msgid "Resolve placeholders"
 msgstr ""
 
 msgid "When off, {placeholders} are printed literally instead of being resolved to their values."
 msgstr ""
 
-msgid "Preview Resolved Text"
+msgid "Preview in 3D"
 msgstr ""
 
 msgid "Show the resolved {placeholders} as 3D geometry in the prepare view. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
 msgstr ""
+
+msgid "Text"
+msgstr "Текст"
 
 msgid "Advanced"
 msgstr "Розширені"
@@ -2706,9 +2709,6 @@ msgstr ""
 
 msgid "Suggestion"
 msgstr "Пропозиція"
-
-msgid "Text"
-msgstr "Текст"
 
 msgid "Height Range Modifier"
 msgstr "Модифікатор діапазону висоти шарів"

@@ -1458,7 +1458,11 @@ int GLGizmoEmboss::text_insert_callback(ImGuiInputTextCallbackData *data)
     // was clicked. ImGui keeps its internal buffer/undo in sync because we go through
     // InsertChars. Fires on the first CallbackAlways after the field regains focus,
     // so the paste is immediate.
-    data->InsertChars(gizmo->m_pending_insert_pos, gizmo->m_pending_insert.c_str());
+    // Clamp to the current buffer length: the captured position could be stale (e.g.
+    // the text was edited between capture and insert), and ImGui asserts / corrupts
+    // the buffer when InsertChars gets an out-of-bounds position.
+    const int insert_pos = std::min(gizmo->m_pending_insert_pos, data->BufTextLen);
+    data->InsertChars(insert_pos, gizmo->m_pending_insert.c_str());
     gizmo->m_pending_insert.clear();
     return 1; // handled
 }
@@ -1491,9 +1495,10 @@ void GLGizmoEmboss::draw_text_template_controls()
         if (ImGui::BeginCombo("##template_var", _u8L("Insert template...").c_str())) {
             for (const char *tag : template_tags) {
                 if (ImGui::Selectable(tag)) {
-                    // Paste at the caret position tracked by the text input callback, so
-                    // the tag lands where the cursor was last.
-                    m_pending_insert_pos = m_text_cursor_pos;
+                    // Paste at the caret position tracked by the text input callback,
+                    // so the tag lands where the cursor was last. When the field was
+                    // never focused (no cursor known), append to the end instead.
+                    m_pending_insert_pos = (m_text_cursor_pos >= 0) ? m_text_cursor_pos : static_cast<int>(m_text.size());
                     m_pending_insert     = tag;
                     m_focus_text_field   = true; // focused at start of draw_text_input()
                 }
@@ -1511,7 +1516,7 @@ void GLGizmoEmboss::draw_text_template_controls()
         // Master toggle: when off, {placeholders} are printed literally and never
         // resolved, both in the preview and at slice time.
         bool &process_templates = m_volume->text_configuration->process_templates;
-        if (ImGui::Checkbox(_u8L("Process templates").c_str(), &process_templates)) {
+        if (ImGui::Checkbox(_u8L("Resolve placeholders").c_str(), &process_templates)) {
             if (!process_templates)
                 m_preview_template = false; // nothing to preview without resolution
         }
@@ -1526,7 +1531,7 @@ void GLGizmoEmboss::draw_text_template_controls()
         // view (the text field keeps the raw, editable template). Requires template
         // processing to be enabled.
         m_imgui->disabled_begin(!process_templates);
-        if (ImGui::Checkbox(_u8L("Preview Resolved Text").c_str(), &m_preview_template))
+        if (ImGui::Checkbox(_u8L("Preview in 3D").c_str(), &m_preview_template))
             process(); // refresh the live 3D mesh with the resolved text
         m_imgui->disabled_end();
         if (ImGui::IsItemHovered())
@@ -1559,16 +1564,23 @@ void GLGizmoEmboss::draw_window(float x, float y)
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(10.0f, 10.0f - 4.0f));
     ScopeGuard spacing_sc([](){ ImGui::PopStyleVar(/*ImGuiStyleVar_ItemSpacing*/); });
 
-    draw_style_list();
+    // Style / Font / Height / Depth grouped in their own collapsible section, like the
+    // other setting groups in this panel.
+    ImGuiTreeNodeFlags text_flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
+    if (ImGui::TreeNodeEx(_u8L("Text").c_str(), text_flags)) {
+        draw_style_list();
 
-    // When unknown font is inside .3mf only font selection is allowed
-    m_imgui->disabled_end(/*m_is_unknown_font*/);
-    draw_font_list_line();
-    m_imgui->disabled_begin(m_is_unknown_font);
+        // When unknown font is inside .3mf only font selection is allowed
+        m_imgui->disabled_end(/*m_is_unknown_font*/);
+        draw_font_list_line();
+        m_imgui->disabled_begin(m_is_unknown_font);
 
-    bool use_inch = wxGetApp().app_config->get_bool("use_inches");
-    draw_height(use_inch);
-    draw_depth(use_inch);
+        bool use_inch = wxGetApp().app_config->get_bool("use_inches");
+        draw_height(use_inch);
+        draw_depth(use_inch);
+
+        ImGui::TreePop();
+    }
 
     // Dynamic template quick-buttons + preview toggle, grouped with the other text
     // size/depth controls so they don't look out of place.

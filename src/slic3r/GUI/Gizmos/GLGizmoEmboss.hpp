@@ -198,7 +198,9 @@ private:
     // Cursor position (byte offset) the queued tag should be inserted at.
     int m_pending_insert_pos = 0;
     // Last known caret position of the text field, tracked via the InputText callback.
-    int m_text_cursor_pos = 0;
+    // -1 means the field was never focused, so no cursor is known (tags then go to the
+    // end of the string instead of the start).
+    int m_text_cursor_pos = -1;
     // Set by a quick-button; consumed at the start of draw_text_input() to move
     // keyboard focus onto the text field so the queued insert applies on the next edit.
     bool m_focus_text_field = false;
