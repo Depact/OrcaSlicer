@@ -118,6 +118,7 @@ private:
     void draw_window(float x, float y);
     void draw_text_input();
     void draw_text_template_controls();
+    void draw_text_resolved_preview();
     void draw_model_type();
     void draw_style_list();
     void draw_delete_style_button();

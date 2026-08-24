@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OrcaSlicer V2.5.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-24 21:46+0200\n"
+"POT-Creation-Date: 2026-08-24 21:55+0200\n"
 "PO-Revision-Date: 2026-02-25 13:38+0300\n"
 "Last-Translator: Felix14_v2\n"
 "Language-Team: Felix14_v2 (ДС/ТГ: @felix14_v2, почта: aleks111001@list.ru), Andylg <andylg@yandex.ru>\n"
@@ -1223,6 +1223,9 @@ msgstr ""
 msgid "Insert template..."
 msgstr ""
 
+msgid "This tag cannot be resolved."
+msgstr ""
+
 msgid "Insert a template at the cursor position"
 msgstr ""
 
@@ -1236,6 +1239,12 @@ msgid "Preview in 3D"
 msgstr ""
 
 msgid "Show the resolved {placeholders} as 3D geometry in the prepare view. The stored text keeps the raw template; resolution to geometry happens again at slicing time. Literal braces must be escaped as \\{."
+msgstr ""
+
+msgid "Some placeholders could not be resolved and stay literal."
+msgstr ""
+
+msgid "Resolved value of the template placeholders."
 msgstr ""
 
 msgid "Text"

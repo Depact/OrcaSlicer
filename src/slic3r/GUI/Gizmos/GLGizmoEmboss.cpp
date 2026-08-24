@@ -1504,8 +1504,14 @@ void GLGizmoEmboss::draw_text_template_controls()
                     m_pending_insert     = tag;
                     m_focus_text_field   = true; // focused at start of draw_text_input()
                 }
-                if (ImGui::IsItemHovered())
-                    ImGui::SetTooltip("%s", tag);
+                if (ImGui::IsItemHovered()) {
+                    // Tooltip shows what the tag resolves to, not just the tag itself.
+                    const std::string resolved = resolve_text_template(tag);
+                    if (resolved == tag)
+                        ImGui::SetTooltip("%s", _u8L("This tag cannot be resolved.").c_str());
+                    else
+                        ImGui::SetTooltip("%s", resolved.c_str());
+                }
             }
             ImGui::EndCombo();
         }
@@ -1546,6 +1552,27 @@ void GLGizmoEmboss::draw_text_template_controls()
     }
 }
 
+void GLGizmoEmboss::draw_text_resolved_preview()
+{
+    // Live feedback right under the text field: show what the template currently
+    // resolves to, without needing the "Preview in 3D" toggle or a slice.
+    if (m_text.find('{') == std::string::npos)
+        return; // no placeholders to resolve
+    if (m_volume == nullptr || !m_volume->text_configuration.has_value() ||
+        !m_volume->text_configuration->process_templates)
+        return; // template processing disabled - nothing to preview
+
+    const std::string resolved = resolve_text_template(m_text);
+    if (resolved == m_text)
+        return; // nothing actually resolved (e.g. only unknown tags)
+
+    const bool unresolved = resolved.find('{') != std::string::npos;
+    ImGuiWrapper::text_colored(unresolved ? ImGuiWrapper::COL_ORANGE_DARK : ImGuiWrapper::COL_GREY_LIGHT, resolved);
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("%s", unresolved ? _u8L("Some placeholders could not be resolved and stay literal.").c_str()
+                                           : _u8L("Resolved value of the template placeholders.").c_str());
+}
+
 void GLGizmoEmboss::draw_window(float x, float y)
 {
 #ifdef ALLOW_DEBUG_MODE
@@ -1561,6 +1588,8 @@ void GLGizmoEmboss::draw_window(float x, float y)
     ScopeGuard unknown_font_sc([imgui = m_imgui]() { imgui->disabled_end(/*m_is_unknown_font*/); });
 
     draw_text_input();
+
+    draw_text_resolved_preview();
 
     // subtract 4.0f to counteract weird additional spacing/padding of the revert buttons
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(10.0f, 10.0f - 4.0f));
