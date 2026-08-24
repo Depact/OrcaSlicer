@@ -1,7 +1,7 @@
 @echo off
 REM Incrementally build OrcaSlicer (Ninja) and launch it with the template test file.
 REM Usage: build_and_run.bat   (optionally pass another .3mf path as %1)
-setlocal
+setlocal EnableDelayedExpansion
 
 set "ROOT=%~dp0"
 set "BUILD_DIR=%ROOT%build"
@@ -15,12 +15,22 @@ if not "%~1"=="" (
     set "TEST_FILE=D:\Files\Drawing\2026\08\24.08.26 Template test.3mf"
 )
 
-REM If OrcaSlicer is already running, do not kill it - ask the user to close it first.
-REM (It locks OrcaSlicer.dll, so the build cannot relink it while it is open.)
+REM Close any running instance - it locks OrcaSlicer.dll and would block the link.
+taskkill /IM orca-slicer.exe /F >nul 2>&1
+
+REM Wait until the old instance is fully gone (releases the DLL / single-instance mutex).
+REM Bounded loop - never wait forever.
+set /a wait_sec = 0
+:waitkill
 tasklist /FI "IMAGENAME eq orca-slicer.exe" 2>nul | find /I "orca-slicer.exe" >nul
 if not errorlevel 1 (
-    echo OrcaSlicer is already running. Close it first, then run build_and_run again.
-    exit /b 1
+    if !wait_sec! GEQ 15 (
+        echo Old OrcaSlicer instance did not exit; aborting.
+        exit /b 1
+    )
+    set /a wait_sec += 1
+    timeout /t 1 /nobreak >nul
+    goto :waitkill
 )
 
 REM Load the MSVC environment (cl, link, ...).
@@ -42,10 +52,12 @@ if not exist "%EXE%" (
     exit /b 1
 )
 
-REM Launch the app (with the test file when it exists).
+REM Launch the app (with the test file when it exists). orca-slicer.exe is a console
+REM subsystem binary, so "start" would block the script until the app closes; PowerShell
+REM Start-Process detaches it and returns immediately.
 if exist "%TEST_FILE%" (
-    start "" "%EXE%" "%TEST_FILE%"
+    powershell -NoProfile -Command "Start-Process -FilePath '%EXE%' -ArgumentList '%TEST_FILE%'"
 ) else (
-    start "" "%EXE%"
+    powershell -NoProfile -Command "Start-Process -FilePath '%EXE%'"
 )
 exit /b 0
