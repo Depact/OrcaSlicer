@@ -1621,6 +1621,8 @@ bool GLGizmoEmboss::draw_section_header(size_t icon_type, const char *title, con
         ImGui::SameLine();
         ImGui::Image((void *)(intptr_t)icon.tex_id, ImVec2(icon_h, icon_h), icon.tl, icon.br);
         ImGui::SameLine();
+    } else {
+        ImGui::SameLine();
     }
     ImGui::TextUnformatted(title);
     return open;
