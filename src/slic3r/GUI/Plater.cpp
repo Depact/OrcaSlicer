@@ -69,6 +69,8 @@
 #include "libslic3r/Format/bbs_3mf.hpp"
 #include "libslic3r/GCode/ThumbnailData.hpp"
 #include "libslic3r/Model.hpp"
+#include "libslic3r/Emboss.hpp"
+#include "slic3r/Utils/WxFontUtils.hpp"
 #include "libslic3r/SLA/Hollowing.hpp"
 #include "libslic3r/SLA/SupportPoint.hpp"
 #include "libslic3r/SLA/ReprojectPointsOnMesh.hpp"
@@ -6769,6 +6771,42 @@ void read_binary_stl(const std::string& filename, std::string& model_id, std::st
 }
 
 // BBS: backup & restore
+// Regenerate the raw template mesh for every text volume with placeholders loaded from
+// a project. A saved .3mf may carry a previously previewed (resolved) mesh, while the
+// "Preview in Prepare Tab" toggle is transient and off by default, so the 3D must show
+// the raw template until the user enables the preview. Runs on the GUI thread (load).
+static void revert_text_template_previews(Model &model)
+{
+    for (ModelObject *object : model.objects) {
+        if (object == nullptr) continue;
+        for (ModelVolume *volume : object->volumes) {
+            if (volume == nullptr || !volume->is_text()) continue;
+            TextConfiguration &tc = *volume->text_configuration;
+            if (tc.text.find('{') == std::string::npos)
+                continue; // no placeholders - nothing to revert
+
+            // Load the font bytes if not already cached: wx descriptor styles need
+            // wxWidgets, which is only available on the GUI thread (we are on it here).
+            if (tc.font_data == nullptr) {
+                std::unique_ptr<Emboss::FontFile> font_file;
+                if (tc.style.type == EmbossStyle::Type::file_path && !tc.style.path.empty())
+                    font_file = Emboss::create_font_file(tc.style.path.c_str());
+                else if (tc.style.type == WxFontUtils::get_current_type()) {
+                    const wxFont wx_font = WxFontUtils::load_wxFont(tc.style.path);
+                    if (wx_font.IsOk())
+                        font_file = WxFontUtils::create_font_file(wx_font);
+                }
+                if (font_file != nullptr && font_file->data != nullptr)
+                    tc.font_data = std::make_shared<std::vector<unsigned char>>(*font_file->data);
+            }
+            if (tc.font_data == nullptr)
+                continue; // font unavailable - keep the loaded mesh
+
+            Emboss::regenerate_text_mesh(*volume, tc.text);
+        }
+    }
+}
+
 std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_files, LoadStrategy strategy, bool ask_multi)
 {
     std::vector<size_t> empty_result;
@@ -7957,6 +7995,9 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
             if (msg.ShowModal() == wxID_YES) {}
         }
     }
+    // The .3mf may carry previously previewed (resolved) text meshes; revert them to
+    // the raw template so the Prepare tab matches the (off by default) preview toggle.
+    revert_text_template_previews(q->model());
     q->schedule_background_process(true);
     q->mark_plate_toolbar_image_dirty();
     return obj_idxs;
