@@ -119,6 +119,11 @@ private:
     void draw_text_input();
     void draw_text_template_controls();
     void draw_text_resolved_preview();
+    // Section header with an icon. When `tree_id` is nullptr the header is static
+    // (always visible); otherwise it is a collapsible tree node keyed by `tree_id` and
+    // the returned value is its open state (caller must TreePop() when open).
+    // `icon_type` is an index into the cpp-local IconType enum.
+    bool draw_section_header(size_t icon_type, const char *title, const char *tree_id = nullptr);
     void draw_model_type();
     void draw_style_list();
     void draw_delete_style_button();

@@ -182,6 +182,10 @@ enum class IconType : unsigned {
     align_vertical_top,
     align_vertical_center,
     align_vertical_bottom,
+    section_text,
+    section_quality,
+    section_templates,
+    section_advanced,
     // automatic calc of icon's count
     _count
 };
@@ -1472,8 +1476,7 @@ int GLGizmoEmboss::text_insert_callback(ImGuiInputTextCallbackData *data)
 void GLGizmoEmboss::draw_text_template_controls()
 {
     ImGui::Spacing();
-    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
-    if (ImGui::TreeNodeEx(_u8L("Templates").c_str(), flags)) {
+    if (draw_section_header(static_cast<size_t>(IconType::section_templates), _u8L("Templates").c_str(), "##templates")) {
         // Disabled while previewing (the field is then read-only) so an insert would
         // never apply and would pop up unexpectedly later.
         const bool preview_read_only = m_preview_template && !m_style_manager.get_font_prop().per_glyph;
@@ -1573,6 +1576,32 @@ void GLGizmoEmboss::draw_text_resolved_preview()
                                            : _u8L("Resolved value of the template placeholders.").c_str());
 }
 
+bool GLGizmoEmboss::draw_section_header(size_t icon_type, const char *title, const char *tree_id)
+{
+    const IconManager::Icon &icon = get_icon(m_icons, static_cast<IconType>(icon_type), IconState::activable);
+    const float icon_h = ImGui::GetTextLineHeight();
+    const ImVec2 icon_size(icon_h, icon_h);
+
+    if (tree_id == nullptr) {
+        // Static (non-collapsible) header: icon + title.
+        ImGui::Image((void *)(intptr_t)icon.tex_id, icon_size, icon.tl, icon.br);
+        ImGui::SameLine();
+        ImGui::TextUnformatted(title);
+        return true;
+    }
+
+    // Collapsible section header: tree arrow + icon + title. The label is hidden
+    // (##id) so the icon/title are rendered inline after the arrow.
+    const bool open = ImGui::TreeNodeEx(tree_id, ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding);
+    if (open) {
+        ImGui::SameLine();
+        ImGui::Image((void *)(intptr_t)icon.tex_id, icon_size, icon.tl, icon.br);
+        ImGui::SameLine();
+        ImGui::TextUnformatted(title);
+    }
+    return open;
+}
+
 void GLGizmoEmboss::draw_window(float x, float y)
 {
 #ifdef ALLOW_DEBUG_MODE
@@ -1599,7 +1628,7 @@ void GLGizmoEmboss::draw_window(float x, float y)
     // non-collapsible section header with the settings grouped beneath (Style, Font,
     // Quality), instead of a collapsible tree node.
     ImGui::Separator();
-    ImGui::TextUnformatted(_u8L("Text").c_str());
+    draw_section_header(static_cast<size_t>(IconType::section_text), _u8L("Text").c_str());
     ImGui::Spacing();
 
     draw_style_list();
@@ -1611,7 +1640,7 @@ void GLGizmoEmboss::draw_window(float x, float y)
 
     // Height / Depth grouped under a "Quality" sub-heading, matching the print
     // settings hierarchy where "Layer Height" lives on the Quality page.
-    ImGui::TextUnformatted(_u8L("Quality").c_str());
+    draw_section_header(static_cast<size_t>(IconType::section_quality), _u8L("Quality").c_str());
     ImGui::Spacing();
 
     bool use_inch = wxGetApp().app_config->get_bool("use_inches");
@@ -1629,8 +1658,7 @@ void GLGizmoEmboss::draw_window(float x, float y)
         ImGui::SetNextTreeNodeOpen(false);
 
     // ImGui Bug: After switching to another window and switching back, clicking the text doesnt open/close the TreeNode anymore
-    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
-    if (ImGui::TreeNodeEx(_u8L("Advanced").c_str(), flags)) {
+    if (draw_section_header(static_cast<size_t>(IconType::section_advanced), _u8L("Advanced").c_str(), "##advanced")) {
         if (!m_is_advanced_edit_style) {
             m_is_advanced_edit_style = true;
             m_imgui->set_requires_extra_frame();
@@ -1803,7 +1831,14 @@ void GLGizmoEmboss::draw_text_input()
 
     // The field always shows and edits the raw template. Resolved-text preview happens
     // only in the 3D (prepare) view via process().
-    ImVec2 input_size(m_gui_cfg->text_size.x, m_gui_cfg->text_size.y);
+    // Auto-grow the field vertically up to a limit so multi-line templates stay
+    // visible without scrolling, then clamp to a comfortable range.
+    const float line_height = ImGui::GetTextLineHeightWithSpacing();
+    const unsigned count_lines = get_count_lines(m_text);
+    const unsigned min_lines = 3;
+    const unsigned max_lines = 10;
+    const unsigned lines = std::clamp<unsigned>(std::max(count_lines, min_lines), min_lines, max_lines);
+    ImVec2 input_size(m_gui_cfg->text_size.x, line_height * lines);
     if (ImGui::InputTextMultiline("##Text", &m_text, input_size, flags,
                                   text_insert_callback, this)) {
         if (m_style_manager.get_font_prop().per_glyph) {
@@ -3482,7 +3517,11 @@ void GLGizmoEmboss::init_icons()
         "align_horizontal_right.svg",
         "align_vertical_top.svg",
         "align_vertical_center.svg",
-        "align_vertical_bottom.svg"
+        "align_vertical_bottom.svg",
+        "add_text_part.svg",        // section_text
+        "custom-gcode_quality.svg", // section_quality
+        "edit.svg",                 // section_templates
+        "advanced.svg"              // section_advanced
     };
     assert(filenames.size() == static_cast<size_t>(IconType::_count));
     std::string path = resources_dir() + "/images/";
