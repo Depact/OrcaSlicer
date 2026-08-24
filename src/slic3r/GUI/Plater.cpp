@@ -6785,6 +6785,9 @@ static void revert_text_template_previews(Model &model)
             if (tc.text.find('{') == std::string::npos)
                 continue; // no placeholders - nothing to revert
 
+            BOOST_LOG_TRIVIAL(debug) << "revert_text_template_previews: text volume '" << volume->name
+                                     << "' template='" << tc.text << "'";
+
             // Load the font bytes if not already cached: wx descriptor styles need
             // wxWidgets, which is only available on the GUI thread (we are on it here).
             if (tc.font_data == nullptr) {
@@ -6799,10 +6802,13 @@ static void revert_text_template_previews(Model &model)
                 if (font_file != nullptr && font_file->data != nullptr)
                     tc.font_data = std::make_shared<std::vector<unsigned char>>(*font_file->data);
             }
-            if (tc.font_data == nullptr)
+            if (tc.font_data == nullptr) {
+                BOOST_LOG_TRIVIAL(warning) << "revert_text_template_previews: font not loadable, keeping loaded mesh";
                 continue; // font unavailable - keep the loaded mesh
+            }
 
-            Emboss::regenerate_text_mesh(*volume, tc.text);
+            const bool ok = Emboss::regenerate_text_mesh(*volume, tc.text);
+            BOOST_LOG_TRIVIAL(debug) << "revert_text_template_previews: regenerate_text_mesh returned " << ok;
         }
     }
 }
