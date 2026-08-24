@@ -1267,7 +1267,14 @@ void GLGizmoEmboss::set_volume_by_selection()
         m_style_manager.get_style().angle = calc_angle(selection);
 
     // calculate scale for height and depth inside of scaled object instance
-    calculate_scale();    
+    calculate_scale();
+
+    // Reconcile the 3D (Prepare tab) view with the "Preview in Prepare Tab" toggle:
+    // the saved mesh may hold a previously previewed (resolved) result, but the toggle
+    // is transient and defaults to off on launch, so regenerate the raw template mesh
+    // whenever the toggle is off and the text contains placeholders.
+    if (!m_preview_template && m_text.find('{') != std::string::npos)
+        process();
 }
 
 void GLGizmoEmboss::reset_volume()
