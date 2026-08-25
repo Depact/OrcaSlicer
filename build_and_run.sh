@@ -12,7 +12,7 @@ set -e
 #   macOS                ./build_and_run.sh
 #   Windows (Git Bash)   bash build_and_run.sh   (from a Git Bash prompt, or
 #                        C:/Program\ Files/Git/bin/bash.exe build_and_run.sh)
-#   Windows (WSL)        not supported - this runs the Windows MSVC/Ninja build.
+#   Windows (WSL bash)   bash build_and_run.sh   - auto re-executes under Git Bash.
 
 # Work from the script's own directory so the script works regardless of CWD.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -20,11 +20,29 @@ BUILD_DIR="${BUILD_DIR:-${SCRIPT_DIR}/build}"
 CONFIG="${CONFIG:-Release}"
 TARGET="${TARGET:-OrcaSlicer_app_gui}"
 
-# Detect running under Git Bash / MSYS2 / Cygwin on Windows.
+# Detect the runtime environment: Git Bash / MSYS2 / Cygwin / WSL / native.
 IS_WINDOWS=0
+IS_WSL=0
 case "$(uname -s 2>/dev/null)" in
     MINGW*|MSYS*|CYGWIN*) IS_WINDOWS=1 ;;
 esac
+if [[ ${IS_WINDOWS} -eq 0 ]] && { [[ -n "${WSL_DISTRO_NAME}" ]] || uname -r 2>/dev/null | grep -qi microsoft; }; then
+    IS_WINDOWS=1
+    IS_WSL=1
+fi
+
+if [[ ${IS_WSL} -eq 1 ]]; then
+    # WSL has no Windows env (USERPROFILE etc.) and cannot run the MSVC build
+    # directly. Re-execute under Git Bash, which has the full Windows environment.
+    GIT_BASH="/mnt/c/Program Files/Git/bin/bash.exe"
+    if [[ -e "${GIT_BASH}" ]]; then
+        echo "WSL bash detected - re-running under Git Bash."
+        exec "${GIT_BASH}" "$(wslpath -w "${SCRIPT_DIR}")/build_and_run.sh" "$@"
+    fi
+    echo "WSL bash detected but Git Bash not found. Run from Git Bash instead:" >&2
+    echo "  C:\\Program Files\\Git\\bin\\bash.exe build_and_run.sh" >&2
+    exit 1
+fi
 
 # Locate cmake: explicit CMAKE var, then PATH, then the known local tools dir on Windows.
 CMAKE_BIN="${CMAKE:-}"
@@ -32,7 +50,7 @@ if [[ -z "${CMAKE_BIN}" ]] && command -v cmake >/dev/null 2>&1; then
     CMAKE_BIN="$(command -v cmake)"
 fi
 if [[ -z "${CMAKE_BIN}" && ${IS_WINDOWS} -eq 1 && -n "${USERPROFILE}" && \
-      -x "${USERPROFILE}/tools/cmake-3.31.6-windows-x86_64/bin/cmake.exe" ]]; then
+      -e "${USERPROFILE}/tools/cmake-3.31.6-windows-x86_64/bin/cmake.exe" ]]; then
     CMAKE_BIN="${USERPROFILE}/tools/cmake-3.31.6-windows-x86_64/bin/cmake.exe"
 fi
 if [[ -z "${CMAKE_BIN}" ]]; then
@@ -48,7 +66,7 @@ else
     EXE_SUFFIX=""
     [[ ${IS_WINDOWS} -eq 1 ]] && EXE_SUFFIX=".exe"
     # Prefer src/orca-slicer (Ninja/CMake layout); fall back to bin/orca-slicer.
-    if [[ -x "${BUILD_DIR}/src/orca-slicer${EXE_SUFFIX}" ]]; then
+    if [[ -e "${BUILD_DIR}/src/orca-slicer${EXE_SUFFIX}" ]]; then
         BINARY="${BINARY:-${BUILD_DIR}/src/orca-slicer${EXE_SUFFIX}}"
     else
         BINARY="${BINARY:-${BUILD_DIR}/bin/orca-slicer${EXE_SUFFIX}}"
