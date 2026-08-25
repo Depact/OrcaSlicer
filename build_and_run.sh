@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-# tl;dr how to run:
+# How to run:
 #   Linux/macOS:  ./build_and_run.sh [file.3mf]
 #   Windows:      bash build_and_run.sh [file.3mf]   (auto-hand-offs to Git Bash)
 #   Overrides:    BUILD_DIR= build/  CONFIG=RelWithDebInfo  CMAKE=cmake  TARGET=OrcaSlicer_app_gui
