@@ -377,6 +377,15 @@ TEST_CASE("Emboss text template tags resolve", "[PlaceholderParser][TextTemplate
         REQUIRE(std::regex_match(parser.process("{year}-{month}-{day}"), std::regex(R"(\d{4}-\d{1,2}-\d{1,2})")));
     }
 
+    SECTION("resolve_text_template {year}-{month}-{day}") {
+        // The feature path resolves via resolve_text_template(), which goes through
+        // the escape pre-processing - make sure a plain multi-tag template is not
+        // mangled by it.
+        const std::string out = parser.resolve_text_template("{year}-{month}-{day}");
+        REQUIRE(std::regex_match(out, std::regex(R"(\d{4}-\d{1,2}-\d{1,2})")));
+        REQUIRE(out.find('{') == std::string::npos);
+    }
+
     SECTION("template {hour}:{minute}") {
         // hour/minute are not zero-padded, so allow 1-2 digits.
         REQUIRE(std::regex_match(parser.process("{hour}:{minute}"), std::regex(R"(\d{1,2}:\d{1,2})")));
@@ -450,6 +459,18 @@ TEST_CASE("Emboss text template tags resolve", "[PlaceholderParser][TextTemplate
         // \\ is a literal backslash; a lone \ in normal text is untouched.
         REQUIRE(parser.resolve_text_template("C:\\tmp") == "C:\\tmp");
         REQUIRE(parser.resolve_text_template("back\\slash") == "back\\slash");
+    }
+
+    SECTION("malformed tag does not swallow well-formed tags after it") {
+        // "{hour}:{minute{year}-{month}-{day}" is missing the '}' after "minute", so
+        // the whole "{minute{year}-{month}-{day}" group is malformed. It must not blank
+        // out the date tags: only the rejected '{' stays literal, {year}/{month}/{day}
+        // still resolve, and {hour} before it resolves too.
+        const std::string out = parser.resolve_text_template("{hour}:{minute{year}-{month}-{day}");
+        REQUIRE(std::regex_match(out, std::regex(R"(\d{1,2}:\{minute\d{4}-\d{1,2}-\d{1,2})")));
+        REQUIRE(out.find("{year}") == std::string::npos);
+        REQUIRE(out.find("{month}") == std::string::npos);
+        REQUIRE(out.find("{day}") == std::string::npos);
     }
 }
 

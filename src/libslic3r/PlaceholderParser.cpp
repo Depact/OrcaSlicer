@@ -177,10 +177,26 @@ std::string PlaceholderParser::resolve_text_template(const std::string &templ) c
         result += escaped.substr(pos, open - pos); // literal text before the tag
         const size_t close = escaped.find('}', open + 1);
         if (close == std::string::npos) {
-            result += escaped.substr(open); // unbalanced brace - keep the rest literal
+            // Unbalanced '{' with no '}' at all. If a nested '{' follows, re-scan so
+            // well-formed inner tags still resolve; otherwise keep the rest literal.
+            if (escaped.find('{', open + 1) != std::string::npos) {
+                result += '{';
+                pos = open + 1;
+                continue;
+            }
+            result += escaped.substr(open);
             break;
         }
         const std::string tag = escaped.substr(open, close - open + 1);
+        if (tag.find('{', 1) != std::string::npos) {
+            // This '{' starts a malformed tag (a nested '{' before the '}'), e.g.
+            // "{minute{year}-{month}-{day}" missing the '}' after "minute". Keeping it
+            // whole would blank out the well-formed inner tags; keep just the rejected
+            // '{' literal and re-scan its interior so {year}, {month}, {day} resolve.
+            result += '{';
+            pos = open + 1;
+            continue;
+        }
         try {
             result += this->process(tag, 0);
         } catch (const std::exception &) {
