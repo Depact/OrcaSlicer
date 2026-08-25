@@ -356,9 +356,11 @@ std::string PlaceholderParser::resolve_text_template(const std::string &templ, c
 
 Notes for the implementer:
 
-- **Escaping.** The parser's macro syntax requires a literal `{` to be written `\{`. A text
-  like `A {literal} brace` will throw and fall back to the raw string; document this in the
-  UI tooltip (Section 4.2).
+- **Escaping.** The parser's macro syntax requires a literal `{` to be written `\{` and a
+  literal `}` to be written `\}`; `\\` is a literal backslash. Anything else (an unbalanced
+  `{`, an unknown variable, a stray `}`) falls back to resolving each `{tag}` group on its
+  own and leaving the unresolvable parts literal, so `A {literal} brace` resolves to
+  `A {literal} brace`. Document this in the UI tooltip (Section 4.2).
 - **Vector options resolve to the first element without an index.** `{nozzle_temperature}`
   is a per-filament `ConfigOptionInts`; addressed without an index the parser uses element 0
   (the "current extruder" default), so the tags stay short and non-cryptic. Explicit
@@ -542,7 +544,7 @@ void GLGizmoEmboss::draw_text_template_controls()
             ImGui::SetTooltip("%s", _u8L(
                 "Show the resolved {placeholders} as 3D geometry in the prepare view. The "
                 "stored text keeps the raw template; resolution to geometry happens again "
-                "at slicing time. Literal braces must be escaped as \\{.").c_str());
+                "at slicing time. Literal braces must be escaped as \\{ and \\}.").c_str());
 
         ImGui::TreePop();
     }
@@ -672,24 +674,19 @@ bool Emboss::regenerate_text_mesh(ModelVolume &volume, const std::string &resolv
     const TextConfiguration &tc = *tc_opt;
     const EmbossShape       &es = *es_opt;
 
-    // The headless path below only reproduces flat, non-per-glyph text. On-surface
-    // text (wrapped around a cylinder / cut into a surface) and per-glyph text need
-    // the surface mesh, TextLinesModel and raycaster from the GUI Job pipeline, which
-    // are unavailable on the slicing thread. Keep the previous mesh for those.
-    if (es.projection.use_surface || tc.style.prop.per_glyph) {
+    // Per-glyph text (glyphs laid out along a user-drawn curve) requires the GUI
+    // session's TextLinesModel, which is not stored on the volume, so it cannot be
+    // rebuilt headlessly during slicing. Keep the previous mesh.
+    if (tc.style.prop.per_glyph) {
         BOOST_LOG_TRIVIAL(warning)
-            << "Dynamic text template: on-surface / per-glyph text cannot be re-meshed "
-               "headlessly, keeping previous mesh.";
+            << "Dynamic text template: per-glyph text cannot be re-meshed headlessly, "
+               "keeping previous mesh.";
         return false;
     }
 
-    std::unique_ptr<FontFile> font_file = load_volume_font(tc);
-    if (font_file == nullptr || was_canceled())
+    FontFileWithCache font = load_volume_font(tc);
+    if (!font.has_value() || was_canceled())
         return false;
-
-    // The glyph cache inside FontFileWithCache is scratch space; the shared FontFile
-    // carries the byte data.
-    FontFileWithCache font(std::move(font_file));
 
     // Build the glyph shapes from the resolved string.
     EmbossShape text_shape;
@@ -705,25 +702,45 @@ bool Emboss::regenerate_text_mesh(ModelVolume &volume, const std::string &resolv
     text_shape.scale      = es.scale;
     text_shape.projection = es.projection;
 
-    // Boolean-union the per-glyph shapes exactly like try_create_mesh() does.
+    // Boolean-union the per-glyph shapes exactly like the GUI try_create_mesh() does.
     ExPolygons shapes = union_with_delta(text_shape, UNION_DELTA, UNION_MAX_ITERATIN);
     if (shapes.empty() || was_canceled())
         return false;
 
-    // Replicate the transform math of the GUI path (EmbossJob.cpp:939-949).
-    double scale = text_shape.scale;
-    double depth = text_shape.projection.depth / scale;
-
     bool is_outside = volume.is_model_part(); // MODEL_PART == raised text
-    float offset = is_outside ? -SAFE_SURFACE_OFFSET : (SAFE_SURFACE_OFFSET - static_cast<float>(depth));
-    // NOTE: the GUI additionally adds the (non-persisted) style "distance from surface"
-    // here via DataBase::from_surface. It defaults to 0 for new text objects, so the
-    // slice-time mesh matches the common case exactly.
+    TriangleMesh mesh;
 
-    Transform3d tr = Eigen::Translation<double, 3>(0., 0., offset) * Eigen::Scaling(scale);
-    auto projectZ = std::make_unique<ProjectZ>(depth);
-    ProjectTransform project(std::move(projectZ), tr);
-    TriangleMesh mesh(polygons2model(shapes, project));
+    if (es.projection.use_surface) {
+        // On-surface text: cut the resolved shapes into the source object and extrude.
+        // The source meshes are the object's other model parts (the text volume is
+        // excluded), in object space - exactly what the GUI cut_surface_to_its uses.
+        std::vector<std::pair<const indexed_triangle_set *, Transform3d>> sources;
+        if (const ModelObject *object = volume.get_object())
+            for (const ModelVolume *v : object->volumes)
+                if (v != nullptr && v != &volume && v->is_model_part() && !v->mesh().empty())
+                    sources.emplace_back(&v->mesh().its, v->get_matrix());
+
+        indexed_triangle_set cut_mesh = cut_surface_to_its(
+            shapes, volume.get_matrix(), sources, is_outside,
+            es.projection.depth, es.scale, was_canceled);
+        if (cut_mesh.indices.empty() || was_canceled())
+            return false;
+        mesh = TriangleMesh(std::move(cut_mesh));
+    } else {
+        // Flat text: extrude the shapes along Z (replicates GUI try_create_mesh).
+        double scale = text_shape.scale;
+        double depth = text_shape.projection.depth / scale;
+
+        float offset = is_outside ? -SAFE_SURFACE_OFFSET : (SAFE_SURFACE_OFFSET - static_cast<float>(depth));
+        // NOTE: the GUI additionally adds the (non-persisted) style "distance from
+        // surface" via DataBase::from_surface. It defaults to 0 for new text objects,
+        // so the slice-time mesh matches the common case exactly.
+
+        Transform3d tr = Eigen::Translation<double, 3>(0., 0., offset) * Eigen::Scaling(scale);
+        auto projectZ = std::make_unique<ProjectZ>(depth);
+        ProjectTransform project(std::move(projectZ), tr);
+        mesh = TriangleMesh(polygons2model(shapes, project));
+    }
     if (mesh.empty() || was_canceled())
         return false;
 
@@ -911,20 +928,21 @@ rebuild. If you changed `TextConfiguration.hpp` expect a wide rebuild (it is inc
 
 ### 6.3 Edge cases and how the design handles them
 
-| Edge case                                                                                     | Behavior                                                                                                                                                                                                                                                                                                                                          | Where handled                                                                             |
-| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| **Unknown placeholder / bad braces** (e.g. `Hello {world`)                                    | `PlaceholderParser::process` throws `PlaceholderParserError`; we catch and keep the **raw template** as the rendered text, log a warning. Slicing never aborts.                                                                                                                                                                                   | `Print::resolve_text_templates()` (5.2), `PlaceholderParser::resolve_text_template` (3.2) |
-| **Literal braces in text**                                                                    | Must be escaped `\{` (parser syntax). Tooltip on the preview toggle documents this.                                                                                                                                                                                                                                                               | 3.2, 4.2                                                                                  |
-| **Vector options without index** (`{nozzle_temperature}`)                                     | Parser rejects; user writes `{nozzle_temperature[0]}`. Falls back to raw on error.                                                                                                                                                                                                                                                                | 3.2                                                                                       |
-| **Missing font glyphs for evaluated characters**                                              | `text2vshapes` substitutes the font's replacement glyph (rendered as `?`) exactly like the GUI does - the GUI already warns via `m_text_contain_unknown_glyph`. Optional: call `Emboss::create_range_text(...)` in `regenerate_text_mesh` and log when `exist_unknown` is set.                                                                    | 5.1                                                                                       |
-| **Font unavailable headlessly** (wx-descriptor styles without `font_data`, deleted font file) | `load_volume_font` returns null; `regenerate_text_mesh` returns false and the **previous mesh is kept**. `last_rendered_text` is not updated, so the next slice retries.                                                                                                                                                                          | 5.1                                                                                       |
-| **Multi-line templates** (`line1\n{year}`)                                                    | `widen()` + `text2vshapes` handle `\n` natively; `get_count_lines` semantics are preserved because we render via the same shape pipeline as the GUI.                                                                                                                                                                                              | 5.1                                                                                       |
-| **Bounding-box change when text length changes**                                              | Handled for free: we replace the whole volume mesh and recompute the convex hull (`calculate_convex_hull()`). Do **not** call `set_mesh` on a volume whose mesh is shared between GUI and print - we always operate on the print's copy, so nothing leaks back.                                                                                   | 5.1, 5.2                                                                                  |
-| **Per-glyph / on-surface ("wrapped around a cylinder") text**                                 | `create_mesh_per_glyph` and `cut_surface` need the source surface + `TextLinesModel` + raycaster, all GUI/Job-side. This guide deliberately mirrors only the **non-per-glyph** path. For such volumes, keep the previous mesh (the normal text-on-surface case is far rarer than flat text; a follow-up can lift `cut_surface` into `libslic3r`). | 5.1                                                                                       |
-| **Text that is empty after resolution** (e.g. template resolves to spaces)                    | `regenerate_text_mesh` returns early on empty; previous mesh kept.                                                                                                                                                                                                                                                                                | 5.1                                                                                       |
-| **`.3mf` round-trip**                                                                         | `text` (raw) is the only serialized field; `text_template` / `last_rendered_text` / `font_data` are transient. Old project files load fine; new ones store the template as before. After load, `text_template` is empty so the resolver falls back to `text`.                                                                                     | 3.1, 6.2                                                                                  |
-| **Time stamp stability within one slice**                                                     | `update_timestamp()` is called once per `resolve_text_templates()`, so all text volumes in a single slice share the same wall-clock value (no mid-slice drift between objects).                                                                                                                                                                   | 5.2                                                                                       |
-| **Multiple instances / shared objects**                                                       | Re-mesh happens before the dedup; equal resolved strings produce equal meshes so sharing still works.                                                                                                                                                                                                                                             | 5.2                                                                                       |
+| Edge case                                                                                     | Behavior                                                                                                                                                                                                                                                                                             | Where handled                                                                             |
+| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Unknown placeholder / bad braces** (e.g. `Hello {world`)                                    | `PlaceholderParser::process` throws `PlaceholderParserError`; `resolve_text_template` then resolves each `{tag}` group on its own and keeps the unresolvable ones **literal** (so `{hour}:{minute} {does_not_exist}` still gives `21:30 {does_not_exist}`), logging a warning. Slicing never aborts. | `Print::resolve_text_templates()` (5.2), `PlaceholderParser::resolve_text_template` (3.2) |
+| **Literal braces in text**                                                                    | Must be escaped `\{` and `\}`; `\\` is a literal backslash. Escaped braces are never treated as tag delimiters and work right next to real tags. Tooltip on the preview toggle documents this.                                                                                                       | 3.2, 4.2                                                                                  |
+| **Vector options without index** (`{nozzle_temperature}`)                                     | Parser uses element 0 (the "current extruder") so tags stay short, exactly like G-code; explicit indexing (`{nozzle_temperature[1]}`) is still supported.                                                                                                                                            | 3.2                                                                                       |
+| **Missing font glyphs for evaluated characters**                                              | `text2vshapes` substitutes the font's replacement glyph (rendered as `?`) exactly like the GUI does - the GUI already warns via `m_text_contain_unknown_glyph`. Optional: call `Emboss::create_range_text(...)` in `regenerate_text_mesh` and log when `exist_unknown` is set.                       | 5.1                                                                                       |
+| **Font unavailable headlessly** (wx-descriptor styles without `font_data`, deleted font file) | `load_volume_font` returns null; `regenerate_text_mesh` returns false and the **previous mesh is kept**. `last_rendered_text` is not updated, so the next slice retries.                                                                                                                             | 5.1                                                                                       |
+| **Multi-line templates** (`line1\n{year}`)                                                    | `widen()` + `text2vshapes` handle `\n` natively; `get_count_lines` semantics are preserved because we render via the same shape pipeline as the GUI.                                                                                                                                                 | 5.1                                                                                       |
+| **Bounding-box change when text length changes**                                              | Handled for free: we replace the whole volume mesh and recompute the convex hull (`calculate_convex_hull()`). Do **not** call `set_mesh` on a volume whose mesh is shared between GUI and print - we always operate on the print's copy, so nothing leaks back.                                      | 5.1, 5.2                                                                                  |
+| **Per-glyph text (glyphs along a user-drawn curve)**                                          | `create_mesh_per_glyph` needs the GUI session's `TextLinesModel`, which is not stored on the volume. For such volumes keep the previous mesh and log a warning.                                                                                                                                      | 5.1                                                                                       |
+| **On-surface text (wrapped around a cylinder / cut into a surface)**                          | Handled headlessly: `cut_surface_to_its` (mirrors the GUI EmbossJob helper) cuts the resolved shapes into the object's other model parts via `cut_surface` / `cut2model` / `its_cut_AoI`, using the same `SAFE_SURFACE_OFFSET` so slice geometry matches the preview.                                | 5.1                                                                                       |
+| **Text that is empty after resolution** (e.g. template resolves to spaces)                    | `regenerate_text_mesh` returns early on empty; previous mesh kept.                                                                                                                                                                                                                                   | 5.1                                                                                       |
+| **`.3mf` round-trip**                                                                         | `text` (raw) is the only serialized field; `last_rendered_text` / `font_data` / `process_templates` are transient. Old project files load fine; new ones store the template as before. The print's private model copy carries the resolved mesh; the GUI model keeps the raw template.               | 3.1, 6.2                                                                                  |
+| **Time stamp stability within one slice**                                                     | `update_timestamp()` is called once per `resolve_text_templates()`, so all text volumes in a single slice share the same wall-clock value (no mid-slice drift between objects).                                                                                                                      | 5.2                                                                                       |
+| **Multiple instances / shared objects**                                                       | Re-mesh happens before the dedup; equal resolved strings produce equal meshes so sharing still works.                                                                                                                                                                                                | 5.2                                                                                       |
 
 ### 6.4 Automated test (optional but recommended)
 
@@ -933,7 +951,7 @@ resolver is worthwhile because both are pure `libslic3r`. Conventions live in
 `tests/AGENTS.md`. Sketch:
 
 ```cpp
-// tests/libslic3r/test_text_template.cpp
+// tests/libslic3r/test_placeholder_parser.cpp
 TEST_CASE("PlaceholderParser resolves clock vars for text", "[TextTemplate]") {
     PlaceholderParser parser;
     parser.update_timestamp();

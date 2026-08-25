@@ -434,5 +434,22 @@ TEST_CASE("Emboss text template tags resolve", "[PlaceholderParser][TextTemplate
         // A plain string without placeholders passes through unchanged.
         REQUIRE(parser.resolve_text_template("Plain text") == "Plain text");
     }
+
+    SECTION("escaped braces stay literal and resolve next to real tags") {
+        // \{ and \} are literal braces, never tag delimiters, and they may sit right
+        // next to a resolving tag in the same template.
+        REQUIRE(parser.resolve_text_template("Bracket \\{test}") == "Bracket {test}");
+        REQUIRE(parser.resolve_text_template("\\{a\\} \\{b}") == "{a} {b}");
+        const std::string out = parser.resolve_text_template("{nozzle_temperature} \\{literal}");
+        REQUIRE(out == "357 {literal}");
+        REQUIRE(parser.resolve_text_template("\\{") == "{");
+        REQUIRE(parser.resolve_text_template("\\}") == "}");
+    }
+
+    SECTION("escaped backslash survives, unescaped stays") {
+        // \\ is a literal backslash; a lone \ in normal text is untouched.
+        REQUIRE(parser.resolve_text_template("C:\\tmp") == "C:\\tmp");
+        REQUIRE(parser.resolve_text_template("back\\slash") == "back\\slash");
+    }
 }
 

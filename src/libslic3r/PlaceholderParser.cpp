@@ -109,14 +109,46 @@ void PlaceholderParser::update_user_name(DynamicConfig &config)
 
 std::string PlaceholderParser::resolve_text_template(const std::string &templ) const
 {
-    if (templ.find('{') == std::string::npos)
+    // Protect escaped literal braces and backslashes: \{ and \} are never tag
+    // delimiters, \\ is a literal backslash. The macro grammar's free-form text rule
+    // stops at any '{', so without this "\{x}" would be mis-parsed as a macro.
+    // Escape mapping (restored below): \\ -> 0x01, \{ -> 0x02, \} -> 0x03.
+    std::string escaped;
+    bool has_escape = false;
+    escaped.reserve(templ.size());
+    for (size_t i = 0; i < templ.size(); ++i) {
+        if (templ[i] == '\\' && i + 1 < templ.size()) {
+            const char n = templ[i + 1];
+            if (n == '\\' || n == '{' || n == '}') {
+                escaped += char((n == '\\') ? 0x01 : (n == '{') ? 0x02 : 0x03);
+                ++i;
+                has_escape = true;
+                continue;
+            }
+        }
+        escaped += templ[i];
+    }
+
+    if (templ.find('{') == std::string::npos && !has_escape)
         return templ; // fast path: no placeholders at all
 
+    auto restore = [](std::string &s) {
+        for (char &c : s) {
+            if (c == 0x01) c = '\\';
+            else if (c == 0x02) c = '{';
+            else if (c == 0x03) c = '}';
+        }
+    };
+
     try {
-        return this->process(templ, 0 /* current_extruder_id */);
-    } catch (const std::exception &ex) {
-        BOOST_LOG_TRIVIAL(warning) << "Failed to fully resolve text template '" << templ
-                                   << "' (" << ex.what() << "); resolving what is possible.";
+        std::string out = this->process(escaped, 0 /* current_extruder_id */);
+        restore(out);
+        return out;
+    } catch (const std::exception &) {
+        // Fall through to partial resolution. This is also hit for perfectly valid
+        // templates that only carry escaped literal braces, e.g. "Bracket \{test}"
+        // whose stray '}' is not consumable by the free-text rule - so we only warn
+        // below when an actual {tag} group failed to resolve.
     }
 
     // Partial resolution: the whole-template process() threw (a literal '{' that was
@@ -126,35 +158,41 @@ std::string PlaceholderParser::resolve_text_template(const std::string &templ) c
     // "{hour}:{minute} {does_not_exist}" still resolves to "21:30 {does_not_exist}".
     // Conditional blocks ({if}/{else}/{elsif}/{endif}) span multiple groups and must
     // be processed atomically, so templates using them keep the previous behavior.
-    if (templ.find("{if")   != std::string::npos ||
-        templ.find("{else") != std::string::npos ||
-        templ.find("{elsif") != std::string::npos ||
-        templ.find("{endif") != std::string::npos)
+    if (escaped.find("{if")   != std::string::npos ||
+        escaped.find("{else") != std::string::npos ||
+        escaped.find("{elsif") != std::string::npos ||
+        escaped.find("{endif") != std::string::npos)
         return templ;
 
     std::string result;
-    result.reserve(templ.size());
+    result.reserve(escaped.size());
     size_t pos = 0;
-    while (pos < templ.size()) {
-        const size_t open = templ.find('{', pos);
+    bool   failed_group = false;
+    while (pos < escaped.size()) {
+        const size_t open = escaped.find('{', pos);
         if (open == std::string::npos) {
-            result += templ.substr(pos); // trailing literal text
+            result += escaped.substr(pos); // trailing literal text
             break;
         }
-        result += templ.substr(pos, open - pos); // literal text before the tag
-        const size_t close = templ.find('}', open + 1);
+        result += escaped.substr(pos, open - pos); // literal text before the tag
+        const size_t close = escaped.find('}', open + 1);
         if (close == std::string::npos) {
-            result += templ.substr(open); // unbalanced brace - keep the rest literal
+            result += escaped.substr(open); // unbalanced brace - keep the rest literal
             break;
         }
-        const std::string tag = templ.substr(open, close - open + 1);
+        const std::string tag = escaped.substr(open, close - open + 1);
         try {
             result += this->process(tag, 0);
         } catch (const std::exception &) {
+            failed_group = true;
             result += tag; // unresolvable - keep it literal so the user can fix it
         }
         pos = close + 1;
     }
+    restore(result);
+    if (failed_group)
+        BOOST_LOG_TRIVIAL(warning) << "Failed to resolve one or more tags in text template '"
+                                   << templ << "'; keeping them literal.";
     return result;
 }
 

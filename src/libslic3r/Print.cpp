@@ -2305,7 +2305,10 @@ void Print::process(long long *time_cost_with_cache, bool use_cache)
     // Resolve dynamic text templates before any slicing bookkeeping, so shared-object
     // detection and every downstream step (slice -> perimeters -> infill) consume the
     // resolved geometry. Operates on m_model, the print's private copy from apply(),
-    // so the GUI model keeps showing the raw templates.
+    // so the GUI model keeps showing the raw templates. The last_rendered_text cache
+    // and the template expansion live entirely on this private copy, so a concurrent
+    // GUI edit or re-slice can never read a half-expanded mesh; the following
+    // clear_shared_object() / slice() calls run strictly after this.
     resolve_text_templates();
 
     for (PrintObject *obj : m_objects)

@@ -1,4 +1,5 @@
 #include <numeric>
+#include <limits>
 #ifdef _WIN32
 // Emboss.cpp uses Win32 GDI (CreateCompatibleDC/SelectObject/GetFontData/DeleteDC) to
 // read the raw font bytes from an HFONT. Include windows.h BEFORE anything that may
@@ -15,6 +16,7 @@
 #include <ClipperUtils.hpp> // union_ex + for boldness(polygon extend(offset))
 #include "IntersectionPoints.hpp"
 #include "Model.hpp" // ModelVolume (text_configuration, emboss_shape, set_mesh)
+#include "CutSurface.hpp" // cut_surface, cut2model, its_cut_AoI (on-surface text)
 
 #define STB_TRUETYPE_IMPLEMENTATION // force following include to generate implementation
 #include "imgui/imstb_truetype.h" // stbtt_fontinfo
@@ -2214,6 +2216,130 @@ FontFileWithCache load_volume_font(const TextConfiguration &tc)
         << "No font data for text template re-meshing; keeping previous mesh.";
     return FontFileWithCache(); // empty
 }
+
+// ----- Headless on-surface (wrapped / cut into a surface) text re-meshing -----
+// These mirror the GUI EmbossJob.cpp helpers (create_projection_for_cut /
+// create_emboss_projection / cut_surface_to_its) but operate on plain meshes and
+// transforms so they can run on the slicing thread without wxWidgets / Jobs / GUI.
+
+// Safety margin around the cut bounding box, matches EmbossJob.cpp.
+constexpr float SAFE_EXTENSION = 1.0f;
+
+// Orthogonal projection of the 2D text shape into the source-mesh space.
+OrthoProject create_projection_for_cut(Transform3d tr, double shape_scale, const std::pair<float, float> &z_range)
+{
+    double min_z = z_range.first - SAFE_EXTENSION;
+    double max_z = z_range.second + SAFE_EXTENSION;
+    assert(min_z < max_z);
+    double   projection_size           = max_z - min_z;
+    Matrix3d transformation_for_vector = tr.linear();
+    // Projection must be negative. Text coordinates: X right, Y down, Z text-to-eye.
+    Vec3d untransformed_direction(0., 0., projection_size);
+    Vec3d project_direction = transformation_for_vector * untransformed_direction;
+    tr.translate(Vec3d(0., 0., min_z));
+    tr.scale(shape_scale);
+    return OrthoProject(tr, project_direction);
+}
+
+// Depth extrusion of the cut surface along the emboss direction.
+OrthoProject3d create_emboss_projection(bool is_outside, float emboss, Transform3d tr, SurfaceCut &cut)
+{
+    float front_move = (is_outside) ? emboss : SAFE_SURFACE_OFFSET;
+    float back_move  = -((is_outside) ? SAFE_SURFACE_OFFSET : emboss);
+    its_transform(cut, tr.pretranslate(Vec3d(0., 0., front_move)));
+    Vec3d from_front_to_back(0., 0., back_move - front_move);
+    return OrthoProject3d(from_front_to_back);
+}
+
+// Cut the given 2D text shapes into the source object meshes and extrude them.
+// `sources` are (mesh, world transform) pairs of the object's other model parts.
+indexed_triangle_set cut_surface_to_its(const ExPolygons                  &shapes,
+                                        const Transform3d                &tr,
+                                        const std::vector<std::pair<const indexed_triangle_set *, Transform3d>> &sources,
+                                        bool                              is_outside,
+                                        double                            depth,
+                                        double                            shape_scale,
+                                        const std::function<bool()>      &was_canceled)
+{
+    if (sources.empty() || was_canceled())
+        return {};
+    BoundingBox bb = get_extents(shapes);
+
+    // 1) Clip each source mesh to the projected text area (A(rea) o(f) I(nterest)).
+    const std::pair<const indexed_triangle_set *, Transform3d> *biggest = &sources.front();
+    size_t biggest_count = 0;
+    std::vector<size_t> s_to_itss(sources.size(), std::numeric_limits<size_t>::max());
+    std::vector<indexed_triangle_set> itss;
+    itss.reserve(sources.size());
+    for (size_t i = 0; i < sources.size(); ++i) {
+        const auto &s = sources[i];
+        Transform3d mesh_tr_inv       = s.second.inverse();
+        Transform3d cut_projection_tr = mesh_tr_inv * tr;
+        std::pair<float, float> z_range{0., 1.};
+        OrthoProject cut_projection = create_projection_for_cut(cut_projection_tr, shape_scale, z_range);
+        indexed_triangle_set its = its_cut_AoI(*s.first, bb, cut_projection);
+        if (its.indices.empty())
+            continue;
+        if (biggest_count < its.vertices.size()) {
+            biggest_count = its.vertices.size();
+            biggest       = &s;
+        }
+        s_to_itss[i] = itss.size();
+        itss.emplace_back(std::move(its));
+    }
+    if (itss.empty())
+        return {};
+
+    // 2) Bring all clipped pieces into the coordinate system of the biggest source.
+    Transform3d tr_inv          = biggest->second.inverse();
+    Transform3d cut_projection_tr = tr_inv * tr;
+    size_t itss_index = s_to_itss[biggest - &sources.front()];
+    BoundingBoxf3 mesh_bb = bounding_box(itss[itss_index]);
+    for (size_t i = 0; i < sources.size(); ++i) {
+        itss_index = s_to_itss[i];
+        if (itss_index == std::numeric_limits<size_t>::max() || &sources[i] == biggest)
+            continue;
+        indexed_triangle_set &its = itss[itss_index];
+        its_transform(its, sources[i].second * tr_inv, true);
+        mesh_bb.merge(bounding_box(its));
+    }
+
+    // 3) Cut the surface through the merged mesh.
+    Transform3d emboss_tr = cut_projection_tr.inverse();
+    BoundingBoxf3 mesh_bb_tr = mesh_bb.transformed(emboss_tr);
+    std::pair<float, float> z_range{mesh_bb_tr.min.z(), mesh_bb_tr.max.z()};
+    OrthoProject cut_projection = create_projection_for_cut(cut_projection_tr, shape_scale, z_range);
+    float projection_ratio = (-z_range.first + SAFE_EXTENSION) /
+                             (z_range.second - z_range.first + 2 * SAFE_EXTENSION);
+
+    // Mirror GUI: for reflected text the polygon winding must be flipped for the cut.
+    ExPolygons shapes_data;
+    const ExPolygons *shapes_ptr = &shapes;
+    bool is_text_reflected = Slic3r::has_reflection(tr);
+    if (is_text_reflected) {
+        shapes_data = shapes;
+        for (ExPolygon &shape : shapes_data) {
+            shape.contour.reverse();
+            for (Slic3r::Polygon &hole : shape.holes)
+                hole.reverse();
+        }
+        shapes_ptr = &shapes_data;
+    }
+
+    SurfaceCut cut = cut_surface(*shapes_ptr, itss, cut_projection, projection_ratio);
+    if (is_text_reflected) {
+        for (SurfaceCut::Contour &c : cut.contours)
+            std::reverse(c.begin(), c.end());
+        for (Vec3i32 &t : cut.indices)
+            std::swap(t[0], t[1]);
+    }
+    if (cut.empty() || was_canceled())
+        return {};
+
+    // 4) Extrude the cut along the emboss direction.
+    OrthoProject3d projection = create_emboss_projection(is_outside, static_cast<float>(depth), emboss_tr, cut);
+    return cut2model(cut, projection);
+}
 } // namespace
 
 bool Emboss::regenerate_text_mesh(ModelVolume &volume, const std::string &resolved_text,
@@ -2230,14 +2356,13 @@ bool Emboss::regenerate_text_mesh(ModelVolume &volume, const std::string &resolv
     const TextConfiguration &tc = *tc_opt;
     const EmbossShape       &es = *es_opt;
 
-    // The headless path below only reproduces flat, non-per-glyph text. On-surface
-    // text (wrapped around a cylinder / cut into a surface) and per-glyph text need
-    // the surface mesh, TextLinesModel and raycaster from the GUI Job pipeline, which
-    // are unavailable on the slicing thread. Keep the previous mesh for those.
-    if (es.projection.use_surface || tc.style.prop.per_glyph) {
+    // Per-glyph text (glyphs laid out along a user-drawn curve) requires the GUI
+    // session's TextLinesModel, which is not stored on the volume, so it cannot be
+    // rebuilt headlessly during slicing. Keep the previous mesh.
+    if (tc.style.prop.per_glyph) {
         BOOST_LOG_TRIVIAL(warning)
-            << "Dynamic text template: on-surface / per-glyph text cannot be re-meshed "
-               "headlessly, keeping previous mesh.";
+            << "Dynamic text template: per-glyph text cannot be re-meshed headlessly, "
+               "keeping previous mesh.";
         return false;
     }
 
@@ -2264,20 +2389,40 @@ bool Emboss::regenerate_text_mesh(ModelVolume &volume, const std::string &resolv
     if (shapes.empty() || was_canceled())
         return false;
 
-    // Replicate the transform math of the GUI path (EmbossJob.cpp try_create_mesh).
-    double scale = text_shape.scale;
-    double depth = text_shape.projection.depth / scale;
+    bool is_outside = volume.is_model_part(); // MODEL_PART == raised text
+    TriangleMesh mesh;
 
-    bool  is_outside = volume.is_model_part(); // MODEL_PART == raised text
-    float offset = is_outside ? -SAFE_SURFACE_OFFSET : (SAFE_SURFACE_OFFSET - static_cast<float>(depth));
-    // NOTE: the GUI additionally adds the (non-persisted) style "distance from surface"
-    // here via DataBase::from_surface. It defaults to 0 for new text objects, so the
-    // slice-time mesh matches the common case exactly.
+    if (es.projection.use_surface) {
+        // On-surface text: cut the resolved shapes into the source object and extrude.
+        // The source meshes are the object's other model parts (the text volume is
+        // excluded), in object space - exactly what the GUI cut_surface_to_its uses.
+        std::vector<std::pair<const indexed_triangle_set *, Transform3d>> sources;
+        if (const ModelObject *object = volume.get_object())
+            for (const ModelVolume *v : object->volumes)
+                if (v != nullptr && v != &volume && v->is_model_part() && !v->mesh().empty())
+                    sources.emplace_back(&v->mesh().its, v->get_matrix());
 
-    Transform3d tr = Eigen::Translation<double, 3>(0., 0., offset) * Eigen::Scaling(scale);
-    auto projectZ = std::make_unique<ProjectZ>(depth);
-    ProjectTransform project(std::move(projectZ), tr);
-    TriangleMesh mesh(polygons2model(shapes, project));
+        indexed_triangle_set cut_mesh = cut_surface_to_its(
+            shapes, volume.get_matrix(), sources, is_outside,
+            es.projection.depth, es.scale, was_canceled);
+        if (cut_mesh.indices.empty() || was_canceled())
+            return false;
+        mesh = TriangleMesh(std::move(cut_mesh));
+    } else {
+        // Flat text: extrude the shapes along Z (replicates GUI try_create_mesh).
+        double scale = text_shape.scale;
+        double depth = text_shape.projection.depth / scale;
+
+        float offset = is_outside ? -SAFE_SURFACE_OFFSET : (SAFE_SURFACE_OFFSET - static_cast<float>(depth));
+        // NOTE: the GUI additionally adds the (non-persisted) style "distance from
+        // surface" via DataBase::from_surface. It defaults to 0 for new text objects,
+        // so the slice-time mesh matches the common case exactly.
+
+        Transform3d tr = Eigen::Translation<double, 3>(0., 0., offset) * Eigen::Scaling(scale);
+        auto projectZ = std::make_unique<ProjectZ>(depth);
+        ProjectTransform project(std::move(projectZ), tr);
+        mesh = TriangleMesh(polygons2model(shapes, project));
+    }
     if (mesh.empty() || was_canceled())
         return false;
 

@@ -1511,7 +1511,7 @@ void GLGizmoEmboss::draw_text_template_controls()
         ImGui::SetTooltip("%s", _u8L(
             "Show the resolved {placeholders} as 3D geometry in the Prepare tab. The "
             "stored text keeps the raw template; resolution to geometry happens again "
-            "at slicing time. Literal braces must be escaped as \\{.").c_str());
+            "at slicing time. Literal braces must be escaped as \\{ and \\}.").c_str());
 
     ImGui::Spacing();
 
