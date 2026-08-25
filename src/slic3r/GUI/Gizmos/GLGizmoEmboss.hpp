@@ -13,6 +13,7 @@
 #include <optional>
 #include <memory>
 #include <atomic>
+#include <vector>
 
 #include "libslic3r/Emboss.hpp"
 #include "libslic3r/Point.hpp"
@@ -201,6 +202,20 @@ private:
     // When true the 3D (prepare) view shows the *resolved* text as geometry while the
     // stored configuration keeps the raw template.
     bool m_preview_template = false;
+
+    // Cache for the "Template resolved preview". Resolution merges the full print
+    // config and re-parses the template, so it must not run every frame while the
+    // preview tree node stays open. Recomputed only when m_text changes or the cache
+    // is invalidated (template toggle, volume change).
+    std::string m_resolved_preview_cache;
+    std::string m_resolved_preview_cache_src;
+    bool        m_resolved_preview_cache_valid = false;
+
+    // Resolved values for the "Insert template" dropdown preview column, cached the
+    // same way as the resolved preview so opening the combo does not merge the full
+    // print config on every frame.
+    std::vector<std::string> m_insert_template_resolved;
+    bool                     m_insert_template_resolved_valid = false;
     // Template tag queued by a quick-button, inserted by the text input callback so
     // ImGui's undo buffer stays coherent.
     std::string m_pending_insert;

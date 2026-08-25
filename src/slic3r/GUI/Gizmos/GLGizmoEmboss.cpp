@@ -1257,6 +1257,8 @@ void GLGizmoEmboss::set_volume_by_selection()
     m_text   = tc.text;
     m_volume = volume;
     m_volume_id = volume->id();
+    m_resolved_preview_cache_valid    = false; // different volume / text -> recompute the preview
+    m_insert_template_resolved_valid  = false;
         
     if (tc.style.prop.per_glyph)
         reinit_text_lines();
@@ -1284,6 +1286,8 @@ void GLGizmoEmboss::reset_volume()
 
     m_volume = nullptr;
     m_volume_id.id = 0;
+    m_resolved_preview_cache_valid    = false; // no volume -> no valid preview
+    m_insert_template_resolved_valid  = false;
 
     // No more need of current notification
     remove_notification_not_valid_font();
@@ -1489,6 +1493,8 @@ void GLGizmoEmboss::draw_text_template_controls()
     // resolved, both in the preview and at slice time.
     bool &process_templates = m_volume->text_configuration->process_templates;
     if (ImGui::Checkbox(_u8L("Resolve templates").c_str(), &process_templates)) {
+        m_resolved_preview_cache_valid = false;          // the resolved preview changes with the toggle
+        m_insert_template_resolved_valid = false;
         if (!process_templates)
             m_preview_template = false; // nothing to preview without resolution
     }
@@ -1530,6 +1536,7 @@ void GLGizmoEmboss::draw_text_template_controls()
         "{layer_height}",
         "{filament_type}",
     };
+    constexpr size_t tag_count = sizeof(template_tags) / sizeof(template_tags[0]);
 
     // Second (preview) column offset: just after the widest tag label.
     float tag_column_width = 0.f;
@@ -1537,6 +1544,17 @@ void GLGizmoEmboss::draw_text_template_controls()
         tag_column_width = std::max(tag_column_width, ImGui::CalcTextSize(tag).x);
     const ImGuiStyle &style    = ImGui::GetStyle();
     const float preview_offset = tag_column_width + style.FramePadding.x + style.ItemSpacing.x;
+
+    // Resolved values for the preview column, cached (same invalidation as the
+    // resolved preview) so opening the combo does not merge the full print config
+    // on every frame.
+    if (!m_insert_template_resolved_valid) {
+        m_insert_template_resolved.clear();
+        m_insert_template_resolved.reserve(tag_count);
+        for (const char *tag : template_tags)
+            m_insert_template_resolved.push_back(resolve_text_template(tag));
+        m_insert_template_resolved_valid = true;
+    }
 
     // Disabled while previewing (the field is then read-only) so an insert would
     // never apply and would pop up unexpectedly later.
@@ -1547,7 +1565,8 @@ void GLGizmoEmboss::draw_text_template_controls()
     ImGui::SameLine(m_gui_cfg->input_offset);
     m_imgui->disabled_begin(preview_read_only);
     if (ImGui::BeginCombo("##template_var", _u8L("Insert template...").c_str())) {
-        for (const char *tag : template_tags) {
+        for (size_t i = 0; i < tag_count; ++i) {
+            const char *tag = template_tags[i];
             if (ImGui::Selectable(tag, false)) {
                 // Paste at the caret position tracked by the text input callback,
                 // so the tag lands where the cursor was last. When the field was
@@ -1558,7 +1577,7 @@ void GLGizmoEmboss::draw_text_template_controls()
             }
             // Second column: resolved value as the preview.
             ImGui::SameLine(preview_offset);
-            const std::string resolved = resolve_text_template(tag);
+            const std::string &resolved = m_insert_template_resolved[i];
             ImGui::TextUnformatted(resolved.c_str());
             if (ImGui::IsItemHovered() && resolved == tag)
                 ImGui::SetTooltip("%s", _u8L("This tag cannot be resolved.").c_str());
@@ -1592,7 +1611,16 @@ void GLGizmoEmboss::draw_text_resolved_preview()
 
     // Resolve regardless of the "Resolve templates" checkbox: with the toggle off the
     // preview shows the raw template, i.e. what actually gets printed.
-    const std::string resolved = resolve_text_template(m_text);
+    // Cache the result: resolution merges the full print config and re-parses the
+    // template, which is too heavy to run on every frame while the preview tree stays
+    // open. The cache is keyed on the raw text (refreshes on every keystroke, not on
+    // idle frames) and invalidated when the template toggle or the volume changes.
+    if (!m_resolved_preview_cache_valid || m_resolved_preview_cache_src != m_text) {
+        m_resolved_preview_cache       = resolve_text_template(m_text);
+        m_resolved_preview_cache_src   = m_text;
+        m_resolved_preview_cache_valid = true;
+    }
+    const std::string &resolved = m_resolved_preview_cache;
     const bool unresolved = resolved.find('{') != std::string::npos;
 
     // Scrollable, height-bounded area so a long resolved value does not blow up the
