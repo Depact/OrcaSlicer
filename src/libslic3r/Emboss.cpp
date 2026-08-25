@@ -2194,23 +2194,25 @@ namespace {
 constexpr float SAFE_SURFACE_OFFSET = 0.015f; // [in mm]
 
 // Load the font used by a text volume, headlessly.
-// Priority: 1) raw font bytes captured by the GUI (works for every style type),
-//           2) style.path when the style is a plain file_path.
-std::unique_ptr<Emboss::FontFile> load_volume_font(const TextConfiguration &tc)
+// Priority: 1) the shared font file captured by the GUI (works for every style type,
+//             no re-parse), 2) style.path when the style is a plain file_path.
+FontFileWithCache load_volume_font(const TextConfiguration &tc)
 {
-    if (tc.font_data != nullptr && !tc.font_data->empty())
-        return Emboss::create_font_file(
-            std::make_unique<std::vector<unsigned char>>(*tc.font_data));
+    if (tc.font_data != nullptr)
+        return FontFileWithCache(tc.font_data); // shared - no font re-parse
 
-    if (tc.style.type == EmbossStyle::Type::file_path && !tc.style.path.empty())
-        return Emboss::create_font_file(tc.style.path.c_str());
+    if (tc.style.type == EmbossStyle::Type::file_path && !tc.style.path.empty()) {
+        std::unique_ptr<FontFile> ff = Emboss::create_font_file(tc.style.path.c_str());
+        if (ff != nullptr)
+            return FontFileWithCache(std::move(ff));
+    }
 
     // wx font descriptors (wx_win_font_descr / wx_lin_font_descr / wx_mac_font_descr)
     // can only be decoded into a usable font through wxWidgets, which must not run on
     // the slicing thread. Without the font_data cache this case cannot be re-meshed.
     BOOST_LOG_TRIVIAL(warning)
         << "No font data for text template re-meshing; keeping previous mesh.";
-    return nullptr;
+    return FontFileWithCache(); // empty
 }
 } // namespace
 
@@ -2239,13 +2241,9 @@ bool Emboss::regenerate_text_mesh(ModelVolume &volume, const std::string &resolv
         return false;
     }
 
-    std::unique_ptr<FontFile> font_file = load_volume_font(tc);
-    if (font_file == nullptr || was_canceled())
+    FontFileWithCache font = load_volume_font(tc);
+    if (!font.has_value() || was_canceled())
         return false;
-
-    // The glyph cache inside FontFileWithCache is scratch space; the shared FontFile
-    // carries the byte data.
-    FontFileWithCache font(std::move(font_file));
 
     // Build the glyph shapes from the resolved string.
     EmbossShape text_shape;

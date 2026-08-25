@@ -6777,6 +6777,11 @@ void read_binary_stl(const std::string& filename, std::string& model_id, std::st
 // the raw template until the user enables the preview. Runs on the GUI thread (load).
 static void revert_text_template_previews(Model &model)
 {
+    // Cache fonts by style path within one load so volumes sharing a font share a
+    // single FontFile (and only one font parse per distinct font) instead of one copy
+    // each.
+    std::unordered_map<std::string, std::shared_ptr<const Emboss::FontFile>> font_cache;
+
     for (ModelObject *object : model.objects) {
         if (object == nullptr) continue;
         for (ModelVolume *volume : object->volumes) {
@@ -6788,19 +6793,27 @@ static void revert_text_template_previews(Model &model)
             BOOST_LOG_TRIVIAL(debug) << "revert_text_template_previews: text volume '" << volume->name
                                      << "' template='" << tc.text << "'";
 
-            // Load the font bytes if not already cached: wx descriptor styles need
-            // wxWidgets, which is only available on the GUI thread (we are on it here).
+            // Load (and share) the font if not already cached: wx descriptor styles
+            // need wxWidgets, which is only available on the GUI thread (we are on it).
             if (tc.font_data == nullptr) {
-                std::unique_ptr<Emboss::FontFile> font_file;
-                if (tc.style.type == EmbossStyle::Type::file_path && !tc.style.path.empty())
-                    font_file = Emboss::create_font_file(tc.style.path.c_str());
-                else if (tc.style.type == WxFontUtils::get_current_type()) {
-                    const wxFont wx_font = WxFontUtils::load_wxFont(tc.style.path);
-                    if (wx_font.IsOk())
-                        font_file = WxFontUtils::create_font_file(wx_font);
+                auto it = font_cache.find(tc.style.path);
+                if (it != font_cache.end()) {
+                    tc.font_data = it->second;
+                } else {
+                    std::unique_ptr<Emboss::FontFile> font_file;
+                    if (tc.style.type == EmbossStyle::Type::file_path && !tc.style.path.empty())
+                        font_file = Emboss::create_font_file(tc.style.path.c_str());
+                    else if (tc.style.type == WxFontUtils::get_current_type()) {
+                        const wxFont wx_font = WxFontUtils::load_wxFont(tc.style.path);
+                        if (wx_font.IsOk())
+                            font_file = WxFontUtils::create_font_file(wx_font);
+                    }
+                    if (font_file != nullptr) {
+                        auto shared = std::shared_ptr<const Emboss::FontFile>(std::move(font_file));
+                        font_cache.emplace(tc.style.path, shared);
+                        tc.font_data = shared;
+                    }
                 }
-                if (font_file != nullptr && font_file->data != nullptr)
-                    tc.font_data = std::make_shared<std::vector<unsigned char>>(*font_file->data);
             }
             if (tc.font_data == nullptr) {
                 BOOST_LOG_TRIVIAL(warning) << "revert_text_template_previews: font not loadable, keeping loaded mesh";

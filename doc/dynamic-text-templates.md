@@ -1,4 +1,4 @@
-# Dynamic Placeholder Text Templates for the Text Shape Tool
+﻿# Dynamic Placeholder Text Templates for the Text Shape Tool
 
 Feature: let users type dynamic tags (e.g. `{timestamp}`, `{year}`, `{month}`, `{day}`,
 `{hour}`, `{minute}`, `{nozzle_temperature}`) into the Text Shape tool, keep the raw
@@ -135,7 +135,7 @@ The feature is a pipeline decoupling across three layers. Data flows in one dire
 │ GLGizmoEmboss      │  text_configuration│ ModelVolume                 │
 │ (text field + new  │                   │  .text_configuration        │
 │  template buttons) │                   │    ├ text          (raw)    │
-└────────────────────┘                   │    ├ text_template (raw)    │
+└────────────────────┘                   │    ├                            │
                                          │    ├ last_rendered_text      │
                                          │    ├ font_data (transient)   │
                                          │    └ style + emboss_shape    │
@@ -184,21 +184,20 @@ File: `src/libslic3r/TextConfiguration.hpp`.
 
 Rationale for the layout:
 
-- `text` **stays the raw template the user typed**. It is already what the gizmo stores
-  (`GLGizmoEmboss.cpp:1245` `m_text = tc.text`, `:3421` `TextConfiguration{style, text}`)
-  and what `.3mf` persistence serializes. Keeping it raw means **zero `.3mf` format change**
-  and full backward compatibility (OrcaSlicer hard requirement).
-- `text_template` is the explicit raw-template field this feature reads at slice time. It is
-  kept in sync with `text` by `set_text()` and is **not serialized** (adding it to the
-  cereal `serialize()` would break loading existing `.3mf` files).
+- `text` **is the raw template the user typed and the single serialized attribute**. It is
+  what the gizmo edits (`GLGizmoEmboss.cpp:1245` `m_text = tc.text`) and what `.3mf`
+  persistence serializes. Keeping it raw means **zero `.3mf` format change** and full
+  backward compatibility (OrcaSlicer hard requirement). Template resolution happens
+  ephemerally on the print's private model copy at slice time - nothing is written back.
 - `last_rendered_text` is a _transient mutable cache_ of the resolved string the current
   volume mesh was built from. It lets `Print::process()` skip re-meshing when nothing
   changed (preview refresh, re-slice with same timestamp resolution).
-- `font_data` holds the raw TTF/TTC **bytes** so slicing-time re-meshing can run headless.
-  The GUI stashes it here every time it generates a preview mesh (Section 4.1). Without it,
-  most text volumes (created through the wx font descriptor path) could not be re-meshed in
-  `libslic3r`, because reconstructing an `HFONT`/`wxFont` from the descriptor is a
-  GUI-layer (wx) operation that must not run on the slicing worker thread.
+- `font_data` is a **shared `Emboss::FontFile` handle** so slicing-time re-meshing can run
+  headless. The GUI shares the same handle across volumes using one font (only the
+  shared_ptr is copied, never the font bytes). Without it, most text volumes (created
+  through the wx font descriptor path) could not be re-meshed in `libslic3r`, because
+  reconstructing an `HFONT`/`wxFont` from the descriptor is a GUI-layer (wx) operation that
+  must not run on the slicing worker thread.
 
 ```cpp
 // ---------- TextConfiguration.hpp (additions) ----------
@@ -216,43 +215,27 @@ struct TextConfiguration
     // emboss gizmo edits.
     std::string text = "None";
 
-    // Raw unparsed template string, the single source for slicing-time resolution.
-    // Kept in sync with `text` by set_text(). Empty for volumes never processed by
-    // the dynamic-template code (e.g. loaded from an older .3mf), in which case
-    // callers fall back to `text`.
-    // NOT serialized: adding it to the cereal archive would invalidate existing
-    // .3mf project files.
-    std::string text_template;
-
     // Resolved text that the CURRENT volume mesh was generated from.
     // Transient cache only - never serialized. Lets Print::process() avoid redundant
     // re-meshing when the evaluated template is unchanged.
     mutable std::string last_rendered_text;
 
-    // Raw TTF/TTC font bytes captured by the GUI at edit time, so that libslic3r can
-    // rebuild the glyph shapes headlessly on the slicing thread.
-    // Transient cache only - never serialized (font files are large and OrcaSlicer
+    // Shared font handle captured by the GUI at edit time, so libslic3r can rebuild
+    // the glyph shapes headlessly on the slicing thread. All text volumes using the
+    // same font share one FontFile (only the shared_ptr is copied).
+    // Transient cache only - never serialized (fonts are large and OrcaSlicer
     // does not persist fonts into .3mf for privacy).
-    std::shared_ptr<std::vector<unsigned char>> font_data;
+    std::shared_ptr<const Emboss::FontFile> font_data;
 
-    // Single entry point for assigning text, keeps `text` and `text_template` in sync.
-    void set_text(const std::string &value) {
-        text          = value;
-        text_template = value;
-    }
+    // When false, {placeholders} in `text` are rendered literally (no resolution).
+    // Transient (not serialized): defaults to true so loaded .3mf volumes keep the
+    // existing behavior.
+    bool process_templates = true;
 
     // Undo / redo stack recovery.
     // Deliberately serializes ONLY (style, text) - see notes above.
     template<class Archive> void serialize(Archive &ar) { ar(style, text); }
 };
-```
-
-Update the aggregate init site so the new fields start consistent:
-
-```cpp
-// GLGizmoEmboss.cpp:3421 (inside create_emboss_data_base)
-TextConfiguration tc{static_cast<EmbossStyle>(style), text};
-tc.text_template = text; // keep raw-template alias in sync
 ```
 
 ### 3.2 Step 2 - `PlaceholderParser`: clock variables already exist, just make resolution robust
@@ -302,46 +285,72 @@ to `update_timestamp`:
 
 // Evaluate a text template (used for dynamic embossed text). Unlike process(), this
 // never throws for a bad template: the caller always gets a usable string back.
-//   templ      - raw template, e.g. "{year}-{month}-{day}"
-//   config     - optional config to apply first (print/filament values such as
-    //                {nozzle_temperature}); may be nullptr
+// Two overloads:
+//  - (templ):        resolve against THIS parser (already configured by the caller).
+//  - (templ, config): build a fresh parser configured with clock vars + `config`.
 // Returns the resolved string, or `templ` unchanged when it cannot be resolved
-// (missing variable, malformed braces, ...).
-std::string resolve_text_template(const std::string &templ, const DynamicPrintConfig *config = nullptr) const;
+// (missing variable, malformed braces, ...). Unresolvable {tag}s stay literal.
+std::string resolve_text_template(const std::string &templ) const;
+std::string resolve_text_template(const std::string &templ, const DynamicPrintConfig *config) const;
 ```
 
 ```cpp
 // ---------- PlaceholderParser.cpp (addition) ----------
 
-std::string PlaceholderParser::resolve_text_template(const std::string &templ, const DynamicPrintConfig *config) const
+std::string PlaceholderParser::resolve_text_template(const std::string &templ) const
 {
     if (templ.find('{') == std::string::npos)
         return templ; // fast path: no placeholders at all
 
-    // Slicing can run for a long time; always refresh the wall-clock so the
-    // resolved text is stamped with "now" at the moment of slicing.
-    DynamicConfig clocks;
-    update_timestamp(clocks);
+    try {
+        return this->process(templ, 0 /* current_extruder_id */);
+    } catch (const std::exception &ex) {
+        BOOST_LOG_TRIVIAL(warning) << "Failed to fully resolve text template '" << templ
+                                   << "' (" << ex.what() << "); resolving what is possible.";
+    }
 
+    // Partial resolution: the whole-template process() threw (a literal '{' that was
+    // not escaped, an unknown variable, or an unresolvable tag). Resolve each {tag}
+    // group on its own and leave the unresolvable ones literal, so e.g.
+    // "{hour}:{minute} {does_not_exist}" still resolves to "21:30 {does_not_exist}".
+    // Conditional blocks ({if}/{else}/{elsif}/{endif}) span multiple groups and must
+    // be processed atomically, so templates using them keep the previous behavior.
+    if (templ.find("{if")   != std::string::npos ||
+        templ.find("{else") != std::string::npos ||
+        templ.find("{elsif") != std::string::npos ||
+        templ.find("{endif") != std::string::npos)
+        return templ;
+
+    std::string result;
+    result.reserve(templ.size());
+    size_t pos = 0;
+    while (pos < templ.size()) {
+        const size_t open = templ.find('{', pos);
+        if (open == std::string::npos) { result += templ.substr(pos); break; }
+        result += templ.substr(pos, open - pos);
+        const size_t close = templ.find('}', open + 1);
+        if (close == std::string::npos) { result += templ.substr(open); break; }
+        const std::string tag = templ.substr(open, close - open + 1);
+        try {
+            result += this->process(tag, 0);
+        } catch (const std::exception &) {
+            result += tag; // unresolvable - keep it literal
+        }
+        pos = close + 1;
+    }
+    return result;
+}
+
+std::string PlaceholderParser::resolve_text_template(const std::string &templ, const DynamicPrintConfig *config) const
+{
     // Work on a private copy so the shared parser state is never mutated from a
-    // worker thread.
+    // worker thread, and stamp the clock for this invocation.
     PlaceholderParser parser(this->external_config());
-    parser.config_writable() += clocks;      // {timestamp}, {year}, ...
+    parser.update_timestamp(); // {timestamp}, {year}, {month}, {day}, {hour}, {minute}, {second}
     parser.apply_env_variables();
     if (config != nullptr)
-        parser.apply_config(*config);        // {nozzle_temperature}, {filament_type}, ...
-
-    try {
-        return parser.process(templ, 0 /* current_extruder_id */);
-    } catch (const std::exception &/*ex*/) {
-        // A literal '{' that is not a valid placeholder (e.g. escaped "\{" was not
-        // used), an unknown variable, or a vector option without an index. Rather
-        // than aborting the slice, fall back to the raw template so the user sees
-        // the tag in the printed text and can fix it.
-        BOOST_LOG_TRIVIAL(warning) << "Failed to resolve text template '" << templ
-                                   << "', keeping raw template. Escaped use: \\{";
-        return templ;
-    }
+        parser.apply_config(*config); // {nozzle_temperature}, {filament_type}, ...
+    return parser.resolve_text_template(templ);
 }
 ```
 
@@ -357,8 +366,11 @@ Notes for the implementer:
 - **`strftime()` for format-string dates.** `{strftime("%Y-%m-%d %H:%M")}` behaves like
   .NET's `DateTime.ToString(format)` using C `strftime()` codes (see Section 3.2).
 - **Thread safety.** `PlaceholderParser::process` is `const` and designed to be called from
-  multiple threads (see the `ContextData` comment, `PlaceholderParser.hpp:17`). Building a
-  fresh instance per text volume avoids any shared-state questions.
+  multiple threads (see the `ContextData` comment, `PlaceholderParser.hpp:17`).
+  `Print::resolve_text_templates()` configures one parser once from a snapshot of the
+  print config and reuses it for all volumes (no per-volume re-application); the GUI
+  preview builds a fresh parser per call. Both paths never share mutable parser state
+  across threads.
 
 ---
 
@@ -369,23 +381,27 @@ All UI work is in `src/slic3r/GUI/Gizmos/GLGizmoEmboss.cpp` / `.hpp`.
 ### 4.1 Step 1 - Store the raw template + stash the font bytes
 
 The gizmo already copies `m_text` (raw) into the volume config on every edit via
-`create_emboss_data_base` → `TextDataBase::write`. Two small additions:
+`create_emboss_data_base` → `TextDataBase::write`. The one addition:
 
-**a) Keep `text_template` in sync whenever the volume config is written.**
+**a) Share the font handle when the volume config is written.**
 
 ```cpp
 // GLGizmoEmboss.cpp - TextDataBase::write() (currently ~line 3365)
 void TextDataBase::write(ModelVolume &volume) const
 {
+    // Preserve the user's "Resolve templates" toggle across edits (transient).
+    const bool process_templates = volume.text_configuration.has_value()
+                                       ? volume.text_configuration->process_templates
+                                       : true;
     DataBase::write(volume);
     volume.text_configuration = m_text_configuration; // copy
-    volume.text_configuration->text_template = m_text_configuration.text; // keep raw alias in sync
+    volume.text_configuration->process_templates = process_templates;
 
-    // Cache the raw font bytes so the slicing thread can re-mesh headlessly.
-    // m_font_file.font_file is the shared FontFile the gizmo already loaded.
-    if (m_font_file.font_file != nullptr && m_font_file.font_file->data != nullptr)
-        volume.text_configuration->font_data =
-            std::make_shared<std::vector<unsigned char>>(*m_font_file.font_file->data);
+    // Share the font handle so the slicing thread can re-mesh headlessly without
+    // touching wxWidgets. Only the shared_ptr is copied - all volumes using the same
+    // font point to one FontFile.
+    if (m_font_file.font_file != nullptr)
+        volume.text_configuration->font_data = m_font_file.font_file;
     assert(volume.emboss_shape.has_value());
 }
 ```
@@ -585,8 +601,6 @@ Because `TextDataBase::write` writes `m_text_configuration` (which is built from
 even while the preview mesh shows resolved glyphs.
 
 > Note on the legacy `GLGizmoText`: it is dead code in this fork. Do not spend time on it.
-> If the goal is to also update its header/source for consistency, replicate the same
-> `text_template` field handling, but nothing reads it.
 
 ---
 
@@ -763,55 +777,47 @@ Definition in `Print.cpp`. The hook goes in `Print::process()` **immediately aft
 void Print::resolve_text_templates()
 {
     // Operating on m_model (the print's private copy from PrintBase::apply) so the
-    // GUI model keeps showing the raw templates.
+    // GUI model keeps showing the raw templates. One parser is configured once (clock
+    // variables + a snapshot of the print config) and reused for every volume, so the
+    // config is not re-applied per text volume and a concurrent GUI apply() cannot
+    // mutate it mid-loop.
     PlaceholderParser parser;
     parser.update_timestamp(); // ensure the clock reflects the slicing moment
+    parser.apply_config(this->full_print_config());
 
-    // Make print/filament scoped values ({nozzle_temperature}, {filament_type}, ...)
-    // resolvable from text templates.
-    try {
-        parser.apply_config(this->config());
-    } catch (const std::exception &ex) {
-        BOOST_LOG_TRIVIAL(warning) << "Failed to apply print config to placeholder parser: " << ex.what();
-    }
+    // Resolve a text volume's template and re-mesh it when the result changed.
+    auto resolve_volume = [&parser](ModelVolume &volume) -> bool {
+        TextConfiguration &tc = *volume.text_configuration;
+        const std::string &templ = tc.text;
 
-    for (ModelObject *object : m_model.objects) {
-        if (object == nullptr) continue;
-        for (ModelVolume *volume : object->volumes) {
-            if (volume == nullptr || !volume->is_text()) continue;
-
-            std::optional<TextConfiguration> &tc = volume->text_configuration;
-            assert(tc.has_value());
-
-            // Raw template is the source of truth; text_template is the explicit alias.
-            const std::string &templ = tc->text_template.empty() ? tc->text : tc->text_template;
-
-            // Skip plain text - nothing to resolve.
-            if (templ.find('{') == std::string::npos) {
-                tc->last_rendered_text = templ;
-                continue;
-            }
-
-            // When template processing is disabled for this volume, render the raw
-            // template literally instead of resolving placeholders.
-            std::string resolved = tc->process_templates
-                ? parser.resolve_text_template(templ, &this->full_print_config())
-                : templ;
-
-            // Re-mesh only when the resolved string actually changed. This keeps
-            // repeated preview / re-slice cycles cheap and avoids needlessly
-            // replacing shared meshes (which would defeat the shared-object dedup).
-            if (!tc->last_rendered_text.empty() && tc->last_rendered_text == resolved)
-                continue;
-
-            BOOST_LOG_TRIVIAL(debug) << "Re-meshing text volume '" << volume->name
-                                     << "': '" << templ << "' -> '" << resolved << "'";
-
-            Emboss::regenerate_text_mesh(*volume, resolved);
-            // On failure (missing font, empty shape) the previous mesh is kept and
-            // last_rendered_text is not updated, so the next slice retries.
+        // Skip plain text - nothing to resolve.
+        if (templ.find('{') == std::string::npos) {
+            tc.last_rendered_text = templ;
+            return false;
         }
-    }
+
+        // When template processing is disabled, render the raw template literally.
+        const std::string resolved = tc.process_templates ? parser.resolve_text_template(templ) : templ;
+
+        // Re-mesh only when the resolved string actually changed. This keeps repeated
+        // preview / re-slice cycles cheap and avoids needlessly replacing shared meshes
+        // (which would defeat the shared-object dedup).
+        if (!tc.last_rendered_text.empty() && tc.last_rendered_text == resolved)
+            return false;
+
+        BOOST_LOG_TRIVIAL(debug) << "Re-meshing text volume '" << volume.name
+                                 << "': '" << templ << "' -> '" << resolved << "'";
+
+        // On failure (missing font, empty shape) the previous mesh is kept and
+        // last_rendered_text is not updated, so the next slice retries.
+        return Emboss::regenerate_text_mesh(volume, resolved);
+    };
+
+    for (ModelObject *object : m_model.objects)
+        if (object != nullptr)
+            for (ModelVolume *volume : object->volumes)
+                if (volume != nullptr && volume->is_text())
+                    resolve_volume(*volume);
 }
 
 // ---------- Print.cpp: Print::process() ----------
@@ -950,11 +956,11 @@ cd build && ctest --test-dir ./tests/libslic3r --output-on-failure
 
 ### 6.5 Files touched (summary)
 
-| File                                               | Change                                                                      |
-| -------------------------------------------------- | --------------------------------------------------------------------------- |
-| `src/libslic3r/TextConfiguration.hpp`              | Add `text_template`, `last_rendered_text`, `font_data`, `set_text()`        |
-| `src/libslic3r/PlaceholderParser.hpp` / `.cpp`     | Add `resolve_text_template()` helper (optional, used by GUI preview)        |
-| `src/libslic3r/Emboss.hpp` / `.cpp`                | Add `regenerate_text_mesh()` + private `load_volume_font()`                 |
-| `src/libslic3r/Print.hpp` / `.cpp`                 | Add `resolve_text_templates()`, call it at the top of `Print::process()`    |
-| `src/slic3r/GUI/Gizmos/GLGizmoEmboss.hpp` / `.cpp` | Quick-buttons, preview toggle, callback, `font_data`/`text_template` wiring |
-| `tests/libslic3r/` (optional)                      | Tests for resolver + headless re-mesh                                       |
+| File                                               | Change                                                                   |
+| -------------------------------------------------- | ------------------------------------------------------------------------ |
+| `src/libslic3r/TextConfiguration.hpp`              | Transient `last_rendered_text`, shared `font_data` (`Emboss::FontFile`)  |
+| `src/libslic3r/PlaceholderParser.hpp` / `.cpp`     | `resolve_text_template()` overloads + partial resolution + `strftime()`  |
+| `src/libslic3r/Emboss.hpp` / `.cpp`                | Add `regenerate_text_mesh()` + headless font loading                     |
+| `src/libslic3r/Print.hpp` / `.cpp`                 | Add `resolve_text_templates()`, call it at the top of `Print::process()` |
+| `src/slic3r/GUI/Gizmos/GLGizmoEmboss.hpp` / `.cpp` | Quick-buttons, preview toggle, callback, `font_data` sharing             |
+| `tests/libslic3r/` (optional)                      | Tests for resolver + headless re-mesh                                    |

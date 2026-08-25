@@ -13,6 +13,8 @@
 
 namespace Slic3r {
 
+namespace Emboss { struct FontFile; } // fwd - defined in Emboss.hpp (which includes this header)
+
 /// <summary>
 /// User modifiable property of text style
 /// NOTE: OnEdit fix serializations: EmbossStylesSerializable, TextConfigurationSerialization
@@ -178,43 +180,31 @@ struct TextConfiguration
 
     // Embossed text value.
     // RAW TEMPLATE: exactly what the user typed, e.g. "{year}-{month}-{day}".
-    // This is the field persisted to .3mf (backward compatible) and the string
-    // the emboss gizmo edits.
+    // This is the single field persisted to .3mf (backward compatible) and the string
+    // the emboss gizmo edits. Template resolution happens ephemerally on the print's
+    // private model copy at slice time.
     std::string text = "None";
 
-    // Raw unparsed template string, the single source for slicing-time resolution.
-    // Kept in sync with `text` by set_text(). Empty for volumes that were never
-    // processed by the dynamic-template code (e.g. loaded from an older .3mf), in
-    // which case callers fall back to `text`.
-    // NOT serialized: adding it to the cereal archive would invalidate existing
-    // .3mf project files.
-    std::string text_template;
-
     // Resolved text that the CURRENT volume mesh was generated from.
-    // Transient cache only - never serialized. Lets Print::process() skip
-    // redundant re-meshing when the evaluated template is unchanged.
+    // Transient cache only - never serialized. Lets Print::process() skip redundant
+    // re-meshing when the evaluated template is unchanged.
     mutable std::string last_rendered_text;
 
-    // Raw TTF/TTC font bytes captured by the GUI at edit time, so libslic3r can
-    // rebuild the glyph shapes headlessly on the slicing thread.
-    // Transient cache only - never serialized (font files are large and fonts are
-    // intentionally not persisted into .3mf for privacy).
-    std::shared_ptr<std::vector<unsigned char>> font_data;
+    // Shared font handle (bytes + parsed info) captured by the GUI at edit time, so
+    // libslic3r can rebuild glyph shapes headlessly on the slicing thread without
+    // re-loading the font through wxWidgets. All text volumes using the same font share
+    // one FontFile (the shared_ptr is copied, never the font bytes).
+    // Transient cache only - never serialized (fonts are large and intentionally not
+    // persisted into .3mf for privacy).
+    std::shared_ptr<const Emboss::FontFile> font_data;
 
     // When false, {placeholders} in `text` are rendered literally (no template
     // resolution), both in the GUI and at slice time.
     // Transient (not serialized): defaults to true so loaded .3mf volumes keep the
-    // existing behavior. Persisting it would require a cereal version migration.
+    // existing behavior.
     bool process_templates = true;
 
-    // Single entry point for assigning text, keeps `text` and `text_template` in sync.
-    void set_text(const std::string &value)
-    {
-        text          = value;
-        text_template = value;
-    }
-
-    // undo / redo stack recovery
+    // undo / redo stack recovery.
     // Deliberately serializes ONLY (style, text) - see notes above.
     template<class Archive> void serialize(Archive &ar) { ar(style, text); }
 };

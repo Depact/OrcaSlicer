@@ -120,6 +120,12 @@ namespace Emboss
             : font_file(std::move(font_file))
             , cache(std::make_shared<Emboss::Glyphs>())
         {}
+        // Share an already-loaded font (e.g. TextConfiguration::font_data) instead of
+        // re-parsing the font bytes. Each instance still gets its own glyph cache.
+        explicit FontFileWithCache(std::shared_ptr<const FontFile> font_file)
+            : font_file(std::move(font_file))
+            , cache(std::make_shared<Emboss::Glyphs>())
+        {}
         bool has_value() const { return font_file != nullptr && cache != nullptr; }
     };
 

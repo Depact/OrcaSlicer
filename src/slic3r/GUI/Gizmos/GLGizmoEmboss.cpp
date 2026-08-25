@@ -3654,16 +3654,16 @@ void TextDataBase::write(ModelVolume &volume) const
 
     DataBase::write(volume);
     volume.text_configuration = m_text_configuration; // copy
-    // Keep the raw-template alias in sync: `text` is what .3mf persists and it stays
-    // raw; `text_template` is what slicing-time resolution reads.
-    volume.text_configuration->text_template = m_text_configuration.text;
+    // Preserve the user's toggle: `text` stays the raw template, process_templates is
+    // the only transient state that must survive an edit.
     volume.text_configuration->process_templates = process_templates;
 
     // Cache the raw font bytes so the slicing thread can re-mesh headlessly without
     // touching wxWidgets (wx font descriptors cannot be decoded on the worker thread).
-    if (m_font_file.font_file != nullptr && m_font_file.font_file->data != nullptr)
-        volume.text_configuration->font_data =
-            std::make_shared<std::vector<unsigned char>>(*m_font_file.font_file->data);
+    // The shared_ptr is copied, not the font bytes: all text volumes using the same
+    // font share one FontFile instead of each holding a full copy in RAM.
+    if (m_font_file.font_file != nullptr)
+        volume.text_configuration->font_data = m_font_file.font_file;
     assert(volume.emboss_shape.has_value());
 }
 
@@ -3718,7 +3718,6 @@ std::unique_ptr<DataBase> create_emboss_data_base(const std::string             
 
     FontFileWithCache &font = style_manager.get_font_file_with_cache();
     TextConfiguration tc{static_cast<EmbossStyle>(style), text};
-    tc.text_template = text; // keep raw-template alias in sync
     return std::make_unique<TextDataBase>(std::move(base), font, std::move(tc), style.projection, shape_text);
 }
 

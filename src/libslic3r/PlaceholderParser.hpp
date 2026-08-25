@@ -74,13 +74,16 @@ public:
     static void update_user_name(DynamicConfig &config);
     void update_user_name() { update_user_name(m_config); }
 
-    // Evaluate a text template (used for dynamic embossed text). Unlike process(),
-    // this never throws for a bad template: the caller always gets a usable string
-    // back. Returns `templ` unchanged when it cannot be resolved.
-    //   templ  - raw template, e.g. "{year}-{month}-{day}"
-    //   config - optional print/filament config to resolve values such as
-    //            {nozzle_temperature[0]}; may be nullptr (clock vars only)
-    std::string resolve_text_template(const std::string &templ, const DynamicPrintConfig *config = nullptr) const;
+    // Evaluate a text template (used for dynamic embossed text) against THIS parser,
+    // which must already be configured. Unlike process(), this never throws for a bad
+    // template: unresolvable tags are kept literal, so the caller always gets a usable
+    // string back.
+    //   templ - raw template, e.g. "{year}-{month}-{day}"
+    std::string resolve_text_template(const std::string &templ) const;
+    // Convenience wrapper: builds a fresh parser configured with the clock variables
+    // and the optional `config` (print/filament values such as {nozzle_temperature[0]}),
+    // then delegates to resolve_text_template(templ). May be nullptr (clock vars only).
+    std::string resolve_text_template(const std::string &templ, const DynamicPrintConfig *config) const;
 
 private:
 	// config has a higher priority than external_config when looking up a symbol.

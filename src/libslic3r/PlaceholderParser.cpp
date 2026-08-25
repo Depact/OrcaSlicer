@@ -107,26 +107,13 @@ void PlaceholderParser::update_user_name(DynamicConfig &config)
     config.set_key_value("user", new ConfigOptionString(user));
 }
 
-std::string PlaceholderParser::resolve_text_template(const std::string &templ, const DynamicPrintConfig *config) const
+std::string PlaceholderParser::resolve_text_template(const std::string &templ) const
 {
     if (templ.find('{') == std::string::npos)
         return templ; // fast path: no placeholders at all
 
-    // Slicing can run for a long time; always refresh the wall-clock so the
-    // resolved text is stamped with "now" at the moment of slicing.
-    DynamicConfig clocks;
-    update_timestamp(clocks);
-
-    // Work on a private copy so the shared parser state is never mutated from a
-    // worker thread.
-    PlaceholderParser parser(this->external_config());
-    parser.config_writable() += clocks; // {timestamp}, {year}, {month}, {day}, {hour}, {minute}, {second}
-    parser.apply_env_variables();
-    if (config != nullptr)
-        parser.apply_config(*config); // {nozzle_temperature}, {filament_type}, ...
-
     try {
-        return parser.process(templ, 0 /* current_extruder_id */);
+        return this->process(templ, 0 /* current_extruder_id */);
     } catch (const std::exception &ex) {
         BOOST_LOG_TRIVIAL(warning) << "Failed to fully resolve text template '" << templ
                                    << "' (" << ex.what() << "); resolving what is possible.";
@@ -162,13 +149,25 @@ std::string PlaceholderParser::resolve_text_template(const std::string &templ, c
         }
         const std::string tag = templ.substr(open, close - open + 1);
         try {
-            result += parser.process(tag, 0);
+            result += this->process(tag, 0);
         } catch (const std::exception &) {
             result += tag; // unresolvable - keep it literal so the user can fix it
         }
         pos = close + 1;
     }
     return result;
+}
+
+std::string PlaceholderParser::resolve_text_template(const std::string &templ, const DynamicPrintConfig *config) const
+{
+    // Work on a private copy so the shared parser state is never mutated from a
+    // worker thread, and stamp the clock for this invocation.
+    PlaceholderParser parser(this->external_config());
+    parser.update_timestamp(); // {timestamp}, {year}, {month}, {day}, {hour}, {minute}, {second}
+    parser.apply_env_variables();
+    if (config != nullptr)
+        parser.apply_config(*config); // {nozzle_temperature}, {filament_type}, ...
+    return parser.resolve_text_template(templ);
 }
 
 static inline bool opts_equal(const DynamicConfig &config_old, const DynamicConfig &config_new, const std::string &opt_key)

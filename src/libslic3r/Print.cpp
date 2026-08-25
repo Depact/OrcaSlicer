@@ -2239,50 +2239,49 @@ std::map<ObjectID, unsigned int> getObjectExtruderMap(const Print& print) {
 void Print::resolve_text_templates()
 {
     // Operating on m_model (the print's private copy from PrintBase::apply) so the
-    // GUI model keeps showing the raw templates. A fresh parser is used: the clock
-    // variables are registered by its constructor and refreshed below.
+    // GUI model keeps showing the raw templates. One parser is configured once (clock
+    // variables + a snapshot of the print config) and reused for every volume, so
+    // config is not re-applied per text volume.
     PlaceholderParser parser;
     parser.update_timestamp(); // ensure the clock reflects the slicing moment
+    // Snapshot: process() runs on the background thread; copy the config once so a
+    // concurrent GUI apply() cannot mutate it mid-loop.
+    parser.apply_config(this->full_print_config());
 
-    for (ModelObject *object : m_model.objects) {
-        if (object == nullptr) continue;
-        for (ModelVolume *volume : object->volumes) {
-            if (volume == nullptr || !volume->is_text()) continue;
+    // Resolve a text volume's template and re-mesh it when the result changed.
+    // Returns true when the mesh was regenerated.
+    auto resolve_volume = [&parser](ModelVolume &volume) -> bool {
+        TextConfiguration &tc = *volume.text_configuration;
+        const std::string &templ = tc.text;
 
-            std::optional<TextConfiguration> &tc = volume->text_configuration;
-            assert(tc.has_value());
-
-            // Raw template is the source of truth; text_template is the explicit alias.
-            const std::string &templ = tc->text_template.empty() ? tc->text : tc->text_template;
-
-            // Skip plain text - nothing to resolve.
-            if (templ.find('{') == std::string::npos) {
-                tc->last_rendered_text = templ;
-                continue;
-            }
-
-            // When template processing is disabled for this volume, render the raw
-            // template literally instead of resolving placeholders. The merged full
-            // print config is otherwise passed so print/filament values
-            // ({nozzle_temperature[0]}, ...) are resolvable from text templates.
-            std::string resolved = tc->process_templates
-                                       ? parser.resolve_text_template(templ, &this->full_print_config())
-                                       : templ;
-
-            // Re-mesh only when the resolved string actually changed. This keeps
-            // repeated preview / re-slice cycles cheap and avoids needlessly replacing
-            // shared meshes (which would defeat the shared-object dedup).
-            if (!tc->last_rendered_text.empty() && tc->last_rendered_text == resolved)
-                continue;
-
-            BOOST_LOG_TRIVIAL(debug) << "Re-meshing text volume '" << volume->name
-                                     << "': '" << templ << "' -> '" << resolved << "'";
-
-            Emboss::regenerate_text_mesh(*volume, resolved);
-            // On failure (missing font, empty shape) the previous mesh is kept and
-            // last_rendered_text is not updated, so the next slice retries.
+        // Skip plain text - nothing to resolve.
+        if (templ.find('{') == std::string::npos) {
+            tc.last_rendered_text = templ;
+            return false;
         }
-    }
+
+        // When template processing is disabled, render the raw template literally.
+        const std::string resolved = tc.process_templates ? parser.resolve_text_template(templ) : templ;
+
+        // Re-mesh only when the resolved string actually changed. This keeps repeated
+        // preview / re-slice cycles cheap and avoids needlessly replacing shared meshes
+        // (which would defeat the shared-object dedup).
+        if (!tc.last_rendered_text.empty() && tc.last_rendered_text == resolved)
+            return false;
+
+        BOOST_LOG_TRIVIAL(debug) << "Re-meshing text volume '" << volume.name
+                                 << "': '" << templ << "' -> '" << resolved << "'";
+
+        // On failure (missing font, empty shape) the previous mesh is kept and
+        // last_rendered_text is not updated, so the next slice retries.
+        return Emboss::regenerate_text_mesh(volume, resolved);
+    };
+
+    for (ModelObject *object : m_model.objects)
+        if (object != nullptr)
+            for (ModelVolume *volume : object->volumes)
+                if (volume != nullptr && volume->is_text())
+                    resolve_volume(*volume);
 }
 
 void Print::process(long long *time_cost_with_cache, bool use_cache)
