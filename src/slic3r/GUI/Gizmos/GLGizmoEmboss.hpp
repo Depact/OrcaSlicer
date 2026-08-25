@@ -124,6 +124,9 @@ private:
     // the returned value is its open state (caller must TreePop() when open).
     // `icon_type` is an index into the cpp-local IconType enum.
     bool draw_section_header(size_t icon_type, const char *title, const char *tree_id = nullptr);
+    // Inline divider drawn right after a section header title: a horizontal line from
+    // the end of the title to the right edge of the section, on the same row.
+    void draw_section_divider();
     void draw_model_type();
     void draw_style_list();
     void draw_delete_style_button();

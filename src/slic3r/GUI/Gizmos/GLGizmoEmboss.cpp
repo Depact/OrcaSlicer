@@ -1482,7 +1482,6 @@ void GLGizmoEmboss::draw_text_template_controls()
 {
     // Uncollapsible section, like the "Text" section above.
     ImGui::Spacing();
-    ImGui::Separator();
     draw_section_header(static_cast<size_t>(IconType::section_templates), _u8L("Templates").c_str());
     ImGui::Spacing();
 
@@ -1624,6 +1623,7 @@ bool GLGizmoEmboss::draw_section_header(size_t icon_type, const char *title, con
             ImGui::SameLine();
         }
         ImGui::TextUnformatted(title);
+        draw_section_divider();
         return true;
     }
 
@@ -1640,7 +1640,23 @@ bool GLGizmoEmboss::draw_section_header(size_t icon_type, const char *title, con
         ImGui::SameLine();
     }
     ImGui::TextUnformatted(title);
+    draw_section_divider();
     return open;
+}
+
+// Inline section divider: horizontal line from the end of the header title to the
+// right edge, vertically centered on the title. ImGui 1.83 Separator() always spans
+// the full window width (ignores the cursor), so the line is drawn manually; it does
+// not affect the layout - the next item still starts on a new line.
+void GLGizmoEmboss::draw_section_divider()
+{
+    ImGui::SameLine();
+    const float line_y  = (ImGui::GetItemRectMin().y + ImGui::GetItemRectMax().y) * 0.5f;
+    const float line_x1 = ImGui::GetCursorScreenPos().x;
+    const float line_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+    if (line_x2 > line_x1)
+        ImGui::GetWindowDrawList()->AddLine(ImVec2(line_x1, line_y), ImVec2(line_x2, line_y),
+                                            ImGui::GetColorU32(ImGuiCol_Separator));
 }
 
 void GLGizmoEmboss::draw_window(float x, float y)
@@ -1665,7 +1681,6 @@ void GLGizmoEmboss::draw_window(float x, float y)
 
     // Style / Font / Height / Depth presented like the settings pages: a
     // non-collapsible section header with all the text parameters grouped beneath.
-    ImGui::Separator();
     draw_section_header(static_cast<size_t>(IconType::section_text), _u8L("Text").c_str());
     ImGui::Spacing();
 
