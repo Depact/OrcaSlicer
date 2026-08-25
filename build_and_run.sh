@@ -9,7 +9,10 @@ set -e
 
 BUILD_DIR="${BUILD_DIR:-build}"
 CONFIG="${CONFIG:-RelWithDebInfo}"
+TARGET="${TARGET:-OrcaSlicer_app_gui}"
 CMAKE="${CMAKE:-cmake}"
+
+log() { echo "[build_and_run] $*"; }
 
 # 'bash' on a Windows PATH is often WSL, which has no Windows toolchain - re-run under Git Bash.
 if [[ -n "${WSL_DISTRO_NAME:-}" ]]; then
@@ -22,18 +25,25 @@ if ! command -v "${CMAKE}" >/dev/null 2>&1 && [[ -n "${USERPROFILE:-}" ]] && \
     CMAKE="${USERPROFILE}/tools/cmake-3.31.6-windows-x86_64/bin/cmake.exe"
 fi
 
-"${CMAKE}" --build "${BUILD_DIR}" --config "${CONFIG}" --target OrcaSlicer_app_gui --parallel
+log "config: BUILD_DIR=${BUILD_DIR} CONFIG=${CONFIG} TARGET=${TARGET} CMAKE=${CMAKE}"
+log "building..."
+"${CMAKE}" --build "${BUILD_DIR}" --config "${CONFIG}" --target "${TARGET}" --parallel
 
 case "$OSTYPE" in
-    darwin*)  open "${BUILD_DIR}/bin/OrcaSlicer.app" "$@" ;;
+    darwin*)
+        log "launching ${BUILD_DIR}/bin/OrcaSlicer.app"
+        open "${BUILD_DIR}/bin/OrcaSlicer.app" "$@" ;;
     msys*|cygwin*|mingw*)
         # WSL tears down processes it spawned via &, so detach with Start-Process.
         BIN="$(compgen -G "./${BUILD_DIR}/src/orca-slicer*.exe" | head -1)"
+        log "launching ${BIN}"
         if [[ $# -gt 0 ]]; then
             powershell -NoProfile -Command "Start-Process -FilePath '$(cygpath -w "${BIN}")' -ArgumentList '$(cygpath -w "$1")'"
         else
             powershell -NoProfile -Command "Start-Process -FilePath '$(cygpath -w "${BIN}")'"
         fi
         ;;
-    *)  ./"${BUILD_DIR}"/src/orca-slicer* "$@" & ;;
+    *)
+        log "launching ./${BUILD_DIR}/src/orca-slicer"
+        ./"${BUILD_DIR}"/src/orca-slicer* "$@" & ;;
 esac
