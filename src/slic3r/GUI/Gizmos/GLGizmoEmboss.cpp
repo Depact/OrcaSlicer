@@ -958,6 +958,7 @@ void GLGizmoEmboss::on_set_state()
     // Closing gizmo. e.g. selecting another one
     if (m_state == GLGizmoBase::Off) {
         // refuse outgoing during text preview
+        m_reconcile_on_open_pending = false;
         reset_volume();
         // Store order and last activ index into app.ini
         // TODO: what to do when can't store into file?
@@ -966,10 +967,10 @@ void GLGizmoEmboss::on_set_state()
     } else if (m_state == GLGizmoBase::On) {
         // to reload fonts from system, when install new one
         wxFontEnumerator::InvalidateCache();
-
-        // Immediately after set state On is called function data_changed(), 
-        // where one could distiguish undo/redo serialization from opening by letter 'T'
-        // set_volume_by_selection();
+        // Regenerate the raw-template mesh once when a template volume is selected
+        // (see the reconcile block in set_volume_by_selection). data_changed() is
+        // called right after this by the gizmos manager.
+        m_reconcile_on_open_pending = true;
     }
 }
 
@@ -1274,9 +1275,14 @@ void GLGizmoEmboss::set_volume_by_selection()
     // Reconcile the 3D (Prepare tab) view with the "Preview in Prepare Tab" toggle:
     // the saved mesh may hold a previously previewed (resolved) result, but the toggle
     // is transient and defaults to off on launch, so regenerate the raw template mesh
-    // whenever the toggle is off and the text contains placeholders.
-    if (!m_preview_template && m_text.find('{') != std::string::npos)
+    // whenever the toggle is off and the text contains placeholders. Guarded to fire
+    // once per gizmo open: the re-emboss changes the volume's unique id, which makes
+    // the "same volume" early-return above fail, so without the guard this block would
+    // re-trigger itself on every job finalize (infinite re-emboss loop).
+    if (m_reconcile_on_open_pending && !m_preview_template && m_text.find('{') != std::string::npos) {
+        m_reconcile_on_open_pending = false;
         process();
+    }
 }
 
 void GLGizmoEmboss::reset_volume()

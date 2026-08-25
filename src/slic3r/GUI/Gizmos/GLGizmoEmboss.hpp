@@ -216,6 +216,13 @@ private:
     // print config on every frame.
     std::vector<std::string> m_insert_template_resolved;
     bool                     m_insert_template_resolved_valid = false;
+
+    // Set when the gizmo is activated and cleared after the first reconcile re-emboss.
+    // The reconcile (set_volume_by_selection) regenerates the raw-template mesh when a
+    // text volume carries placeholders; firing it once per open is required because the
+    // re-emboss changes the volume's unique id, which makes the "same volume" guard fail
+    // and would otherwise re-trigger the reconcile forever.
+    bool m_reconcile_on_open_pending = false;
     // Template tag queued by a quick-button, inserted by the text input callback so
     // ImGui's undo buffer stays coherent.
     std::string m_pending_insert;
