@@ -567,10 +567,12 @@ body
 
 #MenuArea
 {
-	height: 140px;
 	display: flex;
 	align-items: center;
-	flex: 0 0 140px;
+	flex-wrap: wrap;
+	row-gap: 16px;
+	flex: 0 0 auto;
+	min-height: 140px;
 }
 
 .MenuItem
@@ -608,6 +610,150 @@ body
 .MenuDesc
 {
 	color: #A8A8A8;
+}
+
+#cali_menu_trigger .MenuIcon img
+{
+	filter: invert(1);
+}
+
+
+/*-----Calibration test picker (opens from the calibration tile)-----*/
+#cali_context_menu
+{
+	position: absolute;
+	margin: 0px;
+	padding: 8px;
+	border: 0px;
+	min-width: 420px;
+	max-width: 460px;
+	border: 1px solid #D7D7D7;
+	border-radius: 8px;
+	color: #323A3D;
+	background-color: #fff;
+	display: none;
+	z-index: 2;
+}
+
+.CaliMenuTitle
+{
+	padding: 6px 12px 8px 12px;
+	font-weight: 700;
+}
+
+.CaliItem
+{
+	padding: 6px 12px;
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	border-radius: 6px;
+}
+
+.CaliItem:hover
+{
+	cursor: pointer;
+	background-color: #E5F0EE; /*ORCA color with %25 opacity*/
+}
+
+.CaliItemIcon
+{
+	margin-right: 8px;
+	width: 18px;
+	min-width: 18px;
+}
+
+.CaliItemIcon img
+{
+	width: 18px;
+	height: 18px;
+}
+
+.CaliItemText
+{
+	flex: 1;
+}
+
+.CaliItemName
+{
+	line-height: 20px;
+	font-weight: 700;
+}
+
+.CaliItemDesc
+{
+	color: #A8A8A8;
+	line-height: 16px;
+}
+
+.CaliMenuFooter
+{
+	margin-top: 4px;
+	padding: 8px 12px 4px 38px;
+	border-top: 1px solid #D7D7D7;
+	color: #009688; /*ORCA color*/
+	cursor: pointer;
+}
+
+.CaliMenuFooter:hover
+{
+	color: #fff;
+	background-color: #009688; /*ORCA color*/
+	border-radius: 6px;
+}
+
+/*-----Guide figure shown when a calibration row is hovered-----*/
+#cali_hover_panel
+{
+	position: absolute;
+	margin: 0px;
+	padding: 8px;
+	border: 0px;
+	width: 256px;
+	border: 1px solid #D7D7D7;
+	border-radius: 8px;
+	color: #323A3D;
+	background-color: #fff;
+	display: none;
+	z-index: 3;
+}
+
+.CaliHoverFrame
+{
+	width: 240px;
+	height: 210px;
+	border-radius: 6px;
+	background-color: #F2F4F4;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+#cali_hover_img
+{
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
+	display: none;
+}
+
+#cali_hover_caption
+{
+	margin-top: 6px;
+	color: #A8A8A8;
+	line-height: 14px;
+}
+
+#cali_hover_link
+{
+	color: #009688; /*ORCA color*/
+	cursor: pointer;
+}
+
+#cali_hover_link:hover
+{
+	text-decoration: underline;
 }
 
 

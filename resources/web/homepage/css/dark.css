@@ -83,6 +83,48 @@ body
 	background-color:#00675b; /*ORCA color*/
 }
 
+#cali_context_menu
+{
+	color: #efeff0;
+	background-color: #242428;
+	border: 0px;
+	box-shadow: 0px 0px 3px #DCDCDC;
+}
+
+#cali_menu_trigger .MenuIcon img
+{
+	filter: none;
+}
+
+.CaliItem:hover
+{
+	background-color: #223C3C;
+}
+
+.CaliMenuFooter:hover
+{
+	color: #fff;
+	background-color: #00675b; /*ORCA color*/
+}
+
+#cali_hover_panel
+{
+	color: #efeff0;
+	background-color: #242428;
+	border: 0px;
+	box-shadow: 0px 0px 3px #DCDCDC;
+}
+
+.CaliHoverFrame
+{
+	background-color: #36363C;
+}
+
+#cali_hover_link
+{
+	color: #009688; /*ORCA color*/
+}
+
 /*----User Manual------*/
 .UG_DESC
 {

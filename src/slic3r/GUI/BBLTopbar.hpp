@@ -44,7 +44,6 @@ public:
     void OnCloseFrame(wxAuiToolBarEvent& event);
     void OnFileToolItem(wxAuiToolBarEvent& evt);
     void OnDropdownToolItem(wxAuiToolBarEvent& evt);
-    void OnCalibToolItem(wxAuiToolBarEvent &evt);
     void OnMouseLeftDClock(wxMouseEvent& mouse);
     void OnMouseLeftDown(wxMouseEvent& event);
     void OnMouseLeftUp(wxMouseEvent& event);
@@ -65,7 +64,6 @@ public:
     void AddDropDownSubMenu(wxMenu* sub_menu, const wxString& title);
     void AddDropDownMenuItem(wxMenuItem* menu_item);
     wxMenu *GetTopMenu();
-    wxMenu *GetCalibMenu();
     void SetTitle(wxString title);
     void SetMaximizedSize();
     void SetWindowSize();
@@ -74,8 +72,6 @@ public:
     void DisableUndoRedoItems();
 
     void SaveNormalRect();
-
-    void ShowCalibrationButton(bool show = true);
 
 protected:
 #ifdef __WXMSW__
@@ -91,8 +87,7 @@ private:
     wxPoint m_last_mouse_position{wxDefaultPosition};
     wxMenu m_top_menu;
     wxMenu* m_file_menu;
-    wxMenu m_calib_menu;
-    
+
     CenteredTitle*    m_title_ctrl { nullptr };
     wxString          m_titleText;
 
@@ -100,7 +95,6 @@ private:
     //wxAuiToolBarItem *m_publish_item;
     wxAuiToolBarItem* m_undo_item;
     wxAuiToolBarItem* m_redo_item;
-    wxAuiToolBarItem* m_calib_item;
     wxAuiToolBarItem* maximize_btn;
 
     wxBitmap m_publish_bitmap;
@@ -112,5 +106,4 @@ private:
     int m_toolbar_h;
     bool m_skip_popup_file_menu;
     bool m_skip_popup_dropdown_menu;
-    bool m_skip_popup_calib_menu;
 };
