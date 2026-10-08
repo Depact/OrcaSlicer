@@ -656,6 +656,17 @@ body
 	background-color: #E5F0EE; /*ORCA color with %25 opacity*/
 }
 
+.CaliItemOrder
+{
+	width: 14px;
+	min-width: 14px;
+	margin-right: 6px;
+	color: #A8A8A8;
+	font-size: 12px;
+	line-height: 20px;
+	text-align: right;
+}
+
 .CaliItemIcon
 {
 	margin-right: 8px;
@@ -667,11 +678,20 @@ body
 {
 	width: 18px;
 	height: 18px;
+	margin-top: 1px;
 }
 
 .CaliItemText
 {
 	flex: 1;
+}
+
+.CaliItemNameRow
+{
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: baseline;
 }
 
 .CaliItemName
@@ -680,17 +700,40 @@ body
 	font-weight: 700;
 }
 
+.CaliItemScope
+{
+	flex-shrink: 0;
+	margin-left: 8px;
+	color: #A8A8A8;
+	font-size: 12px;
+	font-weight: 400;
+	line-height: 20px;
+	white-space: nowrap;
+}
+
 .CaliItemDesc
 {
 	color: #A8A8A8;
 	line-height: 16px;
 }
 
+.CaliItemWhen
+{
+	color: #A8A8A8;
+	line-height: 16px;
+}
+
+.CaliWhenLabel
+{
+	color: #A8A8A8;
+	font-weight: 700;
+}
+
 .CaliMenuFooter
 {
-	margin-top: 4px;
-	padding: 8px 12px 4px 38px;
-	border-top: 1px solid #D7D7D7;
+	margin-top: 12px;
+	padding: 14px 12px 14px 58px;
+	border-top: 1px solid #E2E2E2;
 	color: #009688; /*ORCA color*/
 	cursor: pointer;
 }
@@ -701,61 +744,6 @@ body
 	background-color: #009688; /*ORCA color*/
 	border-radius: 6px;
 }
-
-/*-----Guide figure shown when a calibration row is hovered-----*/
-#cali_hover_panel
-{
-	position: absolute;
-	margin: 0px;
-	padding: 8px;
-	border: 0px;
-	width: 256px;
-	border: 1px solid #D7D7D7;
-	border-radius: 8px;
-	color: #323A3D;
-	background-color: #fff;
-	display: none;
-	z-index: 3;
-}
-
-.CaliHoverFrame
-{
-	width: 240px;
-	height: 210px;
-	border-radius: 6px;
-	background-color: #F2F4F4;
-	overflow: hidden;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-#cali_hover_img
-{
-	max-width: 100%;
-	max-height: 100%;
-	object-fit: contain;
-	display: none;
-}
-
-#cali_hover_caption
-{
-	margin-top: 6px;
-	color: #A8A8A8;
-	line-height: 14px;
-}
-
-#cali_hover_link
-{
-	color: #009688; /*ORCA color*/
-	cursor: pointer;
-}
-
-#cali_hover_link:hover
-{
-	text-decoration: underline;
-}
-
 
 .Content-Title
 {

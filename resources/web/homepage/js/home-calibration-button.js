@@ -1,10 +1,17 @@
-// Homepage calibration button: opens a list of test options with image previews and direction to guide.
-// Row index sent to C++ as CalibKind ordinal for MainFrame::run_calibration.
+// Homepage calibration button: opens a list of test options grouped by printer vs filament.
 // Loaded after home.js; depends on SendWXMessage and OpenUrlInLocalBrowser from ../include/globalapi.js.
+
+function FillCalibrationOrder()
+{
+	$('.CaliItem').each(function(){
+		let OnClick = $(this).attr('onClick') || '';
+		let Match = OnClick.match(/OnSelectCalibrationTest\((\d+)\)/);
+		$(this).find('.CaliItemOrder').text(Match ? String(parseInt(Match[1], 10) + 1) : '');
+	});
+}
 
 function CloseCalibrationMenu()
 {
-	$('#cali_hover_panel').hide();
 	$('#cali_context_menu').hide();
 }
 
@@ -22,6 +29,8 @@ function ShowCalibrationMenu()
 	$("#cali_context_menu").offset({top: 10000, left:-10000});
 	$('#cali_context_menu').show();
 
+	FillCalibrationOrder();
+
 	let MenuWidth = $('#cali_context_menu').width();
 	let MenuHeight = $('#cali_context_menu').height();
 	let DocumentWidth = $(document).width();
@@ -37,84 +46,9 @@ function ShowCalibrationMenu()
 		RealY = Math.max(0, DocumentHeight - MenuHeight - 24);
 
 	$("#cali_context_menu").offset({top: RealY, left: RealX});
-
-	BindCalibrationRowHover();
 }
 
-function HideCaliHoverPanel()
-{
-	$('#cali_hover_panel').hide();
-}
-
-function ShowCaliHoverPanel(Row)
-{
-	let Img = $('#cali_hover_img');
-	let Src = $(Row).attr('data-img');
-	if (Src == null)
-		return;
-
-	let Panel = $('#cali_hover_panel');
-
-	// Show and position before swapping figure to avoid flicker
-	Panel.show();
-	PlaceCaliHoverPanel(Row);
-
-	if (Img.attr('src') != Src)
-	{
-		let Preload = new Image();
-		Preload.onload = function(){ Img.attr('src', Src).show(); };
-		Preload.onerror = function(){ Img.hide(); };
-		Preload.src = Src;
-	}
-	else
-	{
-		Img.show();
-	}
-
-	$('#cali_hover_link').off('click').on('click', function(){
-		CloseCalibrationMenu();
-		OpenUrlInLocalBrowser($(Row).attr('data-wiki'));
-	});
-}
-
-function PlaceCaliHoverPanel(Row)
-{
-	let Panel = $('#cali_hover_panel');
-	let MenuBox = $('#cali_context_menu')[0].getBoundingClientRect();
-	let RowBox = Row.getBoundingClientRect();
-	let PanelW = Panel.outerWidth();
-	let PanelH = Panel.outerHeight();
-	let DocumentWidth = $(document).width();
-	let DocumentHeight = $(document).height();
-	let Gap = 10;
-
-	let RealX = MenuBox.right + Gap;
-	if (RealX + PanelW + 12 > DocumentWidth)
-		RealX = Math.max(0, MenuBox.left - Gap - PanelW);
-
-	let RealY = RowBox.top + RowBox.height / 2 - PanelH / 2;
-	RealY = Math.max(0, Math.min(RealY, DocumentHeight - PanelH - 12));
-
-	Panel.offset({top: RealY, left: RealX});
-}
-
-function BindCalibrationRowHover()
-{
-	$('.CaliItem').off('mouseenter.caliHover').on('mouseenter.caliHover', function(){
-		ShowCaliHoverPanel(this);
-	});
-
-	$('.CaliItem').off('mouseleave.caliHover').on('mouseleave.caliHover', function(){
-		let Panel = $('#cali_hover_panel');
-		let ToPanel = Panel.is(':visible') && Panel[0].contains(event.relatedTarget);
-		let ToMenu = event.relatedTarget && event.relatedTarget.closest &&
-			event.relatedTarget.closest('#cali_context_menu');
-		if (!ToPanel && !ToMenu)
-			HideCaliHoverPanel();
-	});
-}
-
-function OnSelectCalibrationTest(nIndex)
+function OnSelectCalibrationTest(nKind)
 {
 	CloseCalibrationMenu();
 
@@ -122,7 +56,7 @@ function OnSelectCalibrationTest(nIndex)
 	tSend['sequence_id'] = Math.round(new Date() / 1000);
 	tSend['command'] = "homepage_calibration_test";
 	tSend['data'] = {};
-	tSend['data']['kind'] = "" + nIndex;
+	tSend['data']['kind'] = "" + nKind;
 
 	SendWXMessage(JSON.stringify(tSend));
 }

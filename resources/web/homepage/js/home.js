@@ -75,7 +75,7 @@ function Set_PopupDismiss_Event() {
 		}
 
 		$("#recnet_context_menu").hide();
-		// Defined in calibration.js.
+		// Defined in home-calibration-button.js.
 		CloseCalibrationMenu();
 	});
 }

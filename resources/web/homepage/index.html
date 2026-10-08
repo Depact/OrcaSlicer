@@ -140,86 +140,125 @@
 		</div>
 	</div>
 
-	<!-- Ordered to match the CalibKind enum in MainFrame.hpp: the row index is the ordinal sent
-	     to C++, so JS and the wizard dispatch cannot drift apart. -->
+		<!-- Flat list in the recommended order from
+	     https://www.orcaslicer.com/wiki/guides/calibration_guide
+	     (filament tests 1-5, then printer tests 6-9). Each row carries its own CalibKind ordinal
+	     in onClick and FillCalibrationOrder derives the visible number from it, so the display
+	     order and the dispatch can never disagree. The note on the right says whether the result
+	     is stored in the filament or the printer preset. -->
 	<div id="cali_context_menu">
-		<div class="CaliMenuTitle trans" tid="t129">calibration tests</div>
-		<div class="CaliItem" onClick="OnSelectCalibrationTest(0)" data-img="img/calibration_examples/temperature.jpg" data-wiki="https://www.orcaslicer.com/wiki/calibration/temp_calib.html">
+		<div class="CaliMenuTitle trans" tid="t129">Recommended Test Order</div>
+		<div class="CaliItem" onClick="OnSelectCalibrationTest(0)">
+			<div class="CaliItemOrder"></div>
 			<div class="CaliItemIcon"><img src="../../images/param_temperature.svg"></div>
 			<div class="CaliItemText">
-				<div class="CaliItemName trans" tid="t130">Temperature</div>
-				<div class="CaliItemDesc trans" tid="t131">Finds the best nozzle temperature for this filament. Run when corners blob or detail is stringy.</div>
+				<div class="CaliItemNameRow">
+					<div class="CaliItemName trans" tid="t130">Temperature</div>
+					<div class="CaliItemScope trans" tid="t152">per filament</div>
+				</div>
+				<div class="CaliItemWhen"><span class="CaliWhenLabel trans" tid="t153">When:</span> <span class="CaliWhenText trans" tid="t154">corners blob or detail is stringy</span></div>
+				<div class="CaliItemDesc trans" tid="t131">Finds the best nozzle temperature for this filament.</div>
 			</div>
 		</div>
-		<div class="CaliItem" onClick="OnSelectCalibrationTest(1)" data-img="img/calibration_examples/max_volumetric_speed.jpg" data-wiki="https://www.orcaslicer.com/wiki/calibration/volumetric_speed_calib.html">
+		<div class="CaliItem" onClick="OnSelectCalibrationTest(1)">
+			<div class="CaliItemOrder"></div>
 			<div class="CaliItemIcon"><img src="../../images/param_volumetric_speed.svg"></div>
 			<div class="CaliItemText">
-				<div class="CaliItemName trans" tid="t132">Max volumetric speed</div>
-				<div class="CaliItemDesc trans" tid="t133">Finds the fastest the hotend can melt without starving. Run before raising speed limits.</div>
+				<div class="CaliItemNameRow">
+					<div class="CaliItemName trans" tid="t132">Max volumetric speed</div>
+					<div class="CaliItemScope trans" tid="t152">per filament</div>
+				</div>
+				<div class="CaliItemWhen"><span class="CaliWhenLabel trans" tid="t153">When:</span> <span class="CaliWhenText trans" tid="t155">before raising speed limits</span></div>
+				<div class="CaliItemDesc trans" tid="t133">Finds the fastest the hotend can melt without starving.</div>
 			</div>
 		</div>
-		<div class="CaliItem" onClick="OnSelectCalibrationTest(2)" data-img="img/calibration_examples/pressure_advance.jpg" data-wiki="https://www.orcaslicer.com/wiki/calibration/pressure_advance_calib.html">
+		<div class="CaliItem" onClick="OnSelectCalibrationTest(2)">
+			<div class="CaliItemOrder"></div>
 			<div class="CaliItemIcon"><img src="../../images/param_flow_ratio_and_pressure_advance.svg"></div>
 			<div class="CaliItemText">
-				<div class="CaliItemName trans" tid="t134">Pressure advance</div>
-				<div class="CaliItemDesc trans" tid="t135">Tunes how far the nozzle moves ahead of its own pressure. Run after changing extruder, filament or temps.</div>
+				<div class="CaliItemNameRow">
+					<div class="CaliItemName trans" tid="t134">Pressure advance</div>
+					<div class="CaliItemScope trans" tid="t152">per filament</div>
+				</div>
+				<div class="CaliItemWhen"><span class="CaliWhenLabel trans" tid="t153">When:</span> <span class="CaliWhenText trans" tid="t156">after changing extruder, filament or temps</span></div>
+				<div class="CaliItemDesc trans" tid="t135">Tunes how far the nozzle moves ahead of its own pressure.</div>
 			</div>
 		</div>
-		<div class="CaliItem" onClick="OnSelectCalibrationTest(3)" data-img="img/calibration_examples/flow_ratio.png" data-wiki="https://www.orcaslicer.com/wiki/calibration/flow_ratio_calib.html">
+		<div class="CaliItem" onClick="OnSelectCalibrationTest(3)">
+			<div class="CaliItemOrder"></div>
 			<div class="CaliItemIcon"><img src="../../images/param_flow_ratio_and_pressure_advance.svg"></div>
 			<div class="CaliItemText">
-				<div class="CaliItemName trans" tid="t136">Flow ratio</div>
-				<div class="CaliItemDesc trans" tid="t137">Measures how much material really lands on the build plate. Run for thin or inconsistent extrusion.</div>
+				<div class="CaliItemNameRow">
+					<div class="CaliItemName trans" tid="t136">Flow ratio</div>
+					<div class="CaliItemScope trans" tid="t152">per filament</div>
+				</div>
+				<div class="CaliItemWhen"><span class="CaliWhenLabel trans" tid="t153">When:</span> <span class="CaliWhenText trans" tid="t157">for thin or inconsistent extrusion</span></div>
+				<div class="CaliItemDesc trans" tid="t137">Measures how much material really lands on the build plate.</div>
 			</div>
 		</div>
-		<div class="CaliItem" onClick="OnSelectCalibrationTest(4)" data-img="img/calibration_examples/retraction.jpg" data-wiki="https://www.orcaslicer.com/wiki/calibration/retraction_calib.html">
+		<div class="CaliItem" onClick="OnSelectCalibrationTest(4)">
+			<div class="CaliItemOrder"></div>
 			<div class="CaliItemIcon"><img src="../../images/param_retraction.svg"></div>
 			<div class="CaliItemText">
-				<div class="CaliItemName trans" tid="t138">Retraction</div>
-				<div class="CaliItemDesc trans" tid="t139">Finds the shortest retraction that still stops ooze during travel. Run to cut stringing.</div>
+				<div class="CaliItemNameRow">
+					<div class="CaliItemName trans" tid="t138">Retraction</div>
+					<div class="CaliItemScope trans" tid="t152">per filament</div>
+				</div>
+				<div class="CaliItemWhen"><span class="CaliWhenLabel trans" tid="t153">When:</span> <span class="CaliWhenText trans" tid="t158">stringing issues</span></div>
+				<div class="CaliItemDesc trans" tid="t139">Finds the shortest retraction that still stops ooze during travel.</div>
 			</div>
 		</div>
-		<div class="CaliItem" onClick="OnSelectCalibrationTest(5)" data-img="img/calibration_examples/cornering.jpg" data-wiki="https://www.orcaslicer.com/wiki/calibration/cornering_calib.html">
+		<div class="CaliItem" onClick="OnSelectCalibrationTest(5)">
+			<div class="CaliItemOrder"></div>
 			<div class="CaliItemIcon"><img src="../../images/param_precision.svg"></div>
 			<div class="CaliItemText">
-				<div class="CaliItemName trans" tid="t140">Cornering</div>
-				<div class="CaliItemDesc trans" tid="t141">Measures speed lost at sharp direction changes. Run when corners look rounded or wavy.</div>
+				<div class="CaliItemNameRow">
+					<div class="CaliItemName trans" tid="t140">Cornering</div>
+					<div class="CaliItemScope trans" tid="t151">per printer</div>
+				</div>
+				<div class="CaliItemWhen"><span class="CaliWhenLabel trans" tid="t153">When:</span> <span class="CaliWhenText trans" tid="t159">corners look rounded or wavy</span></div>
+				<div class="CaliItemDesc trans" tid="t141">Measures speed lost at sharp direction changes.</div>
 			</div>
 		</div>
-		<div class="CaliItem" onClick="OnSelectCalibrationTest(6)" data-img="img/calibration_examples/input_shaping.jpg" data-wiki="https://www.orcaslicer.com/wiki/calibration/input_shaping_calib.html">
+		<div class="CaliItem" onClick="OnSelectCalibrationTest(6)">
+			<div class="CaliItemOrder"></div>
 			<div class="CaliItemIcon"><img src="../../images/param_resonance_avoidance.svg"></div>
 			<div class="CaliItemText">
-				<div class="CaliItemName trans" tid="t142">Input shaping frequency</div>
-				<div class="CaliItemDesc trans" tid="t143">Finds the machine's resonant frequency so input shaping can cancel ringing. Run once per printer.</div>
+				<div class="CaliItemNameRow">
+					<div class="CaliItemName trans" tid="t142">Input shaping frequency</div>
+					<div class="CaliItemScope trans" tid="t151">per printer</div>
+				</div>
+				<div class="CaliItemWhen"><span class="CaliWhenLabel trans" tid="t153">When:</span> <span class="CaliWhenText trans" tid="t160">once per printer</span></div>
+				<div class="CaliItemDesc trans" tid="t143">Finds the machine's resonant frequency so input shaping can cancel ringing.</div>
 			</div>
 		</div>
-		<div class="CaliItem" onClick="OnSelectCalibrationTest(7)" data-img="img/calibration_examples/input_shaping.jpg" data-wiki="https://www.orcaslicer.com/wiki/calibration/input_shaping_calib.html">
+		<div class="CaliItem" onClick="OnSelectCalibrationTest(7)">
+			<div class="CaliItemOrder"></div>
 			<div class="CaliItemIcon"><img src="../../images/param_resonance_avoidance.svg"></div>
 			<div class="CaliItemText">
-				<div class="CaliItemName trans" tid="t144">Input shaping damping</div>
-				<div class="CaliItemDesc trans" tid="t145">Tunes how hard that ringing gets cancelled. Run after the frequency is set.</div>
+				<div class="CaliItemNameRow">
+					<div class="CaliItemName trans" tid="t144">Input shaping damping</div>
+					<div class="CaliItemScope trans" tid="t151">per printer</div>
+				</div>
+				<div class="CaliItemWhen"><span class="CaliWhenLabel trans" tid="t153">When:</span> <span class="CaliWhenText trans" tid="t161">after the frequency is set</span></div>
+				<div class="CaliItemDesc trans" tid="t145">Tunes how hard that ringing gets cancelled.</div>
 			</div>
 		</div>
-		<div class="CaliItem" onClick="OnSelectCalibrationTest(8)" data-img="img/calibration_examples/vfa.jpg" data-wiki="https://www.orcaslicer.com/wiki/calibration/vfa_calib.html">
+		<div class="CaliItem" onClick="OnSelectCalibrationTest(8)">
+			<div class="CaliItemOrder"></div>
 			<div class="CaliItemIcon"><img src="../../images/param_speed.svg"></div>
 			<div class="CaliItemText">
-				<div class="CaliItemName trans" tid="t146">VFA</div>
-				<div class="CaliItemDesc trans" tid="t147">Measures vertical fine artifacts left by high-speed moves. Run when fast prints look rough on the surface.</div>
+				<div class="CaliItemNameRow">
+					<div class="CaliItemName trans" tid="t146">VFA</div>
+					<div class="CaliItemScope trans" tid="t151">per printer</div>
+				</div>
+				<div class="CaliItemWhen"><span class="CaliWhenLabel trans" tid="t153">When:</span> <span class="CaliWhenText trans" tid="t162">fast prints look rough on the surface</span></div>
+				<div class="CaliItemDesc trans" tid="t147">Measures vertical fine artifacts left by high-speed moves.</div>
 			</div>
 		</div>
 		<div class="CaliMenuFooter trans" tid="t148" onClick="OnClickCalibrationGuide()">calibration guide</div>
 	</div>
 
-	<!-- Guide figure preview. Filled in on row hover from the row's data-img / data-wiki, which
-	     mirror the sections of https://www.orcaslicer.com/wiki/guides/calibration_guide. -->
-	<div id="cali_hover_panel">
-		<div class="CaliHoverFrame">
-			<img id="cali_hover_img" alt="">
-		</div>
-		<div id="cali_hover_caption" class="trans" tid="t149">from the calibration guide</div>
-		<div id="cali_hover_link" class="trans" tid="t150">read guide on wiki</div>
-	</div>
-	
 	<div id="DebugText"></div>	
 	<div id="RecentFileArea">
 		<div id="RecentTitleBlock">
