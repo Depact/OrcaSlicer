@@ -641,6 +641,24 @@ body
 	font-weight: 700;
 }
 
+.CaliGroupHeader
+{
+	padding: 4px 12px 4px 38px;
+	color: #737373;
+	font-size: 12px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	text-align: left;
+}
+
+.CaliGroupHeaderSep
+{
+	margin-top: 12px;
+	padding-top: 14px;
+	border-top: 1px solid #E2E2E2;
+}
+
 .CaliItem
 {
 	padding: 6px 12px;
@@ -654,17 +672,6 @@ body
 {
 	cursor: pointer;
 	background-color: #E5F0EE; /*ORCA color with %25 opacity*/
-}
-
-.CaliItemOrder
-{
-	width: 14px;
-	min-width: 14px;
-	margin-right: 6px;
-	color: #A8A8A8;
-	font-size: 12px;
-	line-height: 20px;
-	text-align: right;
 }
 
 .CaliItemIcon
@@ -686,29 +693,10 @@ body
 	flex: 1;
 }
 
-.CaliItemNameRow
-{
-	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
-	align-items: baseline;
-}
-
 .CaliItemName
 {
 	line-height: 20px;
 	font-weight: 700;
-}
-
-.CaliItemScope
-{
-	flex-shrink: 0;
-	margin-left: 8px;
-	color: #A8A8A8;
-	font-size: 12px;
-	font-weight: 400;
-	line-height: 20px;
-	white-space: nowrap;
 }
 
 .CaliItemDesc
@@ -732,7 +720,7 @@ body
 .CaliMenuFooter
 {
 	margin-top: 12px;
-	padding: 14px 12px 14px 58px;
+	padding: 14px 12px 14px 38px;
 	border-top: 1px solid #E2E2E2;
 	color: #009688; /*ORCA color*/
 	cursor: pointer;

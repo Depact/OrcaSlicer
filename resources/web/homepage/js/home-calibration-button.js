@@ -1,15 +1,6 @@
 // Homepage calibration button: opens a list of test options grouped by printer vs filament.
 // Loaded after home.js; depends on SendWXMessage and OpenUrlInLocalBrowser from ../include/globalapi.js.
 
-function FillCalibrationOrder()
-{
-	$('.CaliItem').each(function(){
-		let OnClick = $(this).attr('onClick') || '';
-		let Match = OnClick.match(/OnSelectCalibrationTest\((\d+)\)/);
-		$(this).find('.CaliItemOrder').text(Match ? String(parseInt(Match[1], 10) + 1) : '');
-	});
-}
-
 function CloseCalibrationMenu()
 {
 	$('#cali_context_menu').hide();
@@ -28,8 +19,6 @@ function ShowCalibrationMenu()
 {
 	$("#cali_context_menu").offset({top: 10000, left:-10000});
 	$('#cali_context_menu').show();
-
-	FillCalibrationOrder();
 
 	let MenuWidth = $('#cali_context_menu').width();
 	let MenuHeight = $('#cali_context_menu').height();
