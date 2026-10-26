@@ -167,6 +167,19 @@ try {
         Select-Object -Unique
     $env:PATH = ($toolDirs -join ";") + ";" + $env:PATH
 
+    # Start metrics monitoring BEFORE dependency check so we capture full build activity
+    if (-not $NoMetrics) {
+        $metricsCsv = Join-Path $env:TEMP "orca-build-metrics-$PID.csv"
+        Remove-Item $metricsCsv -ErrorAction SilentlyContinue
+        Write-Host "  -> Sampling build-process CPU, cores and RAM every ${MetricsInterval}s (2s poll)..." -ForegroundColor Gray
+        try {
+            $metricsJob = Start-BuildMonitor -CsvPath $metricsCsv -IntervalSeconds $MetricsInterval
+        } catch {
+            Write-Host "  -> Resource sampling unavailable: $($_.Exception.Message)" -ForegroundColor Yellow
+            $metricsJob = $null
+        }
+    }
+
     # --- 3. Ensure dependencies are built for clang-cl ---
     Check-Dependencies -Cmake $cmake -ClangCl $clangCl -Config $Config
 
@@ -193,18 +206,6 @@ try {
     if ($Clean -and (Test-Path $buildDir)) {
         Write-Host "  -> Removing $buildDir" -ForegroundColor Yellow
         Remove-Item $buildDir -Recurse -Force
-    }
-
-    if (-not $NoMetrics) {
-        $metricsCsv = Join-Path $env:TEMP "orca-build-metrics-$PID.csv"
-        Remove-Item $metricsCsv -ErrorAction SilentlyContinue
-        Write-Host "  -> Sampling build-process CPU, cores and RAM every ${MetricsInterval}s (2s poll)..." -ForegroundColor Gray
-        try {
-            $metricsJob = Start-BuildMonitor -CsvPath $metricsCsv -IntervalSeconds $MetricsInterval
-        } catch {
-            Write-Host "  -> Resource sampling unavailable: $($_.Exception.Message)" -ForegroundColor Yellow
-            $metricsJob = $null
-        }
     }
 
     # --- 5. Configure and build ---
