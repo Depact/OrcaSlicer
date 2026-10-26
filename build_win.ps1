@@ -285,9 +285,12 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
         Write-Host "  Build complete!" -ForegroundColor Green
     }
     $fmt = { param($t) $h = [math]::Floor($t.TotalHours); $m = [math]::Floor($t.TotalMinutes) % 60; $s = [math]::Round($t.Seconds); if ($h) { "{0}h {1:00}m {2:00}s" -f $h, $m, $s } elseif ($m) { "{0}m {1:00}s" -f $m, $s } else { "{0}s" -f $s } }
-    Write-Host ("  Configure: {0}" -f & $fmt $timing.ConfigureTime) -ForegroundColor Green
-    Write-Host ("  Build:     {0}" -f & $fmt $timing.BuildTime) -ForegroundColor Green
-    Write-Host ("  Total:     {0}" -f & $fmt $total) -ForegroundColor Green
+    $configureStr = & $fmt $timing.ConfigureTime
+    $buildStr     = & $fmt $timing.BuildTime
+    $totalStr     = & $fmt $total
+    Write-Host ("  Configure: {0}" -f $configureStr) -ForegroundColor Green
+    Write-Host ("  Build:     {0}" -f $buildStr) -ForegroundColor Green
+    Write-Host ("  Total:     {0}" -f $totalStr) -ForegroundColor Green
     if ($timing.BuildLog) {
         Write-Host "  Build log: $($timing.BuildLog)" -ForegroundColor Green
     }
