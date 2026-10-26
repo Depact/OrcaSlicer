@@ -151,7 +151,7 @@ def render_rich(rows: list[dict], title: str, height: int, ascii_only: bool) -> 
 
     charts = []
     if info["stack"]:
-        # Combined chart showing CPU% and RAM broken down by process
+        # Combined chart shows CPU% and RAM broken down by tool; no separate RAM chart needed
         charts.append(render_combined_stacked_chart(
             info["stack"], height, width, info["start"], info["end"],
             info["duration"], ascii_only, info["cpu"], info["ram"],
@@ -168,11 +168,11 @@ def render_rich(rows: list[dict], title: str, height: int, ascii_only: bool) -> 
             height, width, "bright_yellow", "{:.0f}", info["start"], info["end"],
             info["duration"], block,
         ))
-    charts.append(render_chart(
-        "RAM GB", info["ram"], 0.0, max(1.0, peak(info["ram"]) * 1.05),
-        height, width, "bright_blue", "{:.1f} GB", info["start"], info["end"],
-        info["duration"], block,
-    ))
+        charts.append(render_chart(
+            "RAM GB", info["ram"], 0.0, max(1.0, peak(info["ram"]) * 1.05),
+            height, width, "bright_blue", "{:.1f} GB", info["start"], info["end"],
+            info["duration"], block,
+        ))
 
     console.print(f"[bold]{title}[/bold]")
     if charts:
