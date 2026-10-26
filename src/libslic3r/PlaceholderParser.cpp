@@ -987,7 +987,7 @@ namespace client
         // Are variable names resolved inside the suppressed blocks too?
         bool check_inactive_names() const { return PlaceholderParser::check_inactive_branches && ! just_boolean_expression; }
 
-        const ConfigOption* 	optp_u8L(const t_config_option_key &opt_key) const override
+        const ConfigOption* 	optptr(const t_config_option_key &opt_key) const override
         {
             const ConfigOption *opt = nullptr;
             if (config_override != nullptr)
@@ -999,15 +999,15 @@ namespace client
             return opt;
         }
 
-        const ConfigOption*     resolve_symbol(const std::string &opt_key) const { return this->optp_u8L(opt_key); }
+        const ConfigOption*     resolve_symbol(const std::string &opt_key) const { return this->optptr(opt_key); }
         ConfigOption*           resolve_output_symbol(const std::string &opt_key) const {
             ConfigOption *out = nullptr;
             if (this->config_outputs)
-                out = this->config_outputs->optp_u8L(opt_key, false);
+                out = this->config_outputs->optptr(opt_key, false);
             if (out == nullptr && this->context_data != nullptr && this->context_data->global_config)
-                out = this->context_data->global_config->optp_u8L(opt_key);
+                out = this->context_data->global_config->optptr(opt_key);
             if (out == nullptr)
-                out = this->config_local.optp_u8L(opt_key);
+                out = this->config_local.optptr(opt_key);
             return out;
         }
         void                    store_new_variable(const std::string &opt_key, std::unique_ptr<ConfigOption> &&opt, bool global_variable) {
@@ -1530,19 +1530,19 @@ namespace client
                 t_config_option_key key(std::string(it_range.begin(), it_range.end()));
                 if (const ConfigOption* opt = ctx->resolve_symbol(key); opt)
                     ctx->throw_exception(_u8L("Symbol is already defined in read-only system dictionary"), it_range);
-                if (ctx->config_outputs && ctx->config_outputs->optp_u8L(key))
+                if (ctx->config_outputs && ctx->config_outputs->optptr(key))
                     ctx->throw_exception(_u8L("Symbol is already defined as system output variable"), it_range);
                 bool has_global_dictionary = ctx->context_data != nullptr && ctx->context_data->global_config;
                 if (global_variable) {
                     if (! has_global_dictionary)
                         ctx->throw_exception(_u8L("Global variables are not available in this context"), it_range);
-                    if (ctx->config_local.optp_u8L(key))
+                    if (ctx->config_local.optptr(key))
                         ctx->throw_exception(_u8L("Variable name already defined in local scope"), it_range);
-                    out.opt = ctx->context_data->global_config->optp_u8L(key);
+                    out.opt = ctx->context_data->global_config->optptr(key);
                 } else {
-                    if (has_global_dictionary && ctx->context_data->global_config->optp_u8L(key))
+                    if (has_global_dictionary && ctx->context_data->global_config->optptr(key))
                         ctx->throw_exception(_u8L("Variable name already defined in global scope"), it_range);
-                    out.opt = ctx->config_local.optp_u8L(key);
+                    out.opt = ctx->config_local.optptr(key);
                 }
                 out.name     = std::move(key);
             } else if (ctx->check_inactive_names()) {

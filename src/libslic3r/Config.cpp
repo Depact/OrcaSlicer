@@ -1616,7 +1616,7 @@ void ConfigBase::save(const std::string &file) const
 void ConfigBase::null_nullables()
 {
     for (const std::string &opt_key : this->keys()) {
-        ConfigOption *opt = this->optp_u8L(opt_key, false);
+        ConfigOption *opt = this->optptr(opt_key, false);
         assert(opt != nullptr);
         if (opt->nullable())
         	opt->deserialize("nil", ForwardCompatibilitySubstitutionRule::Disable);
@@ -1718,7 +1718,7 @@ size_t DynamicConfig::remove_nil_options()
 	return cnt_removed;
 }
 
-ConfigOption* DynamicConfig::optp_u8L(const t_config_option_key &opt_key, bool create)
+ConfigOption* DynamicConfig::optptr(const t_config_option_key &opt_key, bool create)
 {
     auto it = options.find(opt_key);
     if (it != options.end())
@@ -1741,7 +1741,7 @@ ConfigOption* DynamicConfig::optp_u8L(const t_config_option_key &opt_key, bool c
     return opt;
 }
 
-const ConfigOption* DynamicConfig::optp_u8L(const t_config_option_key &opt_key) const
+const ConfigOption* DynamicConfig::optptr(const t_config_option_key &opt_key) const
 {
     auto it = options.find(opt_key);
     return (it == options.end()) ? nullptr : it->second.get();

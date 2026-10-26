@@ -16,7 +16,7 @@ public:
     void _characters_handler(const XML_Char *s, int len);
 
 private:
-    const char *get_attribute_value_charp_u8L(const char **attributes, unsigned int attributes_size, const char *attribute_key);
+    const char *get_attribute_value_charptr(const char **attributes, unsigned int attributes_size, const char *attribute_key);
     std::string get_attribute_value_string(const char **attributes, unsigned int attributes_size, const char *attribute_key);
 
     static void XMLCALL start_element_handler(void *userData, const char *name, const char **attributes);

@@ -431,7 +431,7 @@ public:
     virtual void	sys_color_changed();
 	Field*			get_field(const t_config_option_key& opt_key, int opt_index = -1) const;
 	Line*			get_line(const t_config_option_key& opt_key);
-	std::pair<OG_CustomCtrl*, bool*> get_custom_ctrl_with_blinking_p_u8L(const t_config_option_key& opt_key, int opt_index = -1);
+	std::pair<OG_CustomCtrl*, bool*> get_custom_ctrl_with_blinking_ptr(const t_config_option_key& opt_key, int opt_index = -1);
 
     Field*          get_field(const t_config_option_key &opt_key, Page** selected_page, int opt_index = -1);
     void            toggle_option(const std::string &opt_key, bool toggle, int opt_index = -1);

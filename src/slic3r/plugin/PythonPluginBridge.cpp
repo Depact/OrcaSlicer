@@ -547,7 +547,7 @@ void bind_python_api(pybind11::module_& m)
             // Store capability classes only, not instances. Finalization instantiates them
             // after the package has registered the full set for this plugin.
             py::handle base = py::type::of<PluginCapabilityInterface>();
-            const int is_subclass = PyObject_IsSubclass(plugin_cls.p_u8L(), base.p_u8L());
+            const int is_subclass = PyObject_IsSubclass(plugin_cls.ptr(), base.ptr());
             if (is_subclass != 1) {
                 if (is_subclass < 0)
                     PyErr_Clear();
@@ -614,12 +614,12 @@ capability instance is created. Denying the request aborts the plugin load.)pbdo
     m.def("plugin", [](py::object cls) {
         if (g_active_plugin_key.empty())
             throw py::value_error("@orca.plugin used outside plugin discovery context");
-        if (!PyType_Check(cls.p_u8L()))
+        if (!PyType_Check(cls.ptr()))
             throw py::value_error("@orca.plugin must decorate a class");
         // The decorator is only a marker/capture hook. It records the package class now;
         // finalize_plugin_capture() instantiates it later and calls register_capabilities().
         py::handle base = py::type::of<PyPluginPackage>();
-        const int is_subclass = PyObject_IsSubclass(cls.p_u8L(), base.p_u8L());
+        const int is_subclass = PyObject_IsSubclass(cls.ptr(), base.ptr());
         if (is_subclass != 1) {
             if (is_subclass < 0)
                 PyErr_Clear();

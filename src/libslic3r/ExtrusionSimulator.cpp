@@ -944,7 +944,7 @@ void ExtrusionSimulator::set_bounding_box(const BoundingBox &bbox)
 	this->bbox = bbox;
 }
 
-const void* ExtrusionSimulator::image_p_u8L() const 
+const void* ExtrusionSimulator::image_ptr() const 
 {
 	return (pimpl->image_data.empty()) ? NULL : (void*)&pimpl->image_data.front();
 }

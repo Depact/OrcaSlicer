@@ -904,7 +904,7 @@ int GLVolumeCollection::load_object_volume(
     auto color = GLVolume::MODEL_COLOR[((color_by == "volume") ? volume_idx : obj_idx) % 4];
     color.a(model_volume->is_model_part() ? 0.7f : 0.4f);
 
-    std::shared_ptr<const TriangleMesh> mesh = model_volume->mesh_p_u8L();
+    std::shared_ptr<const TriangleMesh> mesh = model_volume->mesh_ptr();
     this->volumes.emplace_back(new GLVolume(color));
     GLVolume& v = *this->volumes.back();
     v.set_color(color_from_model_volume(*model_volume));
@@ -917,7 +917,7 @@ int GLVolumeCollection::load_object_volume(
     if (model_volume->is_model_part())
     {
         // GLVolume will reference a convex hull from model_volume!
-        v.set_convex_hull(model_volume->get_convex_hull_shared_p_u8L());
+        v.set_convex_hull(model_volume->get_convex_hull_shared_ptr());
         if (extruder_id != -1)
             v.extruder_id = extruder_id;
     }

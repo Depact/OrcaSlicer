@@ -2057,7 +2057,7 @@ void GLGizmoCut3D::render_clipper_cut()
     GLboolean cull_face = GL_FALSE;
     ::glGetBooleanv(GL_CULL_FACE, &cull_face);
     ::glDisable(GL_CULL_FACE);
-    m_c->object_clipper()->render_cut(m_part_selection.get_ignored_contours_p_u8L());
+    m_c->object_clipper()->render_cut(m_part_selection.get_ignored_contours_ptr());
     if (cull_face)
         ::glEnable(GL_CULL_FACE);
 
@@ -3249,7 +3249,7 @@ bool GLGizmoCut3D::is_outside_of_cut_contour(size_t idx, const CutConnectors& co
             bool is_invalid = (contour_idx == -1);
             if (m_part_selection.valid() && ! is_invalid) {
                 assert(contour_idx >= 0);
-                const std::vector<size_t>& ignored = *(m_part_selection.get_ignored_contours_p_u8L());
+                const std::vector<size_t>& ignored = *(m_part_selection.get_ignored_contours_ptr());
                 is_invalid = (std::find(ignored.begin(), ignored.end(), size_t(contour_idx)) != ignored.end());
             }
             if (is_invalid) {
@@ -3730,7 +3730,7 @@ bool GLGizmoCut3D::unproject_on_cut_plane(const Vec2d& mouse_position, Vec3d& po
         if (cont_id == -1)
             return false;
         if (m_part_selection.valid()) {
-            const std::vector<size_t>& ign = *m_part_selection.get_ignored_contours_p_u8L();
+            const std::vector<size_t>& ign = *m_part_selection.get_ignored_contours_ptr();
             if (std::find(ign.begin(), ign.end(), cont_id) != ign.end())
                 return false;
         }    

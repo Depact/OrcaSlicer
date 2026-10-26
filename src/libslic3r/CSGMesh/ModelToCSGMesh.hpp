@@ -37,7 +37,7 @@ bool model_to_csgmesh(const ModelObject &mo,
     bool has_splitable_volume = false;
 
     for (const ModelVolume *vol : mo.volumes) {
-        if (vol && vol->mesh_p_u8L() &&
+        if (vol && vol->mesh_ptr() &&
             ((do_positives && vol->is_model_part()) ||
              (do_negatives && vol->is_negative_volume()))) {
 

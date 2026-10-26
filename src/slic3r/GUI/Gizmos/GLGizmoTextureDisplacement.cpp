@@ -1849,7 +1849,7 @@ void GLGizmoTextureDisplacement::rebuild_painted_colors(bool whole_stack)
     // The sub-triangles, keyed on what they were read from: the volume, its mesh and the paint.
     std::string key;
     if (shown)
-        key = std::to_string(mv->id().id) + ":" + std::to_string(reinterpret_cast<uintptr_t>(mv->mesh_p_u8L().get())) + ":" +
+        key = std::to_string(mv->id().id) + ":" + std::to_string(reinterpret_cast<uintptr_t>(mv->mesh_ptr().get())) + ":" +
               std::to_string(mv->mmu_segmentation_facets.timestamp());
     if (key != m_painted_colors_key) {
         m_painted_colors_key = std::move(key);

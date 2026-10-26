@@ -1228,7 +1228,7 @@ struct CallbackEvent : wxCommandEvent
 
 void PrinterFileSystem::PostCallback(std::function<void(void)> const& callback)
 {
-    wxCommandEvent *e = new CallbackEvent(callback, boost::weak_p_u8L(shared_from_this()));
+    wxCommandEvent *e = new CallbackEvent(callback, boost::weak_ptr(shared_from_this()));
     wxQueueEvent(this, e);
 }
 

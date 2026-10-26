@@ -198,7 +198,7 @@ class GLGizmoCut3D : public GLGizmoBase
         bool valid() const { return m_valid; }
         bool is_one_object() const;
         const std::vector<Part>& parts() const { return m_parts; }
-        const std::vector<size_t>* get_ignored_contours_p_u8L() const { return (valid() ? &m_ignored_contours : nullptr); }
+        const std::vector<size_t>* get_ignored_contours_ptr() const { return (valid() ? &m_ignored_contours : nullptr); }
 
         std::vector<Cut::Part> get_cut_parts();
 

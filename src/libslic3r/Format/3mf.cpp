@@ -195,7 +195,7 @@ public:
     version_error(const char* what_arg) : Slic3r::FileIOError(what_arg) {}
 };
 
-const char* get_attribute_value_charp_u8L(const char** attributes, unsigned int attributes_size, const char* attribute_key)
+const char* get_attribute_value_charptr(const char** attributes, unsigned int attributes_size, const char* attribute_key)
 {
     if ((attributes == nullptr) || (attributes_size == 0) || (attributes_size % 2 != 0) || (attribute_key == nullptr))
         return nullptr;
@@ -210,14 +210,14 @@ const char* get_attribute_value_charp_u8L(const char** attributes, unsigned int 
 
 std::string get_attribute_value_string(const char** attributes, unsigned int attributes_size, const char* attribute_key)
 {
-    const char* text = get_attribute_value_charp_u8L(attributes, attributes_size, attribute_key);
+    const char* text = get_attribute_value_charptr(attributes, attributes_size, attribute_key);
     return (text != nullptr) ? text : "";
 }
 
 float get_attribute_value_float(const char** attributes, unsigned int attributes_size, const char* attribute_key)
 {
     float value = 0.0f;
-    if (const char *text = get_attribute_value_charp_u8L(attributes, attributes_size, attribute_key); text != nullptr)
+    if (const char *text = get_attribute_value_charptr(attributes, attributes_size, attribute_key); text != nullptr)
         fast_float::from_chars(text, text + strlen(text), value);
     return value;
 }
@@ -225,14 +225,14 @@ float get_attribute_value_float(const char** attributes, unsigned int attributes
 int get_attribute_value_int(const char** attributes, unsigned int attributes_size, const char* attribute_key)
 {
     int value = 0;
-    if (const char *text = get_attribute_value_charp_u8L(attributes, attributes_size, attribute_key); text != nullptr)
+    if (const char *text = get_attribute_value_charptr(attributes, attributes_size, attribute_key); text != nullptr)
         boost::spirit::qi::parse(text, text + strlen(text), boost::spirit::qi::int_, value);
     return value;
 }
 
 bool get_attribute_value_bool(const char** attributes, unsigned int attributes_size, const char* attribute_key)
 {
-    const char* text = get_attribute_value_charp_u8L(attributes, attributes_size, attribute_key);
+    const char* text = get_attribute_value_charptr(attributes, attributes_size, attribute_key);
     return (text != nullptr) ? (bool)::atoi(text) : true;
 }
 
@@ -373,7 +373,7 @@ void PrusaFileParser::_start_element_handler(const char *name, const char **attr
     }
 }
 
-const char *PrusaFileParser::get_attribute_value_charp_u8L(const char **attributes, unsigned int attributes_size, const char *attribute_key)
+const char *PrusaFileParser::get_attribute_value_charptr(const char **attributes, unsigned int attributes_size, const char *attribute_key)
 {
     if ((attributes == nullptr) || (attributes_size == 0) || (attributes_size % 2 != 0) || (attribute_key == nullptr)) return nullptr;
 
@@ -386,7 +386,7 @@ const char *PrusaFileParser::get_attribute_value_charp_u8L(const char **attribut
 
 std::string PrusaFileParser::get_attribute_value_string(const char **attributes, unsigned int attributes_size, const char *attribute_key)
 {
-    const char *text = get_attribute_value_charp_u8L(attributes, attributes_size, attribute_key);
+    const char *text = get_attribute_value_charptr(attributes, attributes_size, attribute_key);
     return (text != nullptr) ? text : "";
 }
 

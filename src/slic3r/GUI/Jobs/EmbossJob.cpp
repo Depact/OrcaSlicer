@@ -1419,7 +1419,7 @@ SurfaceVolumeData::ModelSources create_sources(const ModelVolumePtrs &volumes, s
             continue;
         if (tm.its.empty())
             continue;
-        result.push_back({v->get_mesh_shared_p_u8L(), v->get_matrix()});
+        result.push_back({v->get_mesh_shared_ptr(), v->get_matrix()});
     }
     return result;
 }

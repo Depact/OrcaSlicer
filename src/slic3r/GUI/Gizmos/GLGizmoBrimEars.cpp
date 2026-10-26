@@ -1146,7 +1146,7 @@ void GLGizmoBrimEars::register_single_mesh_pick()
             if (m_mesh_raycaster_map.find(v) != m_mesh_raycaster_map.end()) {
                 m_mesh_raycaster_map[v]->set_transform(world_tran.get_matrix());
             } else {
-                auto mesh               = mv->mesh_p_u8L();
+                auto mesh               = mv->mesh_ptr();
                 m_mesh_raycaster_map[v] = std::make_shared<PickRaycaster>(-1, *v->mesh_raycaster, world_tran.get_matrix());
                 m_mesh_raycaster_map[v]->set_transform(world_tran.get_matrix());
             }

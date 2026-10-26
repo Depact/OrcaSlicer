@@ -2023,7 +2023,7 @@ void SyncAmsInfoDialog::update_user_machine_list()
     NetworkAgent *m_agent = wxGetApp().getAgent();
     const std::string provider = wxGetApp().get_printer_cloud_provider();
     if (m_agent && m_agent->is_user_login(provider)) {
-        boost::thread get_print_info_thread = Slic3r::create_thread([this, token = std::weak_p_u8L(m_token), provider] {
+        boost::thread get_print_info_thread = Slic3r::create_thread([this, token = std::weak_ptr(m_token), provider] {
             NetworkAgent *agent = wxGetApp().getAgent();
             unsigned int  http_code;
             std::string   body;

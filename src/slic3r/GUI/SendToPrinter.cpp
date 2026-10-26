@@ -1045,7 +1045,7 @@ void SendToPrinterDialog::on_ok(wxCommandEvent &event)
 
         enable_prepare_mode = false;
 
-        m_send_job->on_check_ip_address_fail([this, token = std::weak_p_u8L(m_token)](int result) {
+        m_send_job->on_check_ip_address_fail([this, token = std::weak_ptr(m_token)](int result) {
              CallAfter([token, this] {
                 if (token.expired()) { return; }
                 SendFailedConfirm sfcDlg;

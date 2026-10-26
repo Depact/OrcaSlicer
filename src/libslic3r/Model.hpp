@@ -890,7 +890,7 @@ public:
 
     // The triangular model.
     const TriangleMesh& mesh() const { return *m_mesh.get(); }
-    std::shared_ptr<const TriangleMesh> mesh_p_u8L() const { return m_mesh; }
+    std::shared_ptr<const TriangleMesh> mesh_ptr() const { return m_mesh; }
     void                set_mesh(const TriangleMesh &mesh) { m_mesh = std::make_shared<const TriangleMesh>(mesh); m_is_splittable = -1; }
     void                set_mesh(TriangleMesh &&mesh) { m_mesh = std::make_shared<const TriangleMesh>(std::move(mesh)); m_is_splittable = -1; }
     void                set_mesh(const indexed_triangle_set &mesh) { m_mesh = std::make_shared<const TriangleMesh>(mesh); m_is_splittable = -1; }
@@ -898,7 +898,7 @@ public:
     void                set_mesh(std::shared_ptr<const TriangleMesh> &mesh) { m_mesh = mesh; m_is_splittable = -1; }
     void                set_mesh(std::unique_ptr<const TriangleMesh> &&mesh) { m_mesh = std::move(mesh); m_is_splittable = -1; }
 	void				reset_mesh() { m_mesh = std::make_shared<const TriangleMesh>(); m_is_splittable = -1; }
-    const std::shared_ptr<const TriangleMesh>& get_mesh_shared_p_u8L() const { return m_mesh; }
+    const std::shared_ptr<const TriangleMesh>& get_mesh_shared_ptr() const { return m_mesh; }
     // Configuration parameters specific to an object model geometry or a modifier volume, 
     // overriding the global Slic3r settings and the ModelObject settings.
     ModelConfigObject	config;
@@ -1089,7 +1089,7 @@ public:
 
     void                calculate_convex_hull();
     const TriangleMesh& get_convex_hull() const;
-    const std::shared_ptr<const TriangleMesh>& get_convex_hull_shared_p_u8L() const { return m_convex_hull; }
+    const std::shared_ptr<const TriangleMesh>& get_convex_hull_shared_ptr() const { return m_convex_hull; }
     //BBS: add convex_hell_2d related logic
     const Polygon& get_convex_hull_2d(const Transform3d &trafo_instance) const;
     void invalidate_convex_hull_2d()

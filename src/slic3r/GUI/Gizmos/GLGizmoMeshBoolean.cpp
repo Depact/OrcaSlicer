@@ -205,8 +205,8 @@ void GLGizmoMeshBoolean::on_set_state()
 
 CommonGizmosDataID GLGizmoMeshBoolean::on_get_requirements() const
 {
-    if (m_c && m_c->raycaster_p_u8L()) {
-        m_c->raycaster_p_u8L()->set_only_support_model_part_flag(false);
+    if (m_c && m_c->raycaster_ptr()) {
+        m_c->raycaster_ptr()->set_only_support_model_part_flag(false);
     }
     return CommonGizmosDataID(
         int(CommonGizmosDataID::SelectionInfo)

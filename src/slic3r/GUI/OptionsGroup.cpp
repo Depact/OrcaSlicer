@@ -1341,18 +1341,18 @@ Field* ConfigOptionsGroup::get_fieldc(const t_config_option_key& opt_key, int op
     return get_field(opt_id);
 }
 
-std::pair<OG_CustomCtrl*, bool*> ConfigOptionsGroup::get_custom_ctrl_with_blinking_p_u8L(const t_config_option_key& opt_key,
+std::pair<OG_CustomCtrl*, bool*> ConfigOptionsGroup::get_custom_ctrl_with_blinking_ptr(const t_config_option_key& opt_key,
                                                                                        int opt_index /* = -1*/)
 {
     Field* field = get_fieldc(opt_key, opt_index);
 
     if (field)
-        return {custom_ctrl, field->get_blink_p_u8L()};
+        return {custom_ctrl, field->get_blink_ptr()};
 
     for (Line& line : m_lines)
         for (const Option& opt : line.get_options())
             if (opt.opt_id == opt_key && line.widget)
-                return {custom_ctrl, line.get_blink_p_u8L()};
+                return {custom_ctrl, line.get_blink_ptr()};
 
     return {nullptr, nullptr};
 }

@@ -12524,7 +12524,7 @@ std::map<std::string, std::string> validate(const FullPrintConfig &cfg, bool und
 
     // Out of range validation of numeric values.
     for (const std::string &opt_key : cfg.keys()) {
-        const ConfigOption      *opt    = cfg.optp_u8L(opt_key);
+        const ConfigOption      *opt    = cfg.optptr(opt_key);
         assert(opt != nullptr);
         const ConfigOptionDef   *optdef = print_config_def.get(opt_key);
         assert(optdef != nullptr);

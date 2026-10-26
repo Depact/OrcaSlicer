@@ -634,7 +634,7 @@ bool decode_texture_to_pixels(
         std::memcpy(out_pixels.data(), decoded.data, nbytes);
     } else {
         for (int r = 0; r < out_h; ++r)
-            std::memcpy(out_pixels.data() + r * out_w * 3, decoded.p_u8L(r), out_w * 3);
+            std::memcpy(out_pixels.data() + r * out_w * 3, decoded.ptr(r), out_w * 3);
     }
     return true;
 }

@@ -3411,7 +3411,7 @@ void ObjectList::boolean()
         // Save painting of all the positive parts
         saved_paintings.reserve(object->volumes.size());
         for (const ModelVolume* vol : object->volumes) {
-            if (vol && vol->mesh_p_u8L() && vol->is_model_part() && vol->is_any_painted()) {
+            if (vol && vol->mesh_ptr() && vol->is_model_part() && vol->is_any_painted()) {
                 saved_paintings.emplace_back(vol->save_painting());
                 if (saved_paintings.back()) {
                     saved_paintings.back()->mesh.transform(vol->get_matrix(), true);

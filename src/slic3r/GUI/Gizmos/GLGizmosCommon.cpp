@@ -69,7 +69,7 @@ InstancesHider* CommonGizmosDataPool::instances_hider() const
     return inst_hider->is_valid() ? inst_hider : nullptr;
 }
 
-CommonGizmosDataObjects::Raycaster *CommonGizmosDataPool::raycaster_p_u8L() {
+CommonGizmosDataObjects::Raycaster *CommonGizmosDataPool::raycaster_ptr() {
     return dynamic_cast<Raycaster *>(m_data.at(CommonGizmosDataID::Raycaster).get());
 }
 

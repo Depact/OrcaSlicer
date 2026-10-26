@@ -494,7 +494,7 @@ PresetBundle::PresetBundle()
     // "printer_model", "printer_variant", "default_print_profile", "default_filament_profile"
 
     // Create the ID config keys, as they are not part of the Static print config classes.
-    this->prints.default_preset().config.optp_u8L("print_settings_id", true);
+    this->prints.default_preset().config.optptr("print_settings_id", true);
     this->prints.default_preset().compatible_printers_condition();
     this->prints.default_preset().inherits();
 
@@ -505,7 +505,7 @@ PresetBundle::PresetBundle()
     {
         auto& default_config = this->filaments.default_preset().config;
         for(const std::string& opt_key : default_config.keys()){
-            ConfigOption* opt = default_config.optp_u8L(opt_key, false);
+            ConfigOption* opt = default_config.optptr(opt_key, false);
             bool is_override_key = is_filament_extruder_override_key(opt_key);
             if(!is_override_key || !opt->nullable()) 
                 continue;
@@ -513,11 +513,11 @@ PresetBundle::PresetBundle()
         }
     }
 
-    this->sla_materials.default_preset().config.optp_u8L("sla_material_settings_id", true);
+    this->sla_materials.default_preset().config.optptr("sla_material_settings_id", true);
     this->sla_materials.default_preset().compatible_printers_condition();
     this->sla_materials.default_preset().inherits();
 
-    this->sla_prints.default_preset().config.optp_u8L("sla_print_settings_id", true);
+    this->sla_prints.default_preset().config.optptr("sla_print_settings_id", true);
     this->sla_prints.default_preset().config.opt_string("filename_format", true) = "[input_filename_base].sl1";
     this->sla_prints.default_preset().compatible_printers_condition();
     this->sla_prints.default_preset().inherits();
@@ -527,13 +527,13 @@ PresetBundle::PresetBundle()
     for (size_t i = 0; i < 1; ++i) {
         // The following ugly switch is to avoid printers.preset(0) to return the edited instance, as the 0th default is the current one.
         Preset &preset = this->printers.default_preset(i);
-        for (const char *key : {"printer_settings_id", "printer_model", "printer_variant", "thumbnails"}) preset.config.optp_u8L(key, true);
+        for (const char *key : {"printer_settings_id", "printer_model", "printer_variant", "thumbnails"}) preset.config.optptr(key, true);
         //if (i == 0) {
-            preset.config.optp_u8L("default_print_profile", true);
+            preset.config.optptr("default_print_profile", true);
             preset.config.option<ConfigOptionStrings>("default_filament_profile", true);
         //} else {
-        //    preset.config.optp_u8L("default_sla_print_profile", true);
-        //    preset.config.optp_u8L("default_sla_material_profile", true);
+        //    preset.config.optptr("default_sla_print_profile", true);
+        //    preset.config.optptr("default_sla_material_profile", true);
         //}
         // default_sla_material_profile
         preset.inherits();
@@ -5967,7 +5967,7 @@ static void apply_mixed_config_relocations(DynamicPrintConfig&                  
                                            const std::string&                             key,
                                            const std::vector<std::pair<size_t, size_t>>&  moves)
 {
-    ConfigOption* opt = config.optp_u8L(key);
+    ConfigOption* opt = config.optptr(key);
     if (opt == nullptr || moves.empty())
         return;
     std::unique_ptr<ConfigOption> snapshot(opt->clone());
@@ -6016,7 +6016,7 @@ static void apply_receiver_mix_relocations(DynamicPrintConfig&                  
         return;
 
     auto move_bools  = [&](const char* key, bool clear_source) {
-        ConfigOption* opt = config.optp_u8L(key);
+        ConfigOption* opt = config.optptr(key);
         if (opt == nullptr)
             return;
         auto*             live   = static_cast<ConfigOptionBools*>(opt);
@@ -6032,7 +6032,7 @@ static void apply_receiver_mix_relocations(DynamicPrintConfig&                  
         }
     };
     auto move_strings = [&](const char* key, bool clear_source) {
-        ConfigOption* opt = config.optp_u8L(key);
+        ConfigOption* opt = config.optptr(key);
         if (opt == nullptr)
             return;
         auto*             live   = static_cast<ConfigOptionStrings*>(opt);
@@ -6048,7 +6048,7 @@ static void apply_receiver_mix_relocations(DynamicPrintConfig&                  
         }
     };
     auto move_ints = [&](const char* key) {
-        ConfigOption* opt = config.optp_u8L(key);
+        ConfigOption* opt = config.optptr(key);
         if (opt == nullptr)
             return;
         auto*             live   = static_cast<ConfigOptionInts*>(opt);
@@ -6116,7 +6116,7 @@ void PresetBundle::load_config_file_config(const std::string &name_or_path, bool
     const bool is_published = published_config != nullptr && published_config->published;
 
     auto clear_compatible_printers = [](DynamicPrintConfig& config){
-        ConfigOption *opt_compatible = config.optp_u8L("compatible_printers");
+        ConfigOption *opt_compatible = config.optptr("compatible_printers");
         if (opt_compatible != nullptr) {
             assert(opt_compatible->type() == coStrings);
             if (opt_compatible->type() == coStrings)

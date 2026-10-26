@@ -1796,7 +1796,7 @@ Line* Tab::get_line(const t_config_option_key& opt_key)
     return m_active_page ? m_active_page->get_line(opt_key) : nullptr;
 }
 
-std::pair<OG_CustomCtrl*, bool*> Tab::get_custom_ctrl_with_blinking_p_u8L(const t_config_option_key& opt_key, int opt_index/* = -1*/)
+std::pair<OG_CustomCtrl*, bool*> Tab::get_custom_ctrl_with_blinking_ptr(const t_config_option_key& opt_key, int opt_index/* = -1*/)
 {
     if (!m_active_page)
         return {nullptr, nullptr};
@@ -1804,7 +1804,7 @@ std::pair<OG_CustomCtrl*, bool*> Tab::get_custom_ctrl_with_blinking_p_u8L(const 
     std::pair<OG_CustomCtrl*, bool*> ret = {nullptr, nullptr};
 
     for (auto opt_group : m_active_page->m_optgroups) {
-        ret = opt_group->get_custom_ctrl_with_blinking_p_u8L(opt_key, opt_index);
+        ret = opt_group->get_custom_ctrl_with_blinking_ptr(opt_key, opt_index);
         if (ret.first && ret.second)
             break;
     }
@@ -2545,7 +2545,7 @@ void Tab::activate_option(const std::string& opt_key, const wxString& category)
            set_focus(field->getWindow());
     }
 
-    m_highlighter.init(get_custom_ctrl_with_blinking_p_u8L(opt_key));
+    m_highlighter.init(get_custom_ctrl_with_blinking_ptr(opt_key));
 }
 
 void Tab::apply_searcher()

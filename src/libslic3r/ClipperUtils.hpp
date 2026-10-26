@@ -89,7 +89,7 @@ namespace ClipperUtils {
 
         struct iterator : public PathsProviderIteratorBase {
         public:
-            explicit iterator(const Points &points) : m_p_u8L(&points) {}
+            explicit iterator(const Points &points) : m_ptr(&points) {}
             const Points& operator*() const { return *m_ptr; }
             bool operator==(const iterator &rhs) const { return m_ptr == rhs.m_ptr; }
             bool operator!=(const iterator &rhs) const { return !(*this == rhs); }

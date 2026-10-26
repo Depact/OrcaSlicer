@@ -313,13 +313,13 @@ wxDataViewItem EditGCodeDialog::add_presets_placeholders()
                     opt_keys.emplace(opt.first);
 
             for (const auto& opt_key : opt_keys)
-                if (const ConfigOption* optptr = full_config.optp_u8L(opt_key)) {
+                if (const ConfigOption* optptr = full_config.optptr(opt_key)) {
                     extra_keys.erase(opt_key);
                     m_params_list->AppendParam(subgroup, optptr->is_scalar() ? ParamType::Scalar : ParamType::Vector, opt_key);
                 }
         }
         for (auto opt_key : extra_keys)
-            if (const ConfigOption* optptr = full_config.optp_u8L(opt_key))
+            if (const ConfigOption* optptr = full_config.optptr(opt_key))
                 m_params_list->AppendParam(parent, optptr->is_scalar() ? ParamType::Scalar : ParamType::Vector, opt_key);
     };
 

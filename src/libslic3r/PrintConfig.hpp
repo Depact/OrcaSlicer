@@ -1067,13 +1067,13 @@ protected:
 
         bool                initialized() const { return ! m_keys.empty(); }
 
-        ConfigOption*       optp_u8L(const std::string &name, T *owner) const
+        ConfigOption*       optptr(const std::string &name, T *owner) const
         {
             const auto it = m_map_name_to_offset.find(name);
             return (it == m_map_name_to_offset.end()) ? nullptr : reinterpret_cast<ConfigOption*>((char*)owner + it->second);
         }
 
-        const ConfigOption* optp_u8L(const std::string &name, const T *owner) const
+        const ConfigOption* optptr(const std::string &name, const T *owner) const
         {
             const auto it = m_map_name_to_offset.find(name);
             return (it == m_map_name_to_offset.end()) ? nullptr : reinterpret_cast<const ConfigOption*>((const char*)owner + it->second);
@@ -1093,7 +1093,7 @@ protected:
             m_keys.reserve(m_map_name_to_offset.size());
             for (const auto &kvp : defs->options) {
                 // Find the option given the option name kvp.first by an offset from (char*)m_defaults.
-                ConfigOption *opt = this->optp_u8L(kvp.first, m_defaults);
+                ConfigOption *opt = this->optptr(kvp.first, m_defaults);
                 if (opt == nullptr)
                     // This option is not defined by the ConfigBase of type T.
                     continue;
@@ -1113,12 +1113,12 @@ protected:
 
 #define STATIC_PRINT_CONFIG_CACHE_BASE(CLASS_NAME) \
 public: \
-    /* Overrides ConfigBase::optp_u8L(). Find ando/or create a ConfigOption instance for a given name. */ \
-    const ConfigOption*      optp_u8L(const t_config_option_key &opt_key) const override \
-        { return s_cache_##CLASS_NAME.optp_u8L(opt_key, this); } \
-    /* Overrides ConfigBase::optp_u8L(). Find ando/or create a ConfigOption instance for a given name. */ \
-    ConfigOption*            optp_u8L(const t_config_option_key &opt_key, bool create = false) override \
-        { return s_cache_##CLASS_NAME.optp_u8L(opt_key, this); } \
+    /* Overrides ConfigBase::optptr(). Find ando/or create a ConfigOption instance for a given name. */ \
+    const ConfigOption*      optptr(const t_config_option_key &opt_key) const override \
+        { return s_cache_##CLASS_NAME.optptr(opt_key, this); } \
+    /* Overrides ConfigBase::optptr(). Find ando/or create a ConfigOption instance for a given name. */ \
+    ConfigOption*            optptr(const t_config_option_key &opt_key, bool create = false) override \
+        { return s_cache_##CLASS_NAME.optptr(opt_key, this); } \
     /* Overrides ConfigBase::keys(). Collect names of all configuration values maintained by this configuration store. */ \
     t_config_option_keys     keys() const override { return s_cache_##CLASS_NAME.keys(); } \
     const t_config_option_keys& keys_ref() const override { return s_cache_##CLASS_NAME.keys(); } \

@@ -94,7 +94,7 @@ public:
     CommonGizmosDataObjects::SelectionInfo* selection_info() const;
     CommonGizmosDataObjects::InstancesHider* instances_hider() const;
 //    CommonGizmosDataObjects::HollowedMesh* hollowed_mesh() const;
-    CommonGizmosDataObjects::Raycaster *  raycaster_p_u8L();
+    CommonGizmosDataObjects::Raycaster *  raycaster_ptr();
     CommonGizmosDataObjects::Raycaster* raycaster() const;
     CommonGizmosDataObjects::ObjectClipper* object_clipper() const;
     // CommonGizmosDataObjects::SupportsClipper* supports_clipper() const;

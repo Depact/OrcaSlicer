@@ -58,7 +58,7 @@ static void png_read_callback(png_struct *png_ptr,
                               png_size_t  byteCountToRead)
 {
     // Retrieve our input buffer through the png_ptr
-    auto reader = static_cast<IStream *>(png_get_io_p_u8L(png_ptr));
+    auto reader = static_cast<IStream *>(png_get_io_ptr(png_ptr));
 
     // libpng expects a short read to be reported through png_error(); returning quietly would leave
     // it decoding whatever happened to be in outBytes.

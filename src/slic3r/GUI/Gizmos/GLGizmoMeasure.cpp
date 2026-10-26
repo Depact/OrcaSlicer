@@ -592,7 +592,7 @@ void GLGizmoMeasure::init_plane_glmodel(GripperType gripper_type, const Measure:
     auto volume = static_cast<GLVolume *>(feature.volume);
     const ModelObject* obj      = selection.get_model()->objects[volume->object_idx()];
     const ModelVolume* vol      = obj->volumes[volume->volume_idx()];
-    auto               mesh = vol->mesh_p_u8L();
+    auto               mesh = vol->mesh_ptr();
     const auto &[idx, normal, pt] = feature.get_plane();
     if (plane_gl_model.plane_idx != idx) {
         plane_gl_model.plane.reset();
@@ -2351,7 +2351,7 @@ void GLGizmoMeasure::register_single_mesh_pick()
             } else {
                 const ModelObject*   obj  = selection.get_model()->objects[v->object_idx()];
                 const ModelVolume*   vol  = obj->volumes[v->volume_idx()];
-                auto                 mesh = vol->mesh_p_u8L();
+                auto                 mesh = vol->mesh_ptr();
                 m_mesh_raycaster_map[v] = std::make_shared<PickRaycaster>(-1, *v->mesh_raycaster, world_tran.get_matrix());
                 m_mesh_raycaster_map[v]->set_transform(world_tran.get_matrix());
                 m_mesh_measure_map[v] = std::make_shared<Measure::Measuring>(mesh->its);

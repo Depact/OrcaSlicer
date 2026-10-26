@@ -3193,7 +3193,7 @@ void Print::process(long long *time_cost_with_cache, bool use_cache)
             const ModelVolume &model_volume2 = *model_obj2->volumes[index];
             if (model_volume1.type() != model_volume2.type())
                 return false;
-            if (model_volume1.mesh_p_u8L() != model_volume2.mesh_p_u8L())
+            if (model_volume1.mesh_ptr() != model_volume2.mesh_ptr())
                 return false;
             if (!(model_volume1.get_transformation() == model_volume2.get_transformation()))
                 return false;
