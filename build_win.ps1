@@ -133,6 +133,7 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
                 & $python -c "import rich" -ErrorAction Stop
             } catch {
                 Write-Host "  -> Installing 'rich' for enhanced output..." -ForegroundColor Yellow
+
                 & $python -m pip install rich -q
             }
         }
@@ -146,7 +147,7 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
     if (-not $vsInstall) {
         throw "Visual Studio 2022 or newer with the C++ toolset was not found. Install the 'Desktop development with C++' workload."
     }
-    Write-Host "  -> Visual Studio: $vsInstall" -ForegroundColor Gray
+    Write-Host "  -> Visual Studio: $vsInstall"
 
     $clangCl = $null
     if ($env:ORCA_CLANG_CL) {
@@ -183,9 +184,9 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
         }
     }
 
-    Write-Host "  -> clang-cl: $clangCl" -ForegroundColor Gray
-    Write-Host "  -> cmake:    $cmake" -ForegroundColor Gray
-    if ($ccache) { Write-Host "  -> ccache:   $ccache" -ForegroundColor Gray }
+    Write-Host "  -> clang-cl: $clangCl"
+    Write-Host "  -> cmake:    $cmake"
+    if ($ccache) { Write-Host "  -> ccache:   $ccache" }
 
     # --- 2. Capture the Visual Studio environment ---
     Write-Step "[2/5] Setting up the Visual Studio environment..."
@@ -202,7 +203,7 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
     if (-not $NoMetrics) {
         $metricsCsv = Join-Path $env:TEMP "orca-build-metrics-$PID.csv"
         Remove-Item $metricsCsv -ErrorAction SilentlyContinue
-        Write-Host "  -> Sampling build-process CPU, cores and RAM every ${MetricsInterval}s (2s poll)..." -ForegroundColor Gray
+        Write-Host "  -> Sampling build-process CPU, cores and RAM every ${MetricsInterval}s (2s poll)..."
         try {
             $metricsJob = Start-BuildMonitor -CsvPath $metricsCsv -IntervalSeconds $MetricsInterval
         } catch {
@@ -225,8 +226,8 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
     }
     if (-not $Target) { $Target = "all" }
     $buildDir = $presetDirs[$Preset]
-    Write-Host "  -> Preset: $Preset ($buildDir)" -ForegroundColor Green
-    Write-Host "  -> Target: $Target, configuration: $Config" -ForegroundColor Green
+    Write-Host "  -> Preset: $Preset ($buildDir)"
+    Write-Host "  -> Target: $Target, configuration: $Config"
     if ($Preset -eq "x64-clang-cache" -and -not $ccache) {
         throw "ccache is required for the x64-clang-cache preset. Install it, add it to PATH, or set ORCA_CCACHE."
     }
@@ -247,18 +248,18 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
         if ($PackDeps) {
             Write-Step "[3.5/5] Packing dependencies..."
             $zipPath = Pack-Dependencies -DepsBuildDir $depsBuildDir -OutputPath (Join-Path $RepoRoot "deps\OrcaSlicer_dep.zip")
-            Write-Host "  -> Dependency archive: $zipPath" -ForegroundColor Green
+            Write-Host "  -> Dependency archive: $zipPath"
             Write-Host ""
             Write-Host "==========================================" -ForegroundColor Green
             Write-Host "  Dependencies packed successfully!" -ForegroundColor Green
-            Write-Host "  Archive: $zipPath" -ForegroundColor Green
+            Write-Host "  Archive: $zipPath"
             Write-Host "==========================================" -ForegroundColor Green
             exit 0
         }
     }
 
     if ($Clean -and (Test-Path $buildDir)) {
-        Write-Host "  -> Removing $buildDir" -ForegroundColor Yellow
+        Write-Host "  -> Removing $buildDir"
         Remove-Item $buildDir -Recurse -Force
     }
 
@@ -278,7 +279,7 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
 
     $total = (Get-Date) - $started
     Write-Host ""
-    Write-Host "==========================================" -ForegroundColor Green
+    Write-Host "=========================================="
     if ($UnityTestLibslic3r) {
         Write-Host "  Unity build test PASSED (libslic3r)" -ForegroundColor Green
     } else {
@@ -308,7 +309,7 @@ console.print(tree)
         Write-Host ("  Build:     {0}" -f $buildStr)
         Write-Host ("  Total:     {0}" -f $totalStr)
     }
-    Write-Host "==========================================" -ForegroundColor Green
+    Write-Host "=========================================="
 } catch {
     Write-Host ""
     Write-Host "BUILD FAILED: $($_.Exception.Message)" -ForegroundColor Red
