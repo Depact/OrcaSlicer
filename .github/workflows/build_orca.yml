@@ -17,6 +17,12 @@ on:
           required: false
           type: string
           default: msvc
+        preset:
+          required: false
+          type: string
+        flags:
+          required: false
+          type: string
         macos-combine-only:
           required: false
           type: boolean
@@ -467,9 +473,14 @@ jobs:
         run: |
           # cache-path is the install directory inside the deps build directory.
           $deps = (Split-Path "${{ github.workspace }}/${{ inputs.cache-path }}").Replace('\', '/')
-          # -l compiles with Visual Studio's clang-cl and -x builds with Ninja; --msvc --msbuild is cl under the Visual Studio generator.
-          $flags = if ("${{ inputs.compiler }}" -eq "clang") { "-l", "-x" } else { "--msvc", "--msbuild" }
-          .\build_win.bat -s --tests -i --arch ${{ inputs.arch }} --build-dir $env:BUILD_DIR --deps-dir $deps @flags
+          # Use preset and flags from matrix if provided, otherwise fall back to compiler-based logic
+          $preset = "${{ inputs.preset }}"
+          $flags = @(${{ inputs.flags }})
+          if (-not $preset) {
+            $preset = if ("${{ inputs.compiler }}" -eq "clang") { "x64-clang" } else { "x64-msvc" }
+            $flags = if ("${{ inputs.compiler }}" -eq "clang") { "-l", "-x" } else { "--msvc", "--msbuild" }
+          }
+          .\build_win.bat -s --tests -i --preset $preset --arch ${{ inputs.arch }} --build-dir $env:BUILD_DIR --deps-dir $deps @flags
         shell: pwsh
 
       - name: Build system preset cache (Windows)
@@ -489,7 +500,7 @@ jobs:
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ github.sha }}-tests-windows-${{ inputs.arch }}
+          name: ${{ github.sha }}-tests-windows-${{ inputs.arch }}-${{ inputs.preset || format('{0}-{1}', inputs.compiler == 'clang' && 'x64-clang' || 'x64-msvc') }}
           overwrite: true
           path: build_tests.tar
           retention-days: 5
