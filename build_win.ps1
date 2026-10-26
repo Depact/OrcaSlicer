@@ -226,8 +226,8 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
     }
     if (-not $Target) { $Target = "all" }
     $buildDir = $presetDirs[$Preset]
-    Write-Host "  -> Preset: $Preset ($buildDir)"
-    Write-Host "  -> Target: $Target, configuration: $Config"
+    Write-Host "  -> Preset: $Preset ($buildDir)" -ForegroundColor DarkGray
+    Write-Host "  -> Target: $Target, configuration: $Config" -ForegroundColor DarkGray
     if ($Preset -eq "x64-clang-cache" -and -not $ccache) {
         throw "ccache is required for the x64-clang-cache preset. Install it, add it to PATH, or set ORCA_CCACHE."
     }
