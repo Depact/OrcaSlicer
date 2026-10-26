@@ -286,7 +286,7 @@ console.print(Rule(char="\u2501", style="green"))
     Write-Host ""
     $python = Get-Command py -ErrorAction SilentlyContinue
     if ($python) {
-        & $python "$RepoRoot\scripts\build_units\rich_utils.py" rule '━' green
+        & $python "$RepoRoot\scripts\build_units\rich_utils.py" rule green
     } else {
         Write-Host "=========================================="
     }
@@ -295,21 +295,10 @@ console.print(Rule(char="\u2501", style="green"))
     } else {
         Write-Host "  Build complete!" -ForegroundColor Green
     }
-    Write-Host ""
     $fmt = { param($t) $h = [math]::Floor($t.TotalHours); $m = [math]::Floor($t.TotalMinutes) % 60; $s = [math]::Round($t.Seconds); if ($h) { "{0}h {1:00}m {2:00}s" -f $h, $m, $s } elseif ($m) { "{0}m {1:00}s" -f $m, $s } else { "{0}s" -f $s } }
-    # Timing breakdown using Rich Tree widget (Total is parent)
     $configureStr = & $fmt $timing.ConfigureTime
     $buildStr     = & $fmt $timing.BuildTime
     $totalStr     = & $fmt $total
-    $python = Get-Command py -ErrorAction SilentlyContinue
-    if (-not $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
-    if ($python) {
-        & $python "$RepoRoot\scripts\build_units\rich_utils.py" tree $totalStr $configureStr $buildStr
-    } else {
-        Write-Host ("  Total:     {0}" -f $totalStr)
-        Write-Host ("  Configure: {0}" -f $configureStr)
-        Write-Host ("  Build:     {0}" -f $buildStr)
-    }
 } catch {
     Write-Host ""
     Write-Host "BUILD FAILED: $($_.Exception.Message)" -ForegroundColor Red
@@ -339,6 +328,16 @@ console.print(Rule(char="\u2501", style="green"))
                 Write-Host "  -> Metrics saved to $metricsCsv (install Python with rich for the chart)." -ForegroundColor Yellow
             }
         }
+    }
+    # Timing breakdown using Rich Tree widget (Total is parent)
+    $python = Get-Command py -ErrorAction SilentlyContinue
+    if (-not $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
+    if ($python) {
+        & $python "$RepoRoot\scripts\build_units\rich_utils.py" tree $totalStr $configureStr $buildStr
+    } else {
+        Write-Host ("  Total:     {0}" -f $totalStr)
+        Write-Host ("  Configure: {0}" -f $configureStr)
+        Write-Host ("  Build:     {0}" -f $buildStr)
     }
     Pop-Location
 }
