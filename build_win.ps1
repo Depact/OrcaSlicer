@@ -106,7 +106,7 @@ try {
     function Write-Step {
         param([string]$Text)
         $ts = Get-TimeStamp
-        Write-Host "[$ts] $Text" -ForegroundColor Green
+        Write-Host "[$ts] $Text"
     }
 
     # --- 1. Locate Visual Studio and the toolchain ---
