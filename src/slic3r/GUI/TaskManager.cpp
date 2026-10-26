@@ -29,7 +29,7 @@ wxDEFINE_EVENT(EVT_MULTI_SEND_LIMIT, wxCommandEvent);
 int TaskManager::MaxSendingAtSameTime = 5;
 int TaskManager::SendingInterval = 180;
 
-std::string get_task_state_enum_s_u8L(TaskState ts)
+std::string get_task_state_enum_str(TaskState ts)
 {
     switch (ts) {
     case TaskState::TS_PENDING:

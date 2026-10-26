@@ -71,7 +71,7 @@ IOPMAssertionID assertionID;
 void disable_screensaver()
 {
     #if __APPLE__
-    CFStringRef reasonForActivity = CFS_u8L("Slic3r");
+    CFStringRef reasonForActivity = CFstr("Slic3r");
     [[maybe_unused]]IOReturn success = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
         kIOPMAssertionLevelOn, reasonForActivity, &assertionID);
     // ignore result: success == kIOReturnSuccess
@@ -279,7 +279,7 @@ void change_opt_value(DynamicPrintConfig& config, const t_config_option_key& opt
 	}
 	catch (const std::exception &e)
 	{
-		wxLogError(format_wxs_u8L("Internal error when changing value for %1%: %2%", opt_key, e.what()));
+		wxLogError(format_wxstr("Internal error when changing value for %1%: %2%", opt_key, e.what()));
 	}
 }
 
@@ -402,8 +402,8 @@ static void add_config_substitutions(const ConfigSubstitutions& conf_substitutio
 			assert(false);
 		}
 
-		changes += format_wxs_u8L("<tr><td><b>\"%1%\" (%2%)</b></td><td>: ", def->opt_key, _(def->label)) +
-				   format_wxs_u8L(_L("%1% was replaced with %2%"), bold_string(conf_substitution.old_value), bold(new_val)) +
+		changes += format_wxstr("<tr><td><b>\"%1%\" (%2%)</b></td><td>: ", def->opt_key, _(def->label)) +
+				   format_wxstr(_L("%1% was replaced with %2%"), bold_string(conf_substitution.old_value), bold(new_val)) +
 				   "</td></tr>";
 	}
 	changes += "</table>";
@@ -433,9 +433,9 @@ void show_substitutions_info(const PresetsConfigSubstitutions& presets_config_su
 	};
 
 	for (const PresetConfigSubstitutions& substitution : presets_config_substitutions) {
-		changes += "\n\n" + format_wxs_u8L("%1% : %2%", preset_type_name(substitution.preset_type), bold_string(substitution.preset_name));
+		changes += "\n\n" + format_wxstr("%1% : %2%", preset_type_name(substitution.preset_type), bold_string(substitution.preset_name));
 		if (!substitution.preset_file.empty())
-			changes += format_wxs_u8L(" (%1%)", substitution.preset_file);
+			changes += format_wxstr(" (%1%)", substitution.preset_file);
 
 		add_config_substitutions(substitution.substitutions, changes);
 	}
@@ -450,7 +450,7 @@ void show_substitutions_info(const ConfigSubstitutions& config_substitutions, co
 	add_config_substitutions(config_substitutions, changes);
 
 	InfoDialog msg(nullptr,
-		format_wxs_u8L(_L("The configuration file \u201c%1%\u201d was loaded, but some values were not recognized."), from_u8(filename)),
+		format_wxstr(_L("The configuration file \u201c%1%\u201d was loaded, but some values were not recognized."), from_u8(filename)),
 		substitution_message(changes), true);
 	msg.ShowModal();
 }
@@ -553,7 +553,7 @@ wxString from_path(const boost::filesystem::path &path)
 
 boost::filesystem::path into_path(const wxString &str)
 {
-	return boost::filesystem::path(str.wx_s_u8L());
+	return boost::filesystem::path(str.wx_str());
 }
 
 wxString file_url_from_path(const boost::filesystem::path &path)

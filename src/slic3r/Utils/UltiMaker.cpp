@@ -280,12 +280,12 @@ bool UltiMaker::generate_auth_creds(wxString &msg) const {
 				if (id.empty() || key.empty()) {
 					BOOST_LOG_TRIVIAL(error) << boost::format("%1%: Either ID or KEY is empty.") % name;
 					// TRN %1% and %2% are the ID and KEY returned by the printer.
-					msg = GUI::format_wxs_u8L(_L("ERROR: Either ID or KEY is empty. ID=%1% KEY=%2%"), id, key);
+					msg = GUI::format_wxstr(_L("ERROR: Either ID or KEY is empty. ID=%1% KEY=%2%"), id, key);
 					ret = false;
 				} else {
 					BOOST_LOG_TRIVIAL(info) << boost::format("%1%: ID and KEY are both present. Setting message appropriately.") % name;
 					// TRN Generated API credentials. %1% is the username, %2% the password.
-					msg = GUI::format_wxs_u8L(_L("Username: %1%  Password: %2%"), id, key);
+					msg = GUI::format_wxstr(_L("Username: %1%  Password: %2%"), id, key);
 				}
             }
             catch (const std::exception & e) {
@@ -617,7 +617,7 @@ std::string UltiMaker::get_base_url() const
 	}
 }
 
-std::string UltiMaker::timestamp_s_u8L() const
+std::string UltiMaker::timestamp_str() const
 {
 	enum { BUFFER_SIZE = 32 };
 

@@ -4758,7 +4758,7 @@ void MainFrame::on_select_default_preset(SimpleEvent& evt)
 
 std::string MainFrame::get_base_name(const wxString &full_name, const char *extension) const
 {
-    boost::filesystem::path filename = boost::filesystem::path(full_name.wx_s_u8L()).filename();
+    boost::filesystem::path filename = boost::filesystem::path(full_name.wx_str()).filename();
     if (extension != nullptr)
 		filename = filename.replace_extension(extension);
     return filename.string();

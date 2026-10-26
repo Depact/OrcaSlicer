@@ -48,7 +48,7 @@ namespace textconv_helper
 	class CA2W_
 	{
 	public:
-		CA2W_(LPCSTR pStr, UINT codePage = CP_ACP) : m_pS_u8L(pStr)
+		CA2W_(LPCSTR pStr, UINT codePage = CP_ACP) : m_pstr(pStr)
 		{
 			if (pStr)
 			{
@@ -61,8 +61,8 @@ namespace textconv_helper
 			}
 		}
 		~CA2W_() {}
-		operator LPCWS_u8L() { return m_pStr ? &m_vWideArray[0] : NULL; }
-		//operator LPOLES_u8L() { return m_pStr ? (LPOLESTR)&m_vWideArray[0] : (LPOLESTR)NULL; }
+		operator LPCWstr() { return m_pStr ? &m_vWideArray[0] : NULL; }
+		//operator LPOLEstr() { return m_pStr ? (LPOLESTR)&m_vWideArray[0] : (LPOLESTR)NULL; }
 
 	private:
 		CA2W_(const CA2W_&);
@@ -74,7 +74,7 @@ namespace textconv_helper
 	class CW2A_
 	{
 	public:
-		CW2A_(LPCWSTR pWStr, UINT codePage = CP_ACP) : m_pWS_u8L(pWStr)
+		CW2A_(LPCWSTR pWStr, UINT codePage = CP_ACP) : m_pWstr(pWStr)
 			// Usage:
 			//   CW2A_ ansiString(L"Some Text");
 			//   CW2A_ utf8String(L"Some Text", CP_UTF8);
@@ -94,7 +94,7 @@ namespace textconv_helper
 		{
 			m_pWStr = 0;
 		}
-		operator LPCS_u8L() { return m_pWStr ? &m_vAnsiArray[0] : NULL; }
+		operator LPCstr() { return m_pWStr ? &m_vAnsiArray[0] : NULL; }
 
 	private:
 		CW2A_(const CW2A_&);
@@ -106,9 +106,9 @@ namespace textconv_helper
 	class CW2W_
 	{
 	public:
-		CW2W_(LPCWSTR pWStr) : m_pWS_u8L(pWStr) {}
-		operator LPCWS_u8L() { return const_cast<LPWSTR>(m_pWStr); }
-		//operator LPOLES_u8L() { return const_cast<LPOLESTR>(m_pWStr); }
+		CW2W_(LPCWSTR pWStr) : m_pWstr(pWStr) {}
+		operator LPCWstr() { return const_cast<LPWSTR>(m_pWStr); }
+		//operator LPOLEstr() { return const_cast<LPOLESTR>(m_pWStr); }
 
 	private:
 		CW2W_(const CW2W_&);
@@ -120,8 +120,8 @@ namespace textconv_helper
 	class CA2A_
 	{
 	public:
-		CA2A_(LPCSTR pStr) : m_pS_u8L(pStr) {}
-		operator LPCS_u8L() { return (LPSTR)m_pStr; }
+		CA2A_(LPCSTR pStr) : m_pstr(pStr) {}
+		operator LPCstr() { return (LPSTR)m_pStr; }
 
 	private:
 		CA2A_(const CA2A_&);
@@ -135,7 +135,7 @@ namespace textconv_helper
 	public:
 		CW2BSTR_(LPCWSTR pWStr) { m_bstrString = ::SysAllocString(pWStr); }
 		~CW2BSTR_() { ::SysFreeString(m_bstrString); }
-		operator BS_u8L() { return m_bstrString; }
+		operator Bstr() { return m_bstrString; }
 
 	private:
 		CW2BSTR_(const CW2BSTR_&);
@@ -148,7 +148,7 @@ namespace textconv_helper
 	public:
 		CA2BSTR_(LPCSTR pStr) { m_bstrString = ::SysAllocString(textconv_helper::CA2W_(pStr)); }
 		~CA2BSTR_() { ::SysFreeString(m_bstrString); }
-		operator BS_u8L() { return m_bstrString; }
+		operator Bstr() { return m_bstrString; }
 
 	private:
 		CA2BSTR_(const CA2BSTR_&);

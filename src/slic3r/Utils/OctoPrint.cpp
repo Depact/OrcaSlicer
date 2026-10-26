@@ -189,7 +189,7 @@ bool OctoPrint::test_with_resolved_ip(wxString &msg) const
                 const auto text = ptree.get_optional<std::string>("text");
                 res = validate_version_text(text);
                 if (!res) {
-                    msg = GUI::format_wxs_u8L(_L("Mismatched type of print host: %s"), (text ? *text : name));
+                    msg = GUI::format_wxstr(_L("Mismatched type of print host: %s"), (text ? *text : name));
                 }
             }
             catch (const std::exception&) {
@@ -238,7 +238,7 @@ bool OctoPrint::test(wxString& msg) const
                 const auto text = ptree.get_optional<std::string>("text");
                 res = validate_version_text(text);
                 if (! res) {
-                    msg = GUI::format_wxs_u8L(_L("Mismatched type of print host: %s"), (text ? *text : name));
+                    msg = GUI::format_wxstr(_L("Mismatched type of print host: %s"), (text ? *text : name));
                 }
             }
             catch (const std::exception &) {
@@ -266,7 +266,7 @@ wxString OctoPrint::get_test_ok_msg () const
 
 wxString OctoPrint::get_test_failed_msg (wxString &msg) const
 {
-    return GUI::format_wxs_u8L("%s: %s\n\n%s"
+    return GUI::format_wxstr("%s: %s\n\n%s"
         , _L("Could not connect to OctoPrint")
         , msg
         , _L("Note: OctoPrint version 1.1.0 or higher is required."));
@@ -311,11 +311,11 @@ bool OctoPrint::upload(PrintHostUpload upload_data, ProgressFn prorgess_fn, Erro
         // try sending to both. (Then if both fail, show both error msg after second try)
         wxString error_message;
         if (!upload_inner_with_resolved_ip(std::move(upload_data), prorgess_fn
-            , [&msg = error_message, resolved_addr](wxString error) { msg = GUI::format_wxs_u8L("%1%: %2%", resolved_addr.front(), error); }
+            , [&msg = error_message, resolved_addr](wxString error) { msg = GUI::format_wxstr("%1%: %2%", resolved_addr.front(), error); }
             , info_fn, resolved_addr.front())
             &&
             !upload_inner_with_resolved_ip(std::move(upload_data), prorgess_fn
-            , [&msg = error_message, resolved_addr](wxString error) { msg += GUI::format_wxs_u8L("\n%1%: %2%", resolved_addr.back(), error); }
+            , [&msg = error_message, resolved_addr](wxString error) { msg += GUI::format_wxstr("\n%1%: %2%", resolved_addr.back(), error); }
             , info_fn, resolved_addr.back())
             ) {
 
@@ -542,7 +542,7 @@ wxString SL1Host::get_test_ok_msg () const
 
 wxString SL1Host::get_test_failed_msg (wxString &msg) const
 {
-    return GUI::format_wxs_u8L("%s: %s", _L("Could not connect to Prusa SLA"), msg);
+    return GUI::format_wxstr("%s: %s", _L("Could not connect to Prusa SLA"), msg);
 }
 
 bool SL1Host::validate_version_text(const boost::optional<std::string> &version_text) const
@@ -569,7 +569,7 @@ wxString PrusaLink::get_test_ok_msg() const
 
 wxString PrusaLink::get_test_failed_msg(wxString& msg) const
 {
-    return GUI::format_wxs_u8L("%s: %s", _L("Could not connect to PrusaLink"), msg);
+    return GUI::format_wxstr("%s: %s", _L("Could not connect to PrusaLink"), msg);
 }
 
 bool PrusaLink::validate_version_text(const boost::optional<std::string>& version_text) const
@@ -655,7 +655,7 @@ bool PrusaLink::test(wxString& msg) const
                 const auto text = ptree.get_optional<std::string>("text");
                 res = validate_version_text(text);
                 if (!res) {
-                    msg = GUI::format_wxs_u8L(_L("Mismatched type of print host: %s"), (text ? *text : "OctoPrint"));
+                    msg = GUI::format_wxstr(_L("Mismatched type of print host: %s"), (text ? *text : "OctoPrint"));
                 }
             }
             catch (const std::exception&) {
@@ -767,7 +767,7 @@ bool PrusaLink::get_storage(wxArrayString& storage_path, wxArrayString& storage_
         if (!storage.empty()) { // otherwise error_msg is already filled 
             error_msg = L"\n\n" + _L("Storages found") + L": \n";
             for (const auto& si : storage) {
-                error_msg += GUI::format_wxs_u8L(si.read_only ?
+                error_msg += GUI::format_wxstr(si.read_only ?
                                                                 // TRN %1% = storage path
                                                                 _L("%1% : read only") : 
                                                                 // TRN %1% = storage path
@@ -818,7 +818,7 @@ bool PrusaLink::test_with_method_check(wxString& msg, bool& use_put) const
             const auto text = ptree.get_optional<std::string>("text");
             res = validate_version_text(text);
             if (!res) {
-                msg = GUI::format_wxs_u8L(_L("Mismatched type of print host: %s"), (text ? *text : "OctoPrint"));
+                msg = GUI::format_wxstr(_L("Mismatched type of print host: %s"), (text ? *text : "OctoPrint"));
                 use_put = false;
                 return;
             }
@@ -898,7 +898,7 @@ bool PrusaLink::test_with_resolved_ip_and_method_check(wxString& msg, bool& use_
                 const auto text = ptree.get_optional<std::string>("text");
                 res = validate_version_text(text);
                 if (!res) {
-                    msg = GUI::format_wxs_u8L(_L("Mismatched type of print host: %s"), (text ? *text : "OctoPrint"));
+                    msg = GUI::format_wxstr(_L("Mismatched type of print host: %s"), (text ? *text : "OctoPrint"));
                     use_put = false;
                     return;
                 }
@@ -1161,6 +1161,6 @@ wxString PrusaConnect::get_test_ok_msg() const
 
 wxString PrusaConnect::get_test_failed_msg(wxString& msg) const
 {
-    return GUI::format_wxs_u8L("%s: %s", _L("Could not connect to Prusa Connect"), msg);
+    return GUI::format_wxstr("%s: %s", _L("Could not connect to Prusa Connect"), msg);
 }
 }

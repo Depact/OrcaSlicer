@@ -94,7 +94,7 @@ bool FlashAir::upload(PrintHostUpload upload_data, ProgressFn prorgess_fn, Error
         strDest.insert(0,"/");
     }
 
-	auto urlPrepare = make_url("upload.cgi", "WRITEPROTECT=ON&FTIME", timestamp_s_u8L());
+	auto urlPrepare = make_url("upload.cgi", "WRITEPROTECT=ON&FTIME", timestamp_str());
     auto urlSetDir = make_url("upload.cgi","UPDIR",strDest);
 	auto urlUpload = make_url("upload.cgi");
 
@@ -175,7 +175,7 @@ bool FlashAir::upload(PrintHostUpload upload_data, ProgressFn prorgess_fn, Error
 	return res;
 }
 
-std::string FlashAir::timestamp_s_u8L() const
+std::string FlashAir::timestamp_str() const
 {
 	auto t = std::time(nullptr);
 	auto tm = *std::localtime(&t);

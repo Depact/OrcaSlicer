@@ -328,7 +328,7 @@ wxString GuideFrame::SetStartPage(GuidePage startpage, bool load)
     //wxLogMessage("GUIDE: webpage_1  %s", (boost::filesystem::path(resources_dir()) / "web\\guide\\1\\index.html").make_preferred().string().c_str() );
     const wxString guide_url = file_url_from_path(boost::filesystem::path(resources_dir()) / "web/guide/0/index.html");
     wxString TargetUrl = guide_url + "?target=1";
-    //wxLogMessage("GUIDE: webpage_2  %s", TargetUrl.mb_s_u8L());
+    //wxLogMessage("GUIDE: webpage_2  %s", TargetUrl.mb_str());
 
     if (startpage == BBL_WELCOME){
         SetTitle(_L("Setup Wizard"));
@@ -897,7 +897,7 @@ void GuideFrame::OnScriptResponseMessage(wxCommandEvent &WXUNUSED(evt))
 bool GuideFrame::IsFirstUse()
 {
     wxString    strUse;
-    std::string strVal = wxGetApp().app_config->get(std::string(m_SectionName.mb_s_u8L()), "finish");
+    std::string strVal = wxGetApp().app_config->get(std::string(m_SectionName.mb_str()), "finish");
     if (strVal == "1")
         return false;
 
@@ -912,15 +912,15 @@ int GuideFrame::SaveProfile()
     // SoftFever: don't collect info
     //privacy
     // if (PrivacyUse == true) {
-    //     m_MainPtr->app_config->set(std::string(m_SectionName.mb_s_u8L()), "privacyuse", "1");
+    //     m_MainPtr->app_config->set(std::string(m_SectionName.mb_str()), "privacyuse", "1");
     // } else
-    //     m_MainPtr->app_config->set(std::string(m_SectionName.mb_s_u8L()), "privacyuse", "0");
+    //     m_MainPtr->app_config->set(std::string(m_SectionName.mb_str()), "privacyuse", "0");
 
     m_MainPtr->app_config->set("region", m_Region);
     m_MainPtr->app_config->set_bool("stealth_mode", StealthMode);
 
     //finish
-    m_MainPtr->app_config->set(std::string(m_SectionName.mb_s_u8L()), "finish", true);
+    m_MainPtr->app_config->set(std::string(m_SectionName.mb_str()), "finish", true);
 
     m_MainPtr->app_config->save();
 
@@ -1826,7 +1826,7 @@ int GuideFrame::LoadProfileFamily(std::string strVendor, std::string strFilePath
             OneModel["nozzle_diameter"] = NozzleOpt;
             OneModel["materials"]       = pm["default_materials"];
 
-            // wxString strCoverPath = wxString::Format("%s\\%s\\%s_cover.png", strFolder, strVendor, std::string(s1.mb_s_u8L()));
+            // wxString strCoverPath = wxString::Format("%s\\%s\\%s_cover.png", strFolder, strVendor, std::string(s1.mb_str()));
             std::string cover_file = s1 + "_cover.png";
             boost::filesystem::path cover_path = boost::filesystem::absolute(vendor_dir / cover_file).make_preferred();
             BOOST_LOG_TRIVIAL(info) << "[WebGuideDialog] " << cover_path;
@@ -2000,7 +2000,7 @@ void GuideFrame::StrReplace(std::string &strBase, std::string strSrc, std::strin
 
 std::string GuideFrame::w2s(wxString sSrc)
 {
-    return std::string(sSrc.mb_s_u8L());
+    return std::string(sSrc.mb_str());
 }
 
 void GuideFrame::GetStardardFilePath(std::string &FilePath) {

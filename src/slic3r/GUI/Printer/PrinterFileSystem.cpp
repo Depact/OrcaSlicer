@@ -355,7 +355,7 @@ void PrinterFileSystem::DownloadRamFile(int index, const std::string &local_path
 
             if (resp.contains("mem_dl_param_size")) {
                 size_t s = resp["mem_dl_param_size"].get<size_t>();
-                std::string json_s_u8L(reinterpret_cast<const char *>(data), s);
+                std::string json_str(reinterpret_cast<const char *>(data), s);
                 // OutputDebugStringA(json_str.c_str());
                 // OutputDebugStringA("\n");
                 json        mem_dl_json = json::parse(json_str);

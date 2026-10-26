@@ -32,7 +32,7 @@ public:
 private:
 	std::string host;
 
-	std::string timestamp_s_u8L() const;
+	std::string timestamp_str() const;
 	std::string make_url(const std::string &path) const;
 	std::string make_url(const std::string &path, const std::string &arg, const std::string &val) const;
 };

@@ -251,11 +251,11 @@ public:
     PrinterSeries get_printer_series() const;
     PrinterArch get_printer_arch() const;
     std::string get_printer_ams_type() const;
-    wxString get_printer_type_display_s_u8L() const;
-    std::string get_auto_pa_cali_thumbnail_img_s_u8L() const;
+    wxString get_printer_type_display_str() const;
+    std::string get_auto_pa_cali_thumbnail_img_str() const;
 
     // check printer device series
-    std::string get_printer_series_s_u8L() const;
+    std::string get_printer_series_str() const;
 
     static bool is_series_n(const std::string& series_str);
     static bool is_series_p(const std::string& series_str);
@@ -269,7 +269,7 @@ public:
     bool can_use_emmc_print() const;
 
     void reload_printer_settings();
-    std::string get_printer_thumbnail_img_s_u8L() const;
+    std::string get_printer_thumbnail_img_str() const;
 
     std::string dev_product_name;       // set by iot service, get /user/print
 
@@ -432,14 +432,14 @@ public:
     int upgrade_err_code = 0;
     std::vector<FirmwareInfo> firmware_list;
 
-    std::string get_firmware_type_s_u8L();
-    std::string get_lifecycle_type_s_u8L();
+    std::string get_firmware_type_str();
+    std::string get_lifecycle_type_str();
     bool is_in_upgrading() const;
     bool is_upgrading_avalable();
     int get_upgrade_percent() const;
     std::string get_ota_version();
     bool check_version_valid();
-    wxString get_upgrade_result_s_u8L(int upgrade_err_code);
+    wxString get_upgrade_result_str(int upgrade_err_code);
     // key: ams_id start as 0,1,2,3
     std::map<int, DevFirmwareVersionInfo> get_ams_version();
 
@@ -464,8 +464,8 @@ public:
 
     int     print_error;
     std::string m_print_error_img_id;
-    static std::string get_error_code_s_u8L(int error_code);
-    std::string get_print_error_s_u8L() const { return MachineObject::get_error_code_s_u8L(this->print_error); }
+    static std::string get_error_code_str(int error_code);
+    std::string get_print_error_str() const { return MachineObject::get_error_code_str(this->print_error); }
 
     std::unordered_set<GUI::DeviceErrorDialog*> m_command_error_code_dlgs;
     void  add_command_error_code_dlg(int command_err, nlohmann::json action_json=nlohmann::json{});
@@ -874,7 +874,7 @@ public:
     /* common apis */
     inline bool is_local() { return !get_dev_ip().empty(); }
     void set_bind_status(std::string status);
-    std::string get_bind_s_u8L();
+    std::string get_bind_str();
     bool can_print();
     bool can_resume();
     bool can_pause();

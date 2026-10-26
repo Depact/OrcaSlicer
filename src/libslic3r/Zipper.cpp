@@ -23,15 +23,15 @@ class Zipper::Impl: public MZ_Archive {
 public:
     std::string m_zipname;
 
-    std::string formatted_errors_u8L() const
+    std::string formatted_errorstr() const
     {
         return _u8L("Error in zip archive") + " " + m_zipname + ": " +
-               get_errors_u8L();
+               get_errorstr();
     }
 
     SLIC3R_NORETURN void blow_up() const
     {
-        throw Slic3r::ExportError(formatted_errors_u8L());
+        throw Slic3r::ExportError(formatted_errorstr());
     }
 
     bool is_alive()
@@ -59,16 +59,16 @@ Zipper::~Zipper()
     if(m_impl->is_alive()) {
         // Flush the current entry if not finished yet.
         try { finish_entry(); } catch(...) {
-            BOOST_LOG_TRIVIAL(error) << m_impl->formatted_errors_u8L();
+            BOOST_LOG_TRIVIAL(error) << m_impl->formatted_errorstr();
         }
 
         if(!mz_zip_writer_finalize_archive(&m_impl->arch))
-            BOOST_LOG_TRIVIAL(error) << m_impl->formatted_errors_u8L();
+            BOOST_LOG_TRIVIAL(error) << m_impl->formatted_errorstr();
     }
 
     // The file should be closed no matter what...
     if(!close_zip_writer(&m_impl->arch))
-        BOOST_LOG_TRIVIAL(error) << m_impl->formatted_errors_u8L();
+        BOOST_LOG_TRIVIAL(error) << m_impl->formatted_errorstr();
 }
 
 Zipper::Zipper(Zipper &&m):

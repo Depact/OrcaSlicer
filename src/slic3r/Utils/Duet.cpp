@@ -190,7 +190,7 @@ std::string Duet::get_upload_url(const std::string &filename, ConnectionType con
 		return (boost::format("%1%rr_upload?name=0:/gcodes/%2%&%3%")
 				% get_base_url()
 				% Http::url_encode(filename)
-				% timestamp_s_u8L()).str();
+				% timestamp_str()).str();
 	}
 }
 
@@ -203,7 +203,7 @@ std::string Duet::get_connect_url(const bool dsfUrl) const
 		return (boost::format("%1%rr_connect?password=%2%&%3%")
 				% get_base_url()
 				% Http::url_encode(password.empty() ? "reprap" : password) // url_encode is needed because password can contain special characters like `&`, "#", etc.
-				% timestamp_s_u8L()).str();
+				% timestamp_str()).str();
 	}
 }
 
@@ -220,7 +220,7 @@ std::string Duet::get_base_url() const
 	}
 }
 
-std::string Duet::timestamp_s_u8L() const
+std::string Duet::timestamp_str() const
 {
 	enum { BUFFER_SIZE = 32 };
 

@@ -69,7 +69,7 @@ public:
     static bool is_optional_printer_model_id(const std::string& model_id) { return model_id.empty(); }
     static std::string get_printer_type(const std::string& type_str) { return get_value_from_config<std::string>(type_str, "printer_type"); }
     static std::string get_printer_display_name(const std::string& type_str) { return get_value_from_config<std::string>(type_str, "display_name"); }
-    static std::string get_printer_series_s_u8L(std::string type_str) { return get_value_from_config<std::string>(type_str, "printer_series"); }
+    static std::string get_printer_series_str(std::string type_str) { return get_value_from_config<std::string>(type_str, "printer_series"); }
     static PrinterArch get_printer_arch(std::string type_str);
 
     // images

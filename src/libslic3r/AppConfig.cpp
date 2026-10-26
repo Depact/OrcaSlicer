@@ -665,17 +665,17 @@ void AppConfig::set_defaults()
         set_bool("allow_ip_resolve", true);
 
     if (get("presets", "filament_colors").empty()) {
-        set_s_u8L("presets", "filament_colors", "#F2754E");
+        set_str("presets", "filament_colors", "#F2754E");
     }
 
     if (get("print", "bed_leveling").empty()) {
-        set_s_u8L("print", "bed_leveling", "1");
+        set_str("print", "bed_leveling", "1");
     }
     if (get("print", "flow_cali").empty()) {
-        set_s_u8L("print", "flow_cali", "1");
+        set_str("print", "flow_cali", "1");
     }
     if (get("print", "timelapse").empty()) {
-        set_s_u8L("print", "timelapse", "1");
+        set_str("print", "timelapse", "1");
     }
 
     if (get("enable_step_mesh_setting").empty()) {

@@ -1072,21 +1072,21 @@ void UnsavedChangesDialog::build(Preset::Type type, PresetCollection *dependent_
         const wxString new_profile      = new_selected_preset.empty() ? _L("the new profile") : from_u8(new_selected_preset);
 
         if (m_discard_btn) {
-            m_discard_btn->SetToolTip(format_wxs_u8L(
+            m_discard_btn->SetToolTip(format_wxstr(
                 _L("Switch to\n\"%1%\"\ndiscarding any changes made in\n\"%2%\"."),
                 new_profile,
                 previous_profile));
         }
 
         if (m_transfer_btn) {
-            m_transfer_btn->SetToolTip(format_wxs_u8L(
+            m_transfer_btn->SetToolTip(format_wxstr(
                 _L("All \"New Value\" settings modified in\n\"%1%\"\nwill be transferred to\n\"%2%\"."),
                 previous_profile,
                 new_profile));
         }
 
         if (m_save_btn) {
-            m_save_btn->SetToolTip(format_wxs_u8L(
+            m_save_btn->SetToolTip(format_wxstr(
                 _L("All \"New Value\" settings are saved in\n\"%1%\"\nand \"%2%\" will open without any changes."),
                 previous_profile,
                 new_profile));
@@ -1149,7 +1149,7 @@ void UnsavedChangesDialog::show_info_line(Action action, std::string preset_name
                        ActionButtons::KEEP & m_buttons  ? _L("Keep the selected options.") :
                                                           _L("Transfer the selected options to the newly selected preset.");
             else
-                text = format_wxs_u8L(
+                text = format_wxstr(
                     action == Action::Save ?
                         _L("Save the selected options to preset \n\"%1%\".") :
                         _L("Transfer the selected options to the newly selected preset \n\"%1%\"."),
@@ -1292,10 +1292,10 @@ void UnsavedChangesDialog::update(Preset::Type type, PresetCollection* dependent
     else {
         wxString action_msg;
         if (type == dependent_presets->type()) {
-            action_msg = format_wxs_u8L(_L("Preset \"%1%\" contains the following unsaved changes:"), presets->get_edited_preset().name);
+            action_msg = format_wxstr(_L("Preset \"%1%\" contains the following unsaved changes:"), presets->get_edited_preset().name);
         }
         else {
-            action_msg = format_wxs_u8L(type == Preset::TYPE_PRINTER ?
+            action_msg = format_wxstr(type == Preset::TYPE_PRINTER ?
                 _L("Preset \"%1%\" is not compatible with the new printer profile and it contains the following unsaved changes:") :
                 _L("Preset \"%1%\" is not compatible with the new process profile and it contains the following unsaved changes:"),
                 presets->get_edited_preset().name);
@@ -1305,7 +1305,7 @@ void UnsavedChangesDialog::update(Preset::Type type, PresetCollection* dependent
 
     wxString action_msg;
     if (dependent_presets) {
-        action_msg = format_wxs_u8L(_L("You have changed some settings of preset \"%1%\"."), dependent_presets->get_edited_preset().name);
+        action_msg = format_wxstr(_L("You have changed some settings of preset \"%1%\"."), dependent_presets->get_edited_preset().name);
         if (!m_transfer_btn) {
             action_msg += _L("\nYou can save or discard the preset values you have modified.");
         } else {
@@ -2167,7 +2167,7 @@ void DiffPresetDialog::update_tree()
         preset_combos.equal_bmp->SetToolTip(wxEmptyString);
 
         // TRN Header of a preset comparison: the two preset names.
-        m_tree->model->AddPreset(type, format_wxs_u8L(_L("\"%1%\" vs \"%2%\""), left_preset->name, right_preset->name), left_pt);
+        m_tree->model->AddPreset(type, format_wxstr(_L("\"%1%\" vs \"%2%\""), left_preset->name, right_preset->name), left_pt);
 
         const std::map<wxString, std::string>& category_icon_map = wxGetApp().get_tab(type)->get_category_icon_map();
         auto get_category_icon = [&category_icon_map](const wxString& key) {

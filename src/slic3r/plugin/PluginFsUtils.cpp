@@ -669,7 +669,7 @@ bool extract_zip_to_directory(const boost::filesystem::path& zip_path, const boo
 
     ZipReaderGuard reader;
     if (!open_zip_reader(&reader.archive, zip_path.string())) {
-        error = "Failed to open plugin zip: " + MZ_Archive::get_errors_u8L(mz_zip_get_last_error(&reader.archive));
+        error = "Failed to open plugin zip: " + MZ_Archive::get_errorstr(mz_zip_get_last_error(&reader.archive));
         return false;
     }
     reader.opened = true;
@@ -679,7 +679,7 @@ bool extract_zip_to_directory(const boost::filesystem::path& zip_path, const boo
     mz_zip_archive_file_stat stat;
     for (mz_uint i = 0; i < num_entries; ++i) {
         if (!mz_zip_reader_file_stat(&reader.archive, i, &stat)) {
-            error = "Failed to read plugin zip entry metadata: " + MZ_Archive::get_errors_u8L(mz_zip_get_last_error(&reader.archive));
+            error = "Failed to read plugin zip entry metadata: " + MZ_Archive::get_errorstr(mz_zip_get_last_error(&reader.archive));
             return false;
         }
 
@@ -727,7 +727,7 @@ bool extract_zip_to_directory(const boost::filesystem::path& zip_path, const boo
         // Shared with the rest of the archive code: long-path capable and binary-safe.
         if (!extract_zip_entry_to_file(&reader.archive, stat.m_file_index, output_path)) {
             error = "Failed to extract plugin zip entry " + relative_key + ": " +
-                    MZ_Archive::get_errors_u8L(mz_zip_get_last_error(&reader.archive));
+                    MZ_Archive::get_errorstr(mz_zip_get_last_error(&reader.archive));
             return false;
         }
     }
@@ -1000,7 +1000,7 @@ bool read_wheel_plugin_metadata(const boost::filesystem::path& whl_path, PluginD
 
     ZipReaderGuard reader;
     if (!open_zip_reader(&reader.archive, whl_path.string())) {
-        error = "Failed to open wheel as zip: " + MZ_Archive::get_errors_u8L(mz_zip_get_last_error(&reader.archive));
+        error = "Failed to open wheel as zip: " + MZ_Archive::get_errorstr(mz_zip_get_last_error(&reader.archive));
         return false;
     }
     reader.opened = true;

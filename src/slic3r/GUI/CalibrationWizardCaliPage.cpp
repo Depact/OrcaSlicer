@@ -133,7 +133,7 @@ void CalibrationCaliPage::set_cali_img()
         }
         else if (m_cali_method == CalibrationMethod::CALI_METHOD_AUTO || m_cali_method == CalibrationMethod::CALI_METHOD_NEW_AUTO) {
             if (curr_obj) {
-                std::string image_name = curr_obj->get_auto_pa_cali_thumbnail_img_s_u8L();
+                std::string image_name = curr_obj->get_auto_pa_cali_thumbnail_img_str();
                 if (curr_obj->is_multi_extruders()) {
                     if (m_cur_extruder_id == 0) {
                         image_name += "_right";

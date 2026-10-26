@@ -688,8 +688,8 @@ NozzleListTable::NozzleListTable(wxWindow* parent) : wxPanel(parent,wxID_ANY,wxD
         try {
             json j = json::parse(message);
             if (j["msg"].get<std::string>() == "init") {
-                auto table_obj_str = BuildTableObjS_u8L();
-                auto text_obj_str = BuildTextObjS_u8L();
+                auto table_obj_str = BuildTableObjstr();
+                auto text_obj_str = BuildTextObjstr();
                 CallAfter([table_obj_str, text_obj_str, this] {
                     wxString script1 = wxString::Format("initText(%s)", text_obj_str);
                     m_web_view->RunScript(script1);
@@ -698,7 +698,7 @@ NozzleListTable::NozzleListTable(wxWindow* parent) : wxPanel(parent,wxID_ANY,wxD
                     });
             }
             else if (j["msg"].get<std::string>() == "updateList") {
-                auto table_obj_str = BuildTableObjS_u8L();
+                auto table_obj_str = BuildTableObjstr();
 
                 CallAfter([table_obj_str, this] {
                     wxString script1 = wxString::Format("updateTable(%s)", table_obj_str);
@@ -731,7 +731,7 @@ NozzleListTable::NozzleListTable(wxWindow* parent) : wxPanel(parent,wxID_ANY,wxD
     wxGetApp().UpdateDarkUIWin(this);
 }
 
-wxString NozzleListTable::BuildTableObjS_u8L()
+wxString NozzleListTable::BuildTableObjstr()
 {
     json obj;
     obj["darkmode"] = wxGetApp().dark_mode();
@@ -763,7 +763,7 @@ void NozzleListTable::SendSelectionChangedEvent()
     event.SetEventObject(this);
     ProcessWindowEvent(event);
 }
-wxString NozzleListTable::BuildTextObjS_u8L()
+wxString NozzleListTable::BuildTextObjstr()
 {
     wxString nozzle_selection = _L("Nozzle Selection");
     wxString nozzle_list = _L("Available Nozzles");
@@ -790,7 +790,7 @@ void NozzleListTable::SetOptions(const std::vector<NozzleOption>& options,int de
 {
     m_nozzle_options = options;
     m_selected_idx = default_select;
-    auto table_obj_str = BuildTableObjS_u8L();
+    auto table_obj_str = BuildTableObjstr();
     wxString script1 = wxString::Format("updateTable(%s)", table_obj_str);
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << "update table " << script1;
 
@@ -873,7 +873,7 @@ void MultiNozzleStatusTable::UpdateRackInfo(std::weak_ptr<DevNozzleRack> rack)
 
             NozzleVolumeType volume_type = DevNozzle::ToNozzleVolumeType(nozzle.m_nozzle_flow);
 
-            m_badge->SetExtruderInfo(extruder_id, format_diameter_to_s_u8L(nozzle.GetNozzleDiameter()), volume_type);
+            m_badge->SetExtruderInfo(extruder_id, format_diameter_to_str(nozzle.GetNozzleDiameter()), volume_type);
         }
         m_badge->SetExtruderValid(has_right);
     }

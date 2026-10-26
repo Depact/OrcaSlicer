@@ -556,7 +556,7 @@ PingCodeBindDialog::~PingCodeBindDialog() {
          wxString model_id_text;
 
          if (m_machine_info) {
-             model_id_text = m_machine_info->get_printer_type_display_s_u8L();
+             model_id_text = m_machine_info->get_printer_type_display_str();
          }
          confirm_dlg.update_text(wxString::Format(txt, model_id_text, model_id_text));
          confirm_dlg.CenterOnParent();
@@ -891,7 +891,7 @@ void BindMachineDialog::on_show(wxShowEvent &event)
     m_result_info   = wxEmptyString;
 
     if (event.IsShown()) {
-        auto img = m_machine_info->get_printer_thumbnail_img_s_u8L();
+        auto img = m_machine_info->get_printer_thumbnail_img_str();
         if (wxGetApp().dark_mode()) { img += "_dark"; }
         try {
             auto bitmap = create_scaled_bitmap(img, this, FromDIP(80));
@@ -1097,7 +1097,7 @@ void UnBindMachineDialog::on_unbind_printer(wxCommandEvent &event)
 void UnBindMachineDialog::on_show(wxShowEvent &event)
 {
     if (event.IsShown()) {
-        auto img = m_machine_info->get_printer_thumbnail_img_s_u8L();
+        auto img = m_machine_info->get_printer_thumbnail_img_str();
         if (wxGetApp().dark_mode()) { img += "_dark"; }
         try {
             auto bitmap = create_scaled_bitmap(img, this, FromDIP(80));

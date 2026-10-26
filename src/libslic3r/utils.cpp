@@ -1735,7 +1735,7 @@ std::string format_memsize(size_t bytes, unsigned int decimals)
 		}
 }
 
-std::string format_diameter_to_s_u8L(double diameter, int precision)
+std::string format_diameter_to_str(double diameter, int precision)
 {
     double candidates[] = {0.2, 0.4, 0.6, 0.8};
     double best = *std::min_element(std::begin(candidates), std::end(candidates), [diameter](double a, double b) { return std::abs(a - diameter) < std::abs(b - diameter); });

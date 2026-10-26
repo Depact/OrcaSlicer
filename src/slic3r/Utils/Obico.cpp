@@ -67,7 +67,7 @@ wxString Obico::get_test_ok_msg() const { return _(L("Connected to Obico success
 
 wxString Obico::get_test_failed_msg(wxString& msg) const
 {
-    return GUI::format_wxs_u8L("%s: %s", _L("Could not connect to Obico"), msg.Truncate(256));
+    return GUI::format_wxstr("%s: %s", _L("Could not connect to Obico"), msg.Truncate(256));
 }
 
 bool Obico::test(wxString& msg) const

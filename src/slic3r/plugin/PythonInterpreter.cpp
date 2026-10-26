@@ -141,7 +141,7 @@ std::string format_python_error(PyObject* ptype, PyObject* pvalue, PyObject* ptr
 
     if (pvalue) {
         if (!result.empty()) result += ": ";
-        PyObject* s = PyObject_S_u8L(pvalue);
+        PyObject* s = PyObject_str(pvalue);
         if (s) {
             const char* cstr = PyUnicode_AsUTF8(s);
             if (cstr) result += cstr;
@@ -623,7 +623,7 @@ bool PythonInterpreter::initialize()
         if (sys) {
             PyObject* path = PyObject_GetAttrString(sys, "path");
             if (path) {
-                PyObject* path_str = PyObject_S_u8L(path);
+                PyObject* path_str = PyObject_str(path);
                 if (path_str) {
                     const char* path_cstr = PyUnicode_AsUTF8(path_str);
                     if (path_cstr) {

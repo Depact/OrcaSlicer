@@ -556,7 +556,7 @@ public:
     // Short label of the physical nozzle(s) a filament prints on, shown on its send-dialog card:
     // rack slots ("R1", "R2 R3") for a nozzle-rack printer, or "L"/"R"/"L R" for a filament-switcher
     // printer. Empty for printers with neither (the card then shows no nozzle row).
-    wxString get_mapped_nozzle_s_u8L(int fila_id) const;
+    wxString get_mapped_nozzle_str(int fila_id) const;
 
     // Block Send while a rack printer is still reading its hotend information.
     bool CheckErrorRackStatus(MachineObject* obj_);

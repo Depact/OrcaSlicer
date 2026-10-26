@@ -922,7 +922,7 @@ wxBoxSizer* SendMultiMachinePage::create_item_checkbox(wxString title, wxWindow*
 
     // save
     checkbox->Bind(wxEVT_TOGGLEBUTTON, [this, checkbox, param](wxCommandEvent& e) {
-        app_config->set_s_u8L("print", param, checkbox->GetValue() ? std::string("1") : std::string("0"));
+        app_config->set_str("print", param, checkbox->GetValue() ? std::string("1") : std::string("0"));
         app_config->save();
         e.Skip();
     });
@@ -962,14 +962,14 @@ wxBoxSizer* SendMultiMachinePage::create_item_input(wxString str_before, wxStrin
 
     input->GetTextCtrl()->Bind(wxEVT_TEXT_ENTER, [this, param, input](wxCommandEvent& e) {
         auto value = input->GetTextCtrl()->GetValue();
-        app_config->set(param, std::string(value.mb_s_u8L()));
+        app_config->set(param, std::string(value.mb_str()));
         app_config->save();
         e.Skip();
         });
 
     input->GetTextCtrl()->Bind(wxEVT_KILL_FOCUS, [this, param, input](wxFocusEvent& e) {
         auto value = input->GetTextCtrl()->GetValue();
-        app_config->set(param, std::string(value.mb_s_u8L()));
+        app_config->set(param, std::string(value.mb_str()));
         app_config->save();
         e.Skip();
         });

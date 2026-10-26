@@ -135,7 +135,7 @@ std::unique_ptr<CompressedImageBuffer> compress_thumbnail_qoi(const ThumbnailDat
     return out;
 }
 
-int ColPic_EncodeS_u8L(unsigned short* fromcolor16, int picw, int pich, unsigned char* outputdata, int outputmaxtsize, int colorsmax);
+int ColPic_Encodestr(unsigned short* fromcolor16, int picw, int pich, unsigned char* outputdata, int outputmaxtsize, int colorsmax);
 
 std::unique_ptr<CompressedImageBuffer> compress_thumbnail_colpic(const ThumbnailData &data)
 {
@@ -184,7 +184,7 @@ std::unique_ptr<CompressedImageBuffer> compress_thumbnail_colpic(const Thumbnail
         }
     }
 
-    ColPic_EncodeS_u8L(color16_buf.data(), width, height, output_buf.data(), output_buf.size(), 1024);
+    ColPic_Encodestr(color16_buf.data(), width, height, output_buf.data(), output_buf.size(), 1024);
 
     auto out  = std::make_unique<CompressedColPic>();
     out->size = output_buf.size();
@@ -488,7 +488,7 @@ static int ColPicEncode(unsigned short* fromcolor16, int picw, int pich, unsigne
     return sizeof(ColPicHead3) + Head0->ListDataSize + Head0->ColorDataSize;
 }
 
-int ColPic_EncodeS_u8L(unsigned short* fromcolor16, int picw, int pich, unsigned char* outputdata, int outputmaxtsize, int colorsmax)
+int ColPic_Encodestr(unsigned short* fromcolor16, int picw, int pich, unsigned char* outputdata, int outputmaxtsize, int colorsmax)
 {
     int           qty      = 0;
     int           temp     = 0;

@@ -580,9 +580,9 @@ void wgtDeviceNozzleRackHotendUpdate::UpdateInfo(const DevNozzle& nozzle)
 
         m_diameter_label->Show(true);
         m_flowtype_label->Show(true);
-        m_diameter_label->SetLabel(nozzle.GetNozzleDiameterS_u8L());
-        m_flowtype_label->SetLabel(nozzle.GetNozzleFlowTypeS_u8L());
-        m_type_label->SetLabel(nozzle.GetNozzleTypeS_u8L());
+        m_diameter_label->SetLabel(nozzle.GetNozzleDiameterstr());
+        m_flowtype_label->SetLabel(nozzle.GetNozzleFlowTypestr());
+        m_type_label->SetLabel(nozzle.GetNozzleTypestr());
         m_type_label->SetForegroundColour(StateColor::darkModeColorFor(*wxBLACK));
 
         m_sn_label->Show(true);
@@ -606,9 +606,9 @@ void wgtDeviceNozzleRackHotendUpdate::UpdateInfo(const DevNozzle& nozzle)
 
         m_diameter_label->Show(true);
         m_flowtype_label->Show(true);
-        m_diameter_label->SetLabel(nozzle.GetNozzleDiameterS_u8L());
-        m_flowtype_label->SetLabel(nozzle.GetNozzleFlowTypeS_u8L());
-        m_type_label->SetLabel(nozzle.GetNozzleTypeS_u8L());
+        m_diameter_label->SetLabel(nozzle.GetNozzleDiameterstr());
+        m_flowtype_label->SetLabel(nozzle.GetNozzleFlowTypestr());
+        m_type_label->SetLabel(nozzle.GetNozzleTypestr());
         m_type_label->SetForegroundColour(StateColor::darkModeColorFor(*wxBLACK));
 
         updateNozzleImage(nozzle);

@@ -63,8 +63,8 @@ public:
 
 private:
 	static int CalcFlushingVolume(const wxColour& from_, const wxColour& to_, int min_flush_volume, int nozzle_flush_dataset);
-	wxString BuildTableObjS_u8L();
-	wxString BuildTextObjS_u8L(bool multi_language = true);
+	wxString BuildTableObjstr();
+	wxString BuildTextObjstr(bool multi_language = true);
 	void StoreFlushData(int extruder_num, const std::vector<std::vector<double>>& flush_volume_vecs, const std::vector<double>& flush_multipliers);
 	// Maps the physical-only matrix shown in the table back onto the full config-indexed matrix.
 	std::vector<double> ExpandToFullMatrix(const std::vector<double>& sub_matrix, int nozzle_idx) const;

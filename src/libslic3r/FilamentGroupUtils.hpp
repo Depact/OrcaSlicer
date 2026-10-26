@@ -27,7 +27,7 @@ namespace Slic3r
             bool operator<(const Color& other) const;
             bool operator==(const Color& other) const;
             bool operator!=(const Color& other) const;
-            std::string to_hex_s_u8L(bool include_alpha = false) const;
+            std::string to_hex_str(bool include_alpha = false) const;
         };
 
 

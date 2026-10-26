@@ -968,9 +968,9 @@ namespace Slic3r
         for (size_t idx = 0; idx < ctx.model_info.filament_ids.size(); ++idx) {
             std::string id = ctx.model_info.filament_ids[idx];
             Color color = ctx.model_info.filament_info[idx].color;
-            std::string unprintable_str = unprintable_stat_to_s_u8L(idx);
+            std::string unprintable_str = unprintable_stat_to_str(idx);
 
-            std::string key = id + "," + color.to_hex_s_u8L(true) + "," + unprintable_str;
+            std::string key = id + "," + color.to_hex_str(true) + "," + unprintable_str;
             merge_filament_map[key].push_back(idx);
         }
 

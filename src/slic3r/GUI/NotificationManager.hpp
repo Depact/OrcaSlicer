@@ -1108,9 +1108,9 @@ private:
 		}
 	},
         NotificationData{NotificationType::EmptyColorChangeCode, NotificationLevel::PrintInfoNotificationLevel, 10,
-         std::string(_devL("value can not be empty when you add a G-code for color change.\nPlease check the \"Color Change G-code\" in \"Printer Settings > Custom G-code\"").mb_s_u8L())},
+         std::string(_devL("value can not be empty when you add a G-code for color change.\nPlease check the \"Color Change G-code\" in \"Printer Settings > Custom G-code\"").mb_str())},
         NotificationData{NotificationType::EmptyAutoColorChange, NotificationLevel::PrintInfoNotificationLevel, 10,
-                         std::string(_devL("You need add a color change event to the print. The print need look like a sign.").mb_s_u8L())},
+                         std::string(_devL("You need add a color change event to the print. The print need look like a sign.").mb_str())},
         NotificationData{NotificationType::DesktopIntegrationSuccess, NotificationLevel::RegularNotificationLevel, 10,
 		_u8L("Integration was successful.") },
         NotificationData{NotificationType::DesktopIntegrationFail, NotificationLevel::WarningNotificationLevel, 10,

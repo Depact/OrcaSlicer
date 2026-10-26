@@ -238,8 +238,8 @@ void wgtDeviceNozzleRackToolHead::UpdateToolHeadInfo(const DevNozzle& extruder_n
     else /*extruder_nozzle.IsNormal()*/
     {
         m_nozzle_diamenter_label->Show(true);
-        m_nozzle_diamenter_label->SetLabel(extruder_nozzle.GetNozzleDiameterS_u8L());
-        m_nozzle_flowtype_label->SetLabel(extruder_nozzle.GetNozzleFlowTypeS_u8L());
+        m_nozzle_diamenter_label->SetLabel(extruder_nozzle.GetNozzleDiameterstr());
+        m_nozzle_flowtype_label->SetLabel(extruder_nozzle.GetNozzleFlowTypestr());
     }
 
     /* Icon*/
@@ -863,8 +863,8 @@ void wgtDeviceNozzleRackNozzleItem::UpdateInfo(const std::shared_ptr<DevNozzleRa
 
     if (rack) {
         const auto        &nozzle_info  = on_rack ? rack->GetNozzle(m_nozzle_id) : rack->GetNozzleSystem()->GetExtNozzle(m_nozzle_id);
-        const wxString    &diameter_str = nozzle_info.GetNozzleDiameterS_u8L();
-        const wxString    &flowtype_str = nozzle_info.GetNozzleFlowTypeS_u8L();
+        const wxString    &diameter_str = nozzle_info.GetNozzleDiameterstr();
+        const wxString    &flowtype_str = nozzle_info.GetNozzleFlowTypestr();
         const std::string &color        = nozzle_info.GetFilamentColor();
 
         /*check empty first*/

@@ -51,7 +51,7 @@ wxColour DevAmsTray::decode_color(const std::string &color)
     return wxColour(ret[0], ret[1], ret[2], ret[3]);
 }
 
-void DevAmsTray::UpdateColorFromS_u8L(const std::string& color)
+void DevAmsTray::UpdateColorFromstr(const std::string& color)
 {
     if (color.empty()) return;
     if (this->color != color)
@@ -732,7 +732,7 @@ void DevFilaSystemParser::ParseV1_0(const json& jj, MachineObject* obj, DevFilaS
                             if (tray_it->contains("tray_color"))
                             {
                                 auto color = (*tray_it)["tray_color"].get<std::string>();
-                                curr_tray->UpdateColorFromS_u8L(color);
+                                curr_tray->UpdateColorFromstr(color);
                             }
                             else
                             {
@@ -943,7 +943,7 @@ void DevFilaSystemParser::ParseAgentFilament(const json& data, MachineObject* ob
                     tray->is_exists       = s.value("loaded", false);
                     tray->m_fila_type     = s.value("material", std::string());
                     tray->setting_id      = s.value("preset_id", std::string());
-                    tray->UpdateColorFromS_u8L(s.value("color", std::string()));
+                    tray->UpdateColorFromstr(s.value("color", std::string()));
                     tray->nozzle_temp_min = std::to_string(s.value("nozzle_temp_min", 0));
                     tray->nozzle_temp_max = std::to_string(s.value("nozzle_temp_max", 0));
                     tray->remain          = s.value("remain_percent", -1);
@@ -1009,7 +1009,7 @@ void DevFilaSystemParser::ParseAgentFilament(const json& data, MachineObject* ob
             tray.is_exists       = e.value("loaded", false);
             tray.m_fila_type     = e.value("material", std::string());
             tray.setting_id      = e.value("preset_id", std::string());
-            tray.UpdateColorFromS_u8L(e.value("color", std::string()));
+            tray.UpdateColorFromstr(e.value("color", std::string()));
             tray.nozzle_temp_min = std::to_string(e.value("nozzle_temp_min", 0));
             tray.nozzle_temp_max = std::to_string(e.value("nozzle_temp_max", 0));
             tray.remain          = e.value("remain_percent", -1);

@@ -367,14 +367,14 @@ wxBitmap* BitmapCache::load_svg(const std::string &bitmap_name, unsigned target_
         replaces["#949494"] = "#7C8282"; // ORCA replace icon line color for light theme
     }
 
-    if (strs_u8L(bitmap_name.c_str(), "toggle_on") != NULL && dark_mode) // ORCA only replace color of toggle button
+    if (strstr(bitmap_name.c_str(), "toggle_on") != NULL && dark_mode) // ORCA only replace color of toggle button
         replaces["#009688"] = "#00675b";
 
     if (!new_color.empty())
         replaces["\"#009688\""] = "\"" + new_color + "\"";
 
      NSVGimage *image = nullptr;
-    if (strs_u8L(bitmap_name.c_str(), "printer_thumbnail") == NULL) {
+    if (strstr(bitmap_name.c_str(), "printer_thumbnail") == NULL) {
         image =  nsvgParseFromFileWithReplace(Slic3r::var(bitmap_name + ".svg").c_str(), "px", 96.0f, replaces);
     }
     else {

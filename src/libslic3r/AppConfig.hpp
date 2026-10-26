@@ -181,7 +181,7 @@ public:
 		}
 	}
 
-	void			    set_s_u8L(const std::string& section, const std::string& key, const std::string& value)
+	void			    set_str(const std::string& section, const std::string& key, const std::string& value)
 	{
 #ifndef NDEBUG
 		{

@@ -77,8 +77,8 @@ void CustomWidgetsPlugin::addButtonProps(Button* btn,
     };
 
     props.push_back({"Button Style", "Orca Button", PropertyType::Choice,
-        styleToS_u8L(btn->GetStyle()), false, styleChoices,
-        [btn, styleToStr]() { return styleToS_u8L(btn->GetStyle()); },
+        styleTostr(btn->GetStyle()), false, styleChoices,
+        [btn, styleToStr]() { return styleTostr(btn->GetStyle()); },
         [btn](const wxString& v) {
             ButtonStyle s = ButtonStyle::Regular;
             if (v == "Confirm")       s = ButtonStyle::Confirm;
@@ -109,8 +109,8 @@ void CustomWidgetsPlugin::addButtonProps(Button* btn,
     };
 
     props.push_back({"Button Type", "Orca Button", PropertyType::Choice,
-        typeToS_u8L(btn->GetType()), false, typeChoices,
-        [btn, typeToStr]() { return typeToS_u8L(btn->GetType()); },
+        typeTostr(btn->GetType()), false, typeChoices,
+        [btn, typeToStr]() { return typeTostr(btn->GetType()); },
         [btn](const wxString& v) {
             ButtonType t = ButtonType::Compact;
             if (v == "Window")       t = ButtonType::Window;

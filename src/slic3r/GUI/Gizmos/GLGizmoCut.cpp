@@ -3165,10 +3165,10 @@ void GLGizmoCut3D::render_input_window_warning() const
     if (invalid_connector_warning) {
         wxString out = /*wxString(ImGui::WarningMarkerSmall)*/ _L("Warning") + ": " + _L("Invalid connectors detected") + ":";
         if (m_info_stats.outside_cut_contour > size_t(0))
-            out += "\n - " + format_wxs_u8L(_L_PLURAL("%1$d connector is out of cut contour", "%1$d connectors are out of cut contour", m_info_stats.outside_cut_contour),
+            out += "\n - " + format_wxstr(_L_PLURAL("%1$d connector is out of cut contour", "%1$d connectors are out of cut contour", m_info_stats.outside_cut_contour),
                                           m_info_stats.outside_cut_contour);
         if (m_info_stats.outside_bb > size_t(0))
-            out += "\n - " + format_wxs_u8L(_L_PLURAL("%1$d connector is out of object", "%1$d connectors are out of object", m_info_stats.outside_bb),
+            out += "\n - " + format_wxstr(_L_PLURAL("%1$d connector is out of object", "%1$d connectors are out of object", m_info_stats.outside_bb),
                                            m_info_stats.outside_bb);
         if (m_info_stats.is_overlap)
             out += "\n - " + _L("Some connectors are overlapped");
@@ -3554,7 +3554,7 @@ static void check_objects_after_cut(const ModelObjectPtrs& objects)
     wxString names = from_u8(err_objects_names[0]);
     for (size_t i = 1; i < err_objects_names.size(); i++)
         names += ", " + from_u8(err_objects_names[i]);
-    WarningDialog(wxGetApp().plater(), format_wxs_u8L(_L_PLURAL("Object (%1%) has duplicated connectors. "
+    WarningDialog(wxGetApp().plater(), format_wxstr(_L_PLURAL("Object (%1%) has duplicated connectors. "
                                 "Some connectors may be missing in slicing result.\n"
                                 "Please report to the OrcaSlicer team in which scenario this issue happened.\n"
                                 "Thank you.",

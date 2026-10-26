@@ -232,7 +232,7 @@ MZ_Archive::MZ_Archive()
     mz_zip_zero_struct(&arch);
 }
 
-std::string MZ_Archive::get_errors_u8L(mz_zip_error mz_err)
+std::string MZ_Archive::get_errorstr(mz_zip_error mz_err)
 {
     switch (mz_err)
     {

@@ -32,7 +32,7 @@ static const constexpr char *const SLICER_UTC_TIME_FMT = "%Y-%m-%d at %T";
 // ISO8601Z representation of time, without time zone info
 static const constexpr char *const ISO8601Z_TIME_FMT = "%Y%m%dT%H%M%SZ";
 
-static const char * get_fmts_u8L(TimeFormat fmt)
+static const char * get_fmtstr(TimeFormat fmt)
 {
     switch (fmt) {
     case TimeFormat::gcode: return SLICER_UTC_TIME_FMT;
@@ -170,7 +170,7 @@ time_t _timegm(const struct std::tm *tms)
 
 std::string process_format(const char *fmt, TimeZone zone)
 {
-    std::string fmts_u8L(fmt);
+    std::string fmtstr(fmt);
 
     if (fmtstr == SLICER_UTC_TIME_FMT && zone == TimeZone::utc)
         fmtstr += " UTC";
@@ -186,7 +186,7 @@ time_t get_current_time_utc()
     return clk::to_time_t(clk::now());
 }
 
-static std::string tm2s_u8L(const std::tm *tms, const char *fmt)
+static std::string tm2str(const std::tm *tms, const char *fmt)
 {
     std::stringstream ss;
     ss.imbue(std::locale("C"));
@@ -194,18 +194,18 @@ static std::string tm2s_u8L(const std::tm *tms, const char *fmt)
     return ss.str();
 }
 
-std::string time2s_u8L(const time_t &t, TimeZone zone, TimeFormat fmt)
+std::string time2str(const time_t &t, TimeZone zone, TimeFormat fmt)
 {
     std::string ret;
     std::tm tms = {};
     tms.tm_isdst = -1;
-    std::string fmtstr = process_format(get_fmts_u8L(fmt), zone);
+    std::string fmtstr = process_format(get_fmtstr(fmt), zone);
 
     switch (zone) {
     case TimeZone::local:
-        ret = tm2s_u8L(_localtime_r(&t, &tms), fmtstr.c_str()); break;
+        ret = tm2str(_localtime_r(&t, &tms), fmtstr.c_str()); break;
     case TimeZone::utc:
-        ret = tm2s_u8L(_gmtime_r(&t, &tms), fmtstr.c_str()); break;
+        ret = tm2str(_gmtime_r(&t, &tms), fmtstr.c_str()); break;
     }
 
     return ret;
@@ -231,7 +231,7 @@ static time_t str2time(std::istream &stream, TimeZone zone, const char *fmt)
 
 time_t str2time(const std::string &str, TimeZone zone, TimeFormat fmt)
 {
-    std::string fmtstr = process_format(get_fmts_u8L(fmt), zone).c_str();
+    std::string fmtstr = process_format(get_fmtstr(fmt), zone).c_str();
     std::stringstream ss(str);
 
     ss.imbue(std::locale("C"));

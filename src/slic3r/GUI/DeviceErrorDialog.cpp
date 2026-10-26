@@ -375,7 +375,7 @@ wxString DeviceErrorDialog::show_error_code(int error_code)
     if (wxGetApp().get_hms_query()->is_internal_error(m_obj, error_code)) { return wxEmptyString;}
 
     /* error code str*/
-    std::string error_str = m_obj->get_error_code_s_u8L(error_code);
+    std::string error_str = m_obj->get_error_code_str(error_code);
 
     /* error code message*/
     wxString error_msg = wxGetApp().get_hms_query()->query_print_error_msg(m_obj, error_code);

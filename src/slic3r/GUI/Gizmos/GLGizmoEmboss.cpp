@@ -1059,7 +1059,7 @@ EmbossStyles GLGizmoEmboss::create_default_styles()
 
         // check that face name is setabled
         if (style.prop.face_name.has_value()) {
-            wxString face_name = wxString::FromUTF8(style.prop.face_name->c_s_u8L());
+            wxString face_name = wxString::FromUTF8(style.prop.face_name->c_str());
             wxFont wx_font_temp;
             if (!wx_font_temp.SetFaceName(face_name))
                 return true;        
@@ -1112,7 +1112,7 @@ std::optional<wxString> get_installed_face_name(const std::optional<std::string>
     if (!face_name_opt.has_value())
         return wxString();
 
-    wxString face_name = wxString::FromUTF8(face_name_opt->c_s_u8L());
+    wxString face_name = wxString::FromUTF8(face_name_opt->c_str());
 
     // search in enumerated fonts
     // refresh list of installed font in the OS.
@@ -1909,7 +1909,7 @@ void GLGizmoEmboss::draw_font_list()
             if (ImGui::BBLSelectable(face.name_truncated.c_str(), is_selected, flags, selectable_size)) {
                 if (!select_facename(wx_face_name)) {
                     del_index = idx;
-                    MessageDialog(wxGetApp().plater(), GUI::format_wxs_u8L(_L("Font \"%1%\" can't be selected."), wx_face_name));
+                    MessageDialog(wxGetApp().plater(), GUI::format_wxstr(_L("Font \"%1%\" can't be selected."), wx_face_name));
                 } else {
                     ImGui::CloseCurrentPopup();
                 }
@@ -2257,7 +2257,7 @@ void GLGizmoEmboss::draw_delete_style_button() {
                 continue;
             }
 
-            wxString message = GUI::format_wxs_u8L(_L("Are you sure you want to permanently remove the \"%1%\" style?"), style_name);
+            wxString message = GUI::format_wxstr(_L("Are you sure you want to permanently remove the \"%1%\" style?"), style_name);
             MessageDialog msg(plater, message, dialog_title, wxICON_WARNING | wxYES | wxNO);
             if (msg.ShowModal() == wxID_YES) {
                 // delete style
@@ -2395,7 +2395,7 @@ void GLGizmoEmboss::draw_style_list() {
     // Check whether user wants lose actual style modification
     if (selected_style_index.has_value() && is_modified) { 
         const std::string & style_name = m_style_manager.get_styles()[*selected_style_index].name;        
-        wxString message = GUI::format_wxs_u8L(_L("Changing style to \"%1%\" will discard current style modification.\n\nWould you like to continue anyway?"), style_name);
+        wxString message = GUI::format_wxstr(_L("Changing style to \"%1%\" will discard current style modification.\n\nWould you like to continue anyway?"), style_name);
         MessageDialog not_loaded_style_message(nullptr, message, _L("Warning"), wxICON_WARNING | wxYES | wxNO);
         if (not_loaded_style_message.ShowModal() != wxID_YES) 
             selected_style_index.reset();
@@ -2412,7 +2412,7 @@ void GLGizmoEmboss::draw_style_list() {
             process();
         } else {
             wxString title   = _L("Not valid style.");
-            wxString message = GUI::format_wxs_u8L(_L("Style \"%1%\" can't be used and will be removed from a list."), style.name);
+            wxString message = GUI::format_wxstr(_L("Style \"%1%\" can't be used and will be removed from a list."), style.name);
             MessageDialog not_loaded_style_message(nullptr, message, title, wxOK);
             not_loaded_style_message.ShowModal();
             m_style_manager.erase(*selected_style_index);
@@ -3148,16 +3148,16 @@ void GLGizmoEmboss::draw_advanced()
 
 #ifdef ALLOW_DEBUG_MODE
     ImGui::Text("family = %s", (current_prop.family.has_value() ?
-                                    current_prop.family->c_s_u8L() :
+                                    current_prop.family->c_str() :
                                     " --- "));
     ImGui::Text("face name = %s", (current_prop.face_name.has_value() ?
-                                       current_prop.face_name->c_s_u8L() :
+                                       current_prop.face_name->c_str() :
                                        " --- "));
     ImGui::Text("style = %s",
-                (current_prop.style.has_value() ? current_prop.style->c_s_u8L() :
+                (current_prop.style.has_value() ? current_prop.style->c_str() :
                                                  " --- "));
     ImGui::Text("weight = %s", (current_prop.weight.has_value() ?
-                                    current_prop.weight->c_s_u8L() :
+                                    current_prop.weight->c_str() :
                                     " --- "));
 
     std::string descriptor = style.path;
@@ -3196,7 +3196,7 @@ bool GLGizmoEmboss::choose_font_by_wxdialog()
     if ((use_deserialized_font && !m_style_manager.load_style(font_index)) ||
         (!use_deserialized_font && !m_style_manager.load_style(emboss_style, wx_font))) {
         m_style_manager.erase(font_index);
-        wxString message = GUI::format_wxs_u8L(
+        wxString message = GUI::format_wxstr(
             _L("Font \"%1%\" can't be used. Please select another."),
             emboss_style.name);
         wxString      title = "Selected font is NOT True-type.";
@@ -3570,7 +3570,7 @@ bool load(Facenames &facenames) {
 void init_truncated_names(Facenames &face_names, float max_width)
 {
     for (FaceName &face : face_names.faces) {
-        std::string name_s_u8L(face.wx_name.ToUTF8().data());
+        std::string name_str(face.wx_name.ToUTF8().data());
         face.name_truncated = ImGuiWrapper::trunc(name_str, max_width);
     }
     face_names.has_truncated_names = true;

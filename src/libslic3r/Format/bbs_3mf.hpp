@@ -148,11 +148,11 @@ struct PlateData
 
     std::vector<GCodeProcessorResult::SliceWarning> warnings;
 
-    std::string get_gcode_prediction_s_u8L() {
+    std::string get_gcode_prediction_str() {
         return gcode_prediction;
     }
 
-    std::string get_gcode_weight_s_u8L() {
+    std::string get_gcode_weight_str() {
         return gcode_weight;
     }
     bool locked;

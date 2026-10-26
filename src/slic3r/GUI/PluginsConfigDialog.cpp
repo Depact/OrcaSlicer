@@ -215,7 +215,7 @@ void PluginsConfigDialog::send_capability_config(const PluginCapabilityId& id)
             PythonGILState gil;
             response["custom_html"] = cap->get_config_ui();
         } catch (const std::exception& ex) {
-            response["error"] = into_u8(GUI::format_wxs_u8L(_L("The plugin's configuration UI failed to load (%1%). Showing the default editor."),
+            response["error"] = into_u8(GUI::format_wxstr(_L("The plugin's configuration UI failed to load (%1%). Showing the default editor."),
                                                           from_u8(ex.what())));
         }
     }

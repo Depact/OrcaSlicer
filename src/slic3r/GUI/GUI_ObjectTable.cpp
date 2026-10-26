@@ -1571,7 +1571,7 @@ void ObjectGridTable::update_value_to_object(Model* model, ObjectGridRow* grid_r
     }
 
     if ((name_ptr) && (*name_ptr != name_value)) {
-        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(", change name from %1% to %2%!")%name_ptr->c_s_u8L() %name_value.c_str();
+        BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(", change name from %1% to %2%!")%name_ptr->c_str() %name_value.c_str();
         *name_ptr = name_value;
         //notify object list
         wxGetApp().obj_list()->update_name_for_items();

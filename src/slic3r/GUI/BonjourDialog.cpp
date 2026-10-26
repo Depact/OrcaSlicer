@@ -260,7 +260,7 @@ IPListDialog::IPListDialog(wxWindow* parent, const wxString& hostname, const std
 
 	wxBoxSizer* vsizer = new wxBoxSizer(wxVERTICAL);
 
-	auto* label = new wxStaticText(this, wxID_ANY, GUI::format_wxs_u8L(_L("There are several IP addresses resolving to hostname %1%.\nPlease select one that should be used."), hostname));
+	auto* label = new wxStaticText(this, wxID_ANY, GUI::format_wxstr(_L("There are several IP addresses resolving to hostname %1%.\nPlease select one that should be used."), hostname));
     label->SetFont(Label::Body_14);
 	vsizer->Add(label, 0, wxEXPAND | wxTOP | wxLEFT | wxRIGHT, em);
 

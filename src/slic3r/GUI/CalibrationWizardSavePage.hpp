@@ -51,8 +51,8 @@ public:
 
     bool is_failed() { return m_is_failed; }
     int get_col_idx() { return m_col_idx; }
-    wxString get_k_s_u8L();
-    wxString get_n_s_u8L();
+    wxString get_k_str();
+    wxString get_n_str();
     wxString get_name();
     void set_data(wxString k_str, wxString n_str, wxString name);
 

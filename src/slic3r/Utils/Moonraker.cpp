@@ -37,7 +37,7 @@ wxString Moonraker::get_test_ok_msg() const
 
 wxString Moonraker::get_test_failed_msg(wxString &msg) const
 {
-    return GUI::format_wxs_u8L("%s: %s", _L("Could not connect to Moonraker"), msg);
+    return GUI::format_wxstr("%s: %s", _L("Could not connect to Moonraker"), msg);
 }
 
 std::string Moonraker::make_url(const std::string &path) const
@@ -100,7 +100,7 @@ bool Moonraker::test(wxString &msg) const
             BOOST_LOG_TRIVIAL(info) << boost::format("%1%: klippy_state = %2%") % name % (*klippy_state);
         } catch (const std::exception &ex) {
             res = false;
-            msg = GUI::format_wxs_u8L(_L("Could not parse Moonraker server response: %s"), ex.what());
+            msg = GUI::format_wxstr(_L("Could not parse Moonraker server response: %s"), ex.what());
         }
     })
 #ifdef WIN32

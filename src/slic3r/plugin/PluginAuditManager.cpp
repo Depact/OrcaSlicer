@@ -635,12 +635,12 @@ std::string python_unicode(PyObject* object)
     return text;
 }
 
-std::string python_s_u8L(PyObject* object)
+std::string python_str(PyObject* object)
 {
     if (!object)
         return {};
 
-    PyObject* str_object = PyObject_S_u8L(object);
+    PyObject* str_object = PyObject_str(object);
     if (!str_object) {
         PyErr_Clear();
         return {};
@@ -810,7 +810,7 @@ std::vector<std::string> audit_targets(const std::string& event_name, AuditEvent
             PyObject* const item = tuple_item(args, index);
             if (item == Py_None)
                 continue;
-            std::string value = python_s_u8L(item);
+            std::string value = python_str(item);
             if (!value.empty()) {
                 targets.push_back(std::move(value));
                 break;

@@ -599,7 +599,7 @@ static int glad_gl_has_extension(const char *exts, char **exts_i, const char *ex
             return 0;
         }
         while(1) {
-            loc = strs_u8L(extensions, ext);
+            loc = strstr(extensions, ext);
             if(loc == NULL) {
                 return 0;
             }

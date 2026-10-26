@@ -554,7 +554,7 @@ static std::vector<Vec2d> get_path_of_change_filament(const Print& print)
     std::string transform_gcode(const std::string &gcode, Vec2f pos, const Vec2f &translation, float angle)
     {
         Vec2f              extruder_offset(0, 0);
-        std::istringstream gcode_s_u8L(gcode);
+        std::istringstream gcode_str(gcode);
         std::string        gcode_out;
         std::string        line;
         Vec2f              transformed_pos = pos;
@@ -572,7 +572,7 @@ static std::vector<Vec2d> get_path_of_change_filament(const Print& print)
                     line.erase(it, it + WipeTower::never_skip_tag().size());
                 }
                 std::ostringstream line_out;
-                std::istringstream line_s_u8L(line);
+                std::istringstream line_str(line);
                 line_str >> std::noskipws; // don't skip whitespace
                 char ch = 0;
                 while (line_str >> ch) {
@@ -1885,7 +1885,7 @@ static std::vector<Vec2d> get_path_of_change_filament(const Print& print)
         else
             extruder_offset = m_extruder_offsets[tcr.initial_tool].cast<float>();
 
-        std::istringstream gcode_s_u8L(tcr.gcode);
+        std::istringstream gcode_str(tcr.gcode);
         std::string gcode_out;
         std::string line;
         Vec2f pos = tcr.start_pos;
@@ -1909,7 +1909,7 @@ static std::vector<Vec2d> get_path_of_change_filament(const Print& print)
                     line.erase(it, it + WipeTower::never_skip_tag().size());
                 }
                 std::ostringstream line_out;
-                std::istringstream line_s_u8L(line);
+                std::istringstream line_str(line);
                 line_str >> std::noskipws; // don't skip whitespace
                 char ch = 0;
                 while (line_str >> ch) {
@@ -7480,19 +7480,19 @@ LayerResult GCode::process_layer(
                 // exclude objects
                 if (m_enable_exclude_object) {
                     if (is_BBL_Printer()) {
-                        m_writer.set_object_start_s_u8L(
+                        m_writer.set_object_start_str(
                             std::string("; start printing object, unique label id: ") +
                             std::to_string(instance_to_print.label_object_id) + "\n" + "M624 " +
                             _encode_label_ids_to_base64({instance_to_print.label_object_id}) + "\n");
                     } else {
                         const auto gflavor = print.config().gcode_flavor.value;
                         if (gflavor == gcfKlipper) {
-                            m_writer.set_object_start_s_u8L(std::string("EXCLUDE_OBJECT_START NAME=") +
+                            m_writer.set_object_start_str(std::string("EXCLUDE_OBJECT_START NAME=") +
                                                           instance_name(inst) + "\n");
                         }
                         else if (gflavor == gcfMarlinLegacy || gflavor == gcfMarlinFirmware || gflavor == gcfRepRapFirmware) {
                             std::string str = std::string("M486 S") + std::to_string(inst.unique_id) + "\n";
-                            m_writer.set_object_start_s_u8L(str);
+                            m_writer.set_object_start_str(str);
                         }
                     }
                 }
@@ -7636,19 +7636,19 @@ LayerResult GCode::process_layer(
                 // exclude objects
                 // Don't set m_gcode_label_objects_end if you don't had to write the m_gcode_label_objects_start.
                 if (!m_writer.is_object_start_str_empty()) {
-                    m_writer.set_object_start_s_u8L("");
+                    m_writer.set_object_start_str("");
                 } else if (m_enable_exclude_object) {
                     if (is_BBL_Printer()) {
-                        m_writer.set_object_end_s_u8L(std::string("; stop printing object, unique label id: ") +
+                        m_writer.set_object_end_str(std::string("; stop printing object, unique label id: ") +
                                                     std::to_string(instance_to_print.label_object_id) + "\n" +
                                                     "M625\n");
                     } else {
                         const auto gflavor = print.config().gcode_flavor.value;
                         if (gflavor == gcfKlipper) {
-                            m_writer.set_object_end_s_u8L(std::string("EXCLUDE_OBJECT_END NAME=") +
+                            m_writer.set_object_end_str(std::string("EXCLUDE_OBJECT_END NAME=") +
                                                         instance_name(inst) + "\n");
                         } else if (gflavor == gcfMarlinLegacy || gflavor == gcfMarlinFirmware || gflavor == gcfRepRapFirmware) {
-                            m_writer.set_object_end_s_u8L(std::string("M486 S-1\n"));
+                            m_writer.set_object_end_str(std::string("M486 S-1\n"));
                         }
                     }
                 }
@@ -7713,17 +7713,17 @@ LayerResult GCode::process_layer(
                 }
                 if (m_enable_exclude_object) {
                     if (is_BBL_Printer()) {
-                        m_writer.set_object_start_s_u8L(
+                        m_writer.set_object_start_str(
                             std::string("; start printing object, unique label id: ") +
                             std::to_string(instance_to_print.label_object_id) + "\n" + "M624 " +
                             _encode_label_ids_to_base64({instance_to_print.label_object_id}) + "\n");
                     } else {
                         const auto gflavor = print.config().gcode_flavor.value;
                         if (gflavor == gcfKlipper) {
-                            m_writer.set_object_start_s_u8L(std::string("EXCLUDE_OBJECT_START NAME=") +
+                            m_writer.set_object_start_str(std::string("EXCLUDE_OBJECT_START NAME=") +
                                                           instance_name(inst) + "\n");
                         } else if (gflavor == gcfMarlinLegacy || gflavor == gcfMarlinFirmware || gflavor == gcfRepRapFirmware) {
-                            m_writer.set_object_start_s_u8L(std::string("M486 S") + std::to_string(inst.unique_id) + "\n");
+                            m_writer.set_object_start_str(std::string("M486 S") + std::to_string(inst.unique_id) + "\n");
                         }
                     }
                 }
@@ -7940,19 +7940,19 @@ LayerResult GCode::process_layer(
 
                 // --- Shared instance footer (mirrors Orca's main instance loop) ---
                 if (!m_writer.is_object_start_str_empty()) {
-                    m_writer.set_object_start_s_u8L("");
+                    m_writer.set_object_start_str("");
                 } else if (m_enable_exclude_object) {
                     if (is_BBL_Printer()) {
-                        m_writer.set_object_end_s_u8L(std::string("; stop printing object, unique label id: ") +
+                        m_writer.set_object_end_str(std::string("; stop printing object, unique label id: ") +
                                                     std::to_string(instance_to_print.label_object_id) + "\n" +
                                                     "M625\n");
                     } else {
                         const auto gflavor = print.config().gcode_flavor.value;
                         if (gflavor == gcfKlipper) {
-                            m_writer.set_object_end_s_u8L(std::string("EXCLUDE_OBJECT_END NAME=") +
+                            m_writer.set_object_end_str(std::string("EXCLUDE_OBJECT_END NAME=") +
                                                         instance_name(inst) + "\n");
                         } else if (gflavor == gcfMarlinLegacy || gflavor == gcfMarlinFirmware || gflavor == gcfRepRapFirmware) {
-                            m_writer.set_object_end_s_u8L(std::string("M486 S-1\n"));
+                            m_writer.set_object_end_str(std::string("M486 S-1\n"));
                         }
                     }
                 }

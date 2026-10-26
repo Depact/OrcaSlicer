@@ -433,7 +433,7 @@ NozzleVolumeType convert_to_nozzle_type(const std::string &str)
     return res;
 }
 
-wxString MachineObject::get_printer_type_display_s_u8L() const
+wxString MachineObject::get_printer_type_display_str() const
 {
     std::string display_name = DevPrinterConfigUtil::get_printer_display_name(printer_type);
 
@@ -456,7 +456,7 @@ wxString MachineObject::get_printer_type_display_s_u8L() const
         return _L("Unknown");
 }
 
-std::string MachineObject::get_printer_thumbnail_img_s_u8L() const
+std::string MachineObject::get_printer_thumbnail_img_str() const
 {
     std::string img_str = DevPrinterConfigUtil::get_printer_thumbnail_img(printer_type);
     std::string img_url;
@@ -481,7 +481,7 @@ std::string MachineObject::get_printer_thumbnail_img_s_u8L() const
     return img_url;
 }
 
-std::string MachineObject::get_auto_pa_cali_thumbnail_img_s_u8L() const
+std::string MachineObject::get_auto_pa_cali_thumbnail_img_str() const
 {
     return DevPrinterConfigUtil::get_printer_auto_pa_cali_image(printer_type);
 }
@@ -570,7 +570,7 @@ void MachineObject::set_access_code(std::string code, bool only_refresh)
                 }
             } else {
                 if (!code.empty())
-                    config->set_s_u8L("access_code", get_dev_id(), code);
+                    config->set_str("access_code", get_dev_id(), code);
                 else
                     config->erase("access_code", get_dev_id());
             }
@@ -587,7 +587,7 @@ std::string MachineObject::get_show_printer_type() const
 }
 PrinterSeries MachineObject::get_printer_series() const
 {
-    std::string series =  DevPrinterConfigUtil::get_printer_series_s_u8L(printer_type);
+    std::string series =  DevPrinterConfigUtil::get_printer_series_str(printer_type);
     if (series == "series_x1" || series == "series_o")
         return PrinterSeries::SERIES_X1;
     else if (series == "series_p1p")
@@ -611,10 +611,10 @@ bool MachineObject::is_series_p(const std::string& series_str) { return series_s
 bool MachineObject::is_series_x(const std::string& series_str) { return series_str == "series_x1"; }
 bool MachineObject::is_series_o(const std::string& series_str) { return series_str == "series_o";  }
 
-bool MachineObject::is_series_n() const { return is_series_n(DevPrinterConfigUtil::get_printer_series_s_u8L(printer_type)); }
-bool MachineObject::is_series_p() const { return is_series_p(DevPrinterConfigUtil::get_printer_series_s_u8L(printer_type)); }
-bool MachineObject::is_series_x() const { return is_series_x(DevPrinterConfigUtil::get_printer_series_s_u8L(printer_type)); }
-bool MachineObject::is_series_o() const { return is_series_o(DevPrinterConfigUtil::get_printer_series_s_u8L(printer_type)); }
+bool MachineObject::is_series_n() const { return is_series_n(DevPrinterConfigUtil::get_printer_series_str(printer_type)); }
+bool MachineObject::is_series_p() const { return is_series_p(DevPrinterConfigUtil::get_printer_series_str(printer_type)); }
+bool MachineObject::is_series_x() const { return is_series_x(DevPrinterConfigUtil::get_printer_series_str(printer_type)); }
+bool MachineObject::is_series_o() const { return is_series_o(DevPrinterConfigUtil::get_printer_series_str(printer_type)); }
 
 bool MachineObject::can_use_emmc_print() const
 {
@@ -623,7 +623,7 @@ bool MachineObject::can_use_emmc_print() const
     return is_support_print_with_emmc && (disable_emmc_print == "0" || disable_emmc_print == "false");
 }
 
-std::string MachineObject::get_printer_series_s_u8L() const{ return DevPrinterConfigUtil::get_printer_series_s_u8L(printer_type);};
+std::string MachineObject::get_printer_series_str() const{ return DevPrinterConfigUtil::get_printer_series_str(printer_type);};
 
 void MachineObject::reload_printer_settings()
 {
@@ -904,7 +904,7 @@ void MachineObject::get_ams_colors(std::vector<wxColour> &ams_colors) {
     m_fila_system->CollectAmsColors(ams_colors);
 }
 
-std::string MachineObject::get_firmware_type_s_u8L()
+std::string MachineObject::get_firmware_type_str()
 {
     /*if (firmware_type == PrinterFirmwareType::FIRMWARE_TYPE_ENGINEER)
         return "engineer";
@@ -916,7 +916,7 @@ std::string MachineObject::get_firmware_type_s_u8L()
     return "product";
 }
 
-std::string MachineObject::get_lifecycle_type_s_u8L()
+std::string MachineObject::get_lifecycle_type_str()
 {
     /*if (lifecycle == PrinterFirmwareType::FIRMWARE_TYPE_ENGINEER)
         return "engineer";
@@ -978,7 +978,7 @@ bool MachineObject::check_version_valid()
     return valid;
 }
 
-wxString MachineObject::get_upgrade_result_s_u8L(int err_code)
+wxString MachineObject::get_upgrade_result_str(int err_code)
 {
     switch(err_code) {
     case UpgradeNoError:
@@ -2503,7 +2503,7 @@ void MachineObject::set_bind_status(std::string status)
     bind_user_name = status;
 }
 
-std::string MachineObject::get_bind_s_u8L()
+std::string MachineObject::get_bind_str()
 {
     std::string default_result = "N/A";
     if (bind_user_name.compare("null") == 0) {
@@ -5219,7 +5219,7 @@ DevAmsTray MachineObject::parse_vt_tray(json vtray)
             vt_tray.bed_temp = "";
         if (vtray.contains("tray_color")) {
             auto color = vtray["tray_color"].get<std::string>();
-            vt_tray.UpdateColorFromS_u8L(color);
+            vt_tray.UpdateColorFromstr(color);
         }
         else {
             vt_tray.color = "";
@@ -6070,7 +6070,7 @@ wxString MachineObject::get_nozzle_replace_url() const
     return wxEmptyString;
 }
 
-std::string MachineObject::get_error_code_s_u8L(int error_code)
+std::string MachineObject::get_error_code_str(int error_code)
 {
     if (error_code < 0) { return std::string();}
 

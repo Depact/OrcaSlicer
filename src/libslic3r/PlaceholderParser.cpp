@@ -1036,7 +1036,7 @@ namespace client
             if (ctx->skipping() && ! ctx->check_inactive_names())
                 return;
 
-            std::string         opt_key_s_u8L(opt_key.begin(), opt_key.end());
+            std::string         opt_key_str(opt_key.begin(), opt_key.end());
             const ConfigOption *opt = ctx->resolve_symbol(opt_key_str);
             size_t              idx = ctx->current_extruder_id;
             if (opt == nullptr) {
@@ -1084,7 +1084,7 @@ namespace client
                 return;
 
             const char         *not_found = ctx->skipping() ? L("Variable does not exist (in an inactive branch)") : L("Variable does not exist");
-            std::string         opt_key_s_u8L(opt_key.begin(), opt_key.end());
+            std::string         opt_key_str(opt_key.begin(), opt_key.end());
             const ConfigOption *opt = ctx->resolve_symbol(opt_key_str);
             if (opt == nullptr) {
                 // Check whether the opt_key ends with '_'.

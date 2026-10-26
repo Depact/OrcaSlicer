@@ -369,13 +369,13 @@ wxString C3DPrinterOS::get_test_ok_msg() const
     wxString msg = _L("Connection to 3DPrinterOS cloud works correctly.");
     if (!m_username.empty())
         // TRN %1% is the 3DPrinterOS account (e-mail address).
-        msg += " " + GUI::format_wxs_u8L(_L("Logged in as user: %1%"), m_username);
+        msg += " " + GUI::format_wxstr(_L("Logged in as user: %1%"), m_username);
     return msg;
 }
 
 wxString C3DPrinterOS::get_test_failed_msg(wxString &msg) const 
 {
-    return GUI::format_wxs_u8L("%s: %s\n\n", _L("Error session check"), msg);
+    return GUI::format_wxstr("%s: %s\n\n", _L("Error session check"), msg);
 }
 
 bool C3DPrinterOS::upload(

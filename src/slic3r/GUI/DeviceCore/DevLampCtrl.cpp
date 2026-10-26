@@ -11,7 +11,7 @@ namespace Slic3r
 {
 
 
-static std::string _light_effect_s_u8L(DevLamp::LIGHT_EFFECT effect)
+static std::string _light_effect_str(DevLamp::LIGHT_EFFECT effect)
 {
     switch (effect)
     {
@@ -40,7 +40,7 @@ int DevLamp::command_set_chamber_light(LIGHT_EFFECT effect, int on_time, int off
     j["system"]["command"] = "ledctrl";
     j["system"]["led_node"] = "chamber_light";
     j["system"]["sequence_id"] = std::to_string(MachineObject::m_sequence_id++);
-    j["system"]["led_mode"] = _light_effect_s_u8L(effect);
+    j["system"]["led_mode"] = _light_effect_str(effect);
     j["system"]["led_on_time"] = on_time;
     j["system"]["led_off_time"] = off_time;
     j["system"]["loop_times"] = loops;
@@ -54,7 +54,7 @@ int DevLamp::command_set_chamber_light2(LIGHT_EFFECT effect, int on_time, int of
     j["system"]["command"] = "ledctrl";
     j["system"]["led_node"] = "chamber_light2";
     j["system"]["sequence_id"] = std::to_string(MachineObject::m_sequence_id++);
-    j["system"]["led_mode"] = _light_effect_s_u8L(effect);
+    j["system"]["led_mode"] = _light_effect_str(effect);
     j["system"]["led_on_time"] = on_time;
     j["system"]["led_off_time"] = off_time;
     j["system"]["loop_times"] = loops;

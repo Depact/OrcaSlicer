@@ -133,7 +133,7 @@ int DevNozzleMappingCtrl::CtrlGetAutoNozzleMappingV0(Slic3r::GUI::Plater* plater
             fila_item_jj["id"] = (fila.id + 1);
             fila_item_jj["direction"] = (nozzle_info.extruder_id == LOGIC_L_EXTRUDER_ID ? 1 : 2);
             fila_item_jj["group"] = nozzle_info.group_id;
-            fila_item_jj["nozzle_d"] = s_get_diameter_s_u8L(nozzle_info.diameter);
+            fila_item_jj["nozzle_d"] = s_get_diameter_str(nozzle_info.diameter);
             fila_item_jj["nozzle_v"] = (nozzle_info.volume_type == NozzleVolumeType::nvtHighFlow) ? "High Flow" : "Standard";
             fila_item_jj["cate"] = fila.filament_id;
             fila_item_jj["color"] = fila.color;
@@ -155,7 +155,7 @@ int DevNozzleMappingCtrl::CtrlGetAutoNozzleMappingV0(Slic3r::GUI::Plater* plater
                 nozzle_item_jj["pos"] = nozzle_system->GetReplaceNozzleTar().value();// special case of tar_id. see protocol definition
             }
 
-            nozzle_item_jj["nozzle_d"] = s_get_diameter_s_u8L(nozzle.second.GetNozzleDiameter());
+            nozzle_item_jj["nozzle_d"] = s_get_diameter_str(nozzle.second.GetNozzleDiameter());
             nozzle_item_jj["nozzle_v"] = DevNozzle::ToNozzleFlowString(nozzle.second.GetNozzleFlowType());
             nozzle_item_jj["wear"] = nozzle.second.GetNozzleWear();
             nozzle_item_jj["cate"] = nozzle.second.GetFilamentId();
@@ -173,7 +173,7 @@ int DevNozzleMappingCtrl::CtrlGetAutoNozzleMappingV0(Slic3r::GUI::Plater* plater
                 nozzle_item_jj["pos"] = nozzle_system->GetReplaceNozzleTar().value();// special case of tar_id. see protocol definition
             }
 
-            nozzle_item_jj["nozzle_d"] = s_get_diameter_s_u8L(nozzle.second.GetNozzleDiameter());
+            nozzle_item_jj["nozzle_d"] = s_get_diameter_str(nozzle.second.GetNozzleDiameter());
             nozzle_item_jj["nozzle_v"] = DevNozzle::ToNozzleFlowString(nozzle.second.GetNozzleFlowType());
             nozzle_item_jj["wear"] = nozzle.second.GetNozzleWear();
             nozzle_item_jj["cate"] = nozzle.second.GetFilamentId();

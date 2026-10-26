@@ -124,7 +124,7 @@ namespace Slic3r {
             AppConfig* app_cfg = GUI::get_app_config();
             if (app_cfg == nullptr)
                 return;
-            app_cfg->set_s_u8L(ELEGOO_DEV_SN_SECTION, host_ip, sn);
+            app_cfg->set_str(ELEGOO_DEV_SN_SECTION, host_ip, sn);
         }
 
         enum class ElegooPrinterType {
@@ -615,7 +615,7 @@ namespace Slic3r {
 
     wxString ElegooLink::get_test_failed_msg(wxString& msg) const
     {
-        return GUI::format_wxs_u8L("%s: %s", _L("Could not connect to ElegooLink"), msg);
+        return GUI::format_wxstr("%s: %s", _L("Could not connect to ElegooLink"), msg);
     }
 
     #ifdef WIN32
@@ -1068,11 +1068,11 @@ namespace Slic3r {
             // try sending to both. (Then if both fail, show both error msg after second try)
             wxString error_message;
             if (!upload_inner_with_resolved_ip(std::move(upload_data), prorgess_fn
-                , [&msg = error_message, resolved_addr](wxString error) { msg = GUI::format_wxs_u8L("%1%: %2%", resolved_addr.front(), error); }
+                , [&msg = error_message, resolved_addr](wxString error) { msg = GUI::format_wxstr("%1%: %2%", resolved_addr.front(), error); }
                 , info_fn, resolved_addr.front())
                 &&
                 !upload_inner_with_resolved_ip(std::move(upload_data), prorgess_fn
-                , [&msg = error_message, resolved_addr](wxString error) { msg += GUI::format_wxs_u8L("\n%1%: %2%", resolved_addr.back(), error); }
+                , [&msg = error_message, resolved_addr](wxString error) { msg += GUI::format_wxstr("\n%1%: %2%", resolved_addr.back(), error); }
                 , info_fn, resolved_addr.back())
                 ) {
 

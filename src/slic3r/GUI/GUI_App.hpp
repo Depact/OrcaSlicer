@@ -200,7 +200,7 @@ public:
         version_str = "";
     }
 
-    void parse_version_s_u8L(std::string str) {
+    void parse_version_str(std::string str) {
         version_str = str;
         std::vector<std::string> items;
         boost::split(items, str, boost::is_any_of("."));
@@ -459,7 +459,7 @@ public:
 
     wxString get_inf_dialog_contect () {return m_info_dialog_content;};
 
-    std::vector<std::string> split_s_u8L(std::string src, std::string separator);
+    std::vector<std::string> split_str(std::string src, std::string separator);
     // To be called after the GUI is fully built up.
     // Process command line parameters cached in this->init_params,
     // load configs, STLs etc.
@@ -670,8 +670,8 @@ public:
     Tab*            get_layer_tab();
     ConfigOptionMode get_saved_mode();
     ConfigOptionMode get_mode();
-    std::string     get_saved_mode_s_u8L();
-    std::string     get_mode_s_u8L();
+    std::string     get_saved_mode_str();
+    std::string     get_mode_str();
     void            save_mode(const /*ConfigOptionMode*/int mode) ;
     // Switch to `mode` from the Speed Dial: a developer-mode override hides the saved mode
     // (get_mode returns comDevelop), so clear it first and persist the choice.

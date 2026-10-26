@@ -1521,7 +1521,7 @@ static std::vector<MultiNozzleUtils::NozzleGroupInfo> build_nozzle_groups(const 
     auto extruder_nozzle_counts = get_extruder_nozzle_stats(print_config.extruder_nozzle_stats.values);
     const auto& nozzle_volume_types = print_config.nozzle_volume_type.values;
     for (size_t idx = 0; idx < extruder_nums; ++idx) {
-        std::string diameter = format_diameter_to_s_u8L(print_config.nozzle_diameter.values[idx]);
+        std::string diameter = format_diameter_to_str(print_config.nozzle_diameter.values[idx]);
         NozzleVolumeType vt = idx < nozzle_volume_types.size() ? NozzleVolumeType(nozzle_volume_types[idx]) : nvtStandard;
         int max_count = idx < print_config.extruder_max_nozzle_count.values.size() ? print_config.extruder_max_nozzle_count.values[idx] : 1;
         if (idx >= extruder_nozzle_counts.size() || extruder_nozzle_counts[idx].empty()) {
@@ -1907,7 +1907,7 @@ static std::vector<MultiNozzleUtils::NozzleInfo> build_default_nozzle_list(const
     std::vector<NozzleInfo> nozzle_list;
     for (size_t idx = 0; idx < extruder_nums; ++idx) {
         NozzleInfo tmp;
-        tmp.diameter    = format_diameter_to_s_u8L(print_config.nozzle_diameter.values[idx]);
+        tmp.diameter    = format_diameter_to_str(print_config.nozzle_diameter.values[idx]);
         tmp.group_id    = static_cast<int>(idx);
         tmp.extruder_id = static_cast<int>(idx);
         // nozzle_volume_type may be shorter than nozzle_diameter on some Orca profiles; default to Standard.

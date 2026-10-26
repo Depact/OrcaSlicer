@@ -1702,7 +1702,7 @@ void GCodeProcessor::run_post_process()
 
         // filament-change commands: T<fid>, ;VT<fid>, M1020 S<fid>, each optionally " H<nozzle_id>"
         if (GLine::cmd_starts_with(gcode_line, "T")) {
-            std::istringstream s_u8L(gcode_line.substr(skips + 1)); // skip whitespace and 'T'
+            std::istringstream str(gcode_line.substr(skips + 1)); // skip whitespace and 'T'
             int fid;
             str >> fid;
             if (!str.fail() && 0 <= fid && fid < 255) {
@@ -1713,7 +1713,7 @@ void GCodeProcessor::run_post_process()
             return;
         }
         if (GLine::cmd_starts_with(gcode_line, ";VT")) {
-            std::istringstream s_u8L(gcode_line.substr(skips + 3)); // skip whitespace and ";VT"
+            std::istringstream str(gcode_line.substr(skips + 3)); // skip whitespace and ";VT"
             int fid;
             str >> fid;
             if (!str.fail() && 0 <= fid && fid < 255) {
@@ -1726,7 +1726,7 @@ void GCodeProcessor::run_post_process()
         if (GLine::cmd_starts_with(gcode_line, "M1020")) {
             size_t s_pos = gcode_line.find('S');
             if (s_pos != std::string::npos) {
-                std::istringstream s_u8L(gcode_line.substr(s_pos + 1));
+                std::istringstream str(gcode_line.substr(s_pos + 1));
                 int fid;
                 str >> fid;
                 if (!str.fail() && 0 <= fid && fid < 255) {
@@ -7005,7 +7005,7 @@ void GCodeProcessor::ensure_nozzle_group_result(int min_filament_count)
     int max_extruder_id = *std::max_element(filament_map.begin(), filament_map.end());
     max_extruder_id = std::max(0, max_extruder_id);
 
-    std::string nozzle_diameter = format_diameter_to_s_u8L(DEFAULT_TOOLPATH_WIDTH);
+    std::string nozzle_diameter = format_diameter_to_str(DEFAULT_TOOLPATH_WIDTH);
     std::vector<MultiNozzleUtils::NozzleInfo> nozzle_list;
     nozzle_list.reserve(static_cast<size_t>(max_extruder_id + 1));
     for (int extruder_id = 0; extruder_id <= max_extruder_id; ++extruder_id) {

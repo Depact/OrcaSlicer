@@ -5340,7 +5340,7 @@ void Sidebar::remove_all_mixed_filaments()
 
     // Worth a confirmation: this drops filament slots the model may be painted with, and anything
     // painted in one falls back to a plain filament.
-    MessageDialog dlg(this, format_wxs_u8L(_L_PLURAL("Remove %1% mixed filament?", "Remove all %1% mixed filaments?", count), count), _L("Mixed Filament"),
+    MessageDialog dlg(this, format_wxstr(_L_PLURAL("Remove %1% mixed filament?", "Remove all %1% mixed filaments?", count), count), _L("Mixed Filament"),
                       wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION);
     if (dlg.ShowModal() != wxID_YES)
         return;
@@ -7323,7 +7323,7 @@ struct Plater::priv
                     fs::path output_file = get_export_file_path(FT_3MF);
                     suggested_project_name = output_file.empty() ? _L("Untitled") : from_u8(output_file.stem().string());
                 }
-                res = MessageDialog(mainframe, reason + "\n" + format_wxs_u8L(_L("Do you want to save changes to \"%1%\"?"), suggested_project_name),
+                res = MessageDialog(mainframe, reason + "\n" + format_wxstr(_L("Do you want to save changes to \"%1%\"?"), suggested_project_name),
                                     wxString(SLIC3R_APP_FULL_NAME), wxYES_NO | wxCANCEL).ShowModal();
                 if (res == wxID_YES)
                     if (!mainframe->save_project_as(project_name))
@@ -9914,7 +9914,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                 else if (model.looks_like_saved_in_meters()) {
                     // BBS do not handle look like in meters
                     MessageDialog dlg(q,
-                                      format_wxs_u8L(_L("The object from file %s is too small, and may be in meters or inches.\nDo you want to scale to millimeters\?"),
+                                      format_wxstr(_L("The object from file %s is too small, and may be in meters or inches.\nDo you want to scale to millimeters\?"),
                                                    from_path(filename)),
                                       _L("Object too small"), wxICON_QUESTION | wxYES_NO);
                     int           answer = dlg.ShowModal();
@@ -9922,7 +9922,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                 } else if (model.looks_like_imperial_units()) {
                     // BBS do not handle look like in meters
                     MessageDialog dlg(q,
-                                      format_wxs_u8L(_L("The object from file %s is too small, and may be in meters or inches.\nDo you want to scale to millimeters\?"),
+                                      format_wxstr(_L("The object from file %s is too small, and may be in meters or inches.\nDo you want to scale to millimeters\?"),
                                                    from_path(filename)),
                                       _L("Object too small"), wxICON_QUESTION | wxYES_NO);
                     int           answer = dlg.ShowModal();
@@ -9936,7 +9936,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                 //        convert_from_imperial_units(model, true);
                 //};
                 // if (answer_convert_from_imperial_units == wxOK_DEFAULT) {
-                //    RichMessageDialog dlg(q, format_wxs_u8L(_L_PLURAL(
+                //    RichMessageDialog dlg(q, format_wxstr(_L_PLURAL(
                 //        "The dimensions of the object from file %s seem to be defined in inches.\n"
                 //        "The internal unit of PrusaSlicer is a millimeter. Do you want to recalculate the dimensions of the object?",
                 //        "The dimensions of some objects from file %s seem to be defined in inches.\n"
@@ -13191,7 +13191,7 @@ void Plater::priv::on_export_finished(wxCommandEvent& evt)
 {
 #if 0
     //BBS: also export 3mf to the same directory for debugging
-    std::string gcode_path_s_u8L(evt.GetString().ToUTF8().data());
+    std::string gcode_path_str(evt.GetString().ToUTF8().data());
     fs::path gcode_path(gcode_path_str);
 
     if (q) {
@@ -14320,7 +14320,7 @@ wxString Plater::priv::get_project_filename(const wxString& extension) const
     if (m_project_name.empty())
         return "";
     else {
-        auto full_filename = m_project_folder / std::string((m_project_name + extension).mb_s_u8L(wxConvUTF8));
+        auto full_filename = m_project_folder / std::string((m_project_name + extension).mb_str(wxConvUTF8));
         return m_project_folder.empty() ? "" : from_path(full_filename);
     }
 }
@@ -14337,10 +14337,10 @@ wxString Plater::priv::get_export_gcode_filename(const wxString& extension, bool
     if (!m_project_folder.empty()) {
         if (!only_filename) {
             if (export_all) {
-                auto full_filename = m_project_folder / std::string((m_project_name + extension).mb_s_u8L(wxConvUTF8));
+                auto full_filename = m_project_folder / std::string((m_project_name + extension).mb_str(wxConvUTF8));
                 return from_path(full_filename);
             } else {
-                auto full_filename = m_project_folder / std::string((m_project_name + from_u8(plate_index_str) + extension).mb_s_u8L(wxConvUTF8));
+                auto full_filename = m_project_folder / std::string((m_project_name + from_u8(plate_index_str) + extension).mb_str(wxConvUTF8));
                 return from_path(full_filename);
             }
         } else {
@@ -14430,9 +14430,9 @@ void Plater::priv::set_project_filename(const wxString& filename)
     set_project_name(project_name);
     // record filename for hint when open exported file/.gcode
     if (q->m_only_gcode)
-        q->m_preview_only_filename = std::string((project_name + ".gcode").mb_s_u8L());
+        q->m_preview_only_filename = std::string((project_name + ".gcode").mb_str());
     if (q->m_exported_file)
-        q->m_preview_only_filename = std::string((project_name + ".3mf").mb_s_u8L());
+        q->m_preview_only_filename = std::string((project_name + ".3mf").mb_str());
 
     wxGetApp().mainframe->update_title();
 
@@ -14615,7 +14615,7 @@ bool Plater::priv::check_ams_status_impl(bool is_slice_all)
             std::vector<std::vector<NozzleGroupInfo>> preset_nozzle_infos(nozzle_diameter_values.size());
             for (size_t extruder_id = 0; extruder_id < nozzle_diameter_values.size(); ++extruder_id) {
                 NozzleVolumeType preset_volume_type = NozzleVolumeType(nozzle_volumes_values[extruder_id]);
-                std::string      preset_diameter    = format_diameter_to_s_u8L(nozzle_diameter_values[extruder_id]);
+                std::string      preset_diameter    = format_diameter_to_str(nozzle_diameter_values[extruder_id]);
 
                 if (preset_volume_type == nvtHybrid) {
                     // Hybrid: expand into separate groups for each nozzle type from stats
@@ -16282,7 +16282,7 @@ int Plater::save_project(bool saveAs)
         json j;
         boost::uintmax_t size = boost::filesystem::file_size(into_path(filename));
         j["file_size"] = size;
-        j["file_name"] = std::string(filename.mb_s_u8L());
+        j["file_name"] = std::string(filename.mb_str());
 
         NetworkAgent* agent = wxGetApp().getAgent();
     }
@@ -16311,7 +16311,7 @@ void Plater::import_model_id(wxString download_info)
 
         }
         else {
-            fs::path download_path = fs::path(download_origin_url.wx_s_u8L());
+            fs::path download_path = fs::path(download_origin_url.wx_str());
             download_url = download_origin_url;
             filename = download_path.filename().string();
         }
@@ -16371,7 +16371,7 @@ void Plater::import_model_id(wxString download_info)
         target_path = fs::path(wxGetApp().app_config->get("download_path"));
 
         //check file suffix
-        wxString extension = fs::path(filename.wx_s_u8L()).extension().c_str();
+        wxString extension = fs::path(filename.wx_str()).extension().c_str();
         if (!extension.Contains(".3mf")) {
             msg = _L("Download failed; unknown file format.");
             return;
@@ -16402,7 +16402,7 @@ void Plater::import_model_id(wxString download_info)
         std::string unique = to_string(uuid).substr(0, 6);
 
         //target_path /= (boost::format("%1%_%2%.3mf") % filename % unique).str();
-        target_path /= fs::path(filename.wc_s_u8L());
+        target_path /= fs::path(filename.wc_str());
 
         fs::path tmp_path = target_path;
         tmp_path += format(".%1%", ".download");
@@ -16839,7 +16839,7 @@ void Plater::_calib_pa_pattern(const Calib_Params& params)
     if (accels.empty()) {
         accels.assign({accel});
         const auto msg{_L("INFO:") + "\n" +
-                       format_wxs_u8L(_L("No accelerations provided for calibration. Use default acceleration value %1%mm/s²"), long(accel))};
+                       format_wxstr(_L("No accelerations provided for calibration. Use default acceleration value %1%mm/s²"), long(accel))};
         get_notification_manager()->push_notification(msg.utf8_string());
     } else {
         // set max acceleration in case of batch mode to get correct test pattern size
@@ -16904,7 +16904,7 @@ void Plater::_calib_pa_pattern(const Calib_Params& params)
 
         speeds.assign({speed});
         const auto msg{_L("INFO:") + "\n" +
-                       format_wxs_u8L(_L("No speeds provided for calibration. Use default optimal speed %1%mm/s"), long(speed))};
+                       format_wxstr(_L("No speeds provided for calibration. Use default optimal speed %1%mm/s"), long(speed))};
         get_notification_manager()->push_notification(msg.utf8_string());
     } else if (speeds.size() == 1) {
         // If we have single value provided, set speed using global configuration.
@@ -17328,7 +17328,7 @@ void Plater::calib_temp(const Calib_Params& params) {
         if (printer_config.has("belt_printer") && printer_config.opt_bool("belt_printer") &&
             ! boost::filesystem::exists(belt_temp_tower_asset(params))) {
             MessageDialog dlg(static_cast<wxWindow *>(wxGetApp().mainframe),
-                              format_wxs_u8L(_L("No belt temperature tower is available for the range %1% to %2%℃. "
+                              format_wxstr(_L("No belt temperature tower is available for the range %1% to %2%℃. "
                                               "Use a range the tower models cover, for example 230 to 190."),
                                            (int) lround(params.start), (int) lround(params.end)),
                               _L("Temperature tower"), wxICON_ERROR | wxOK);
@@ -18242,7 +18242,7 @@ void Plater::load_gcode(const wxString& filename)
 
     if (p->preview->get_canvas3d()->get_gcode_layers_zs().empty()) {
         unload_file_settings();
-        MessageDialog(this, format_wxs_u8L(_L("The selected file:\n%1%\ndoes not contain valid G-code."), filename),
+        MessageDialog(this, format_wxstr(_L("The selected file:\n%1%\ndoes not contain valid G-code."), filename),
             wxString(GCODEVIEWER_APP_NAME) + " - " + _L("An Error has occurred while loading the G-code file."), wxCLOSE | wxICON_WARNING | wxCENTRE).ShowModal();
         set_project_filename(_L(DEFAULT_PROJECT_NAME));
     } else {
@@ -18412,7 +18412,7 @@ bool Plater::preview_zip_archive(const boost::filesystem::path& archive_path)
                             mz_bool res = mz_zip_reader_extract_to_mem(&archive, stat.m_file_index, (void*)buffer.data(), (size_t)stat.m_uncomp_size, 0);
                             if (res == 0) {
                                 // TRN: First argument = path to file, second argument = error description
-                                wxString error_log = GUI::format_wxs_u8L(_L("Failed to unzip file to %1%: %2%"), final_path.string(), mz_zip_get_error_string(mz_zip_get_last_error(&archive)));
+                                wxString error_log = GUI::format_wxstr(_L("Failed to unzip file to %1%: %2%"), final_path.string(), mz_zip_get_error_string(mz_zip_get_last_error(&archive)));
                                 BOOST_LOG_TRIVIAL(error) << error_log;
                                 show_error(nullptr, error_log);
                                 break;
@@ -18422,7 +18422,7 @@ bool Plater::preview_zip_archive(const boost::filesystem::path& archive_path)
                             file.write(buffer.c_str(), buffer.size());
                             file.close();
                             if (!fs::exists(final_path)) {
-                                wxString error_log = GUI::format_wxs_u8L(_L("Failed to find unzipped file at %1%. Unzipping of file has failed."), final_path.string());
+                                wxString error_log = GUI::format_wxstr(_L("Failed to find unzipped file at %1%. Unzipping of file has failed."), final_path.string());
                                 BOOST_LOG_TRIVIAL(error) << error_log;
                                 show_error(nullptr, error_log);
                                 break;

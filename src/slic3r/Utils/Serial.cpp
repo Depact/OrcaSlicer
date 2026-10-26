@@ -176,7 +176,7 @@ std::vector<SerialPortInfo> scan_serial_ports_extended()
 		if (IOServiceGetMatchingServices(kIOMasterPortDefault, classes, &iter) == KERN_SUCCESS) {
 			io_object_t port;
 			while ((port = IOIteratorNext(iter)) != 0) {
-				CFTypeRef cf_property = IORegistryEntryCreateCFProperty(port, CFS_u8L(kIOCalloutDeviceKey), kCFAllocatorDefault, 0);
+				CFTypeRef cf_property = IORegistryEntryCreateCFProperty(port, CFstr(kIOCalloutDeviceKey), kCFAllocatorDefault, 0);
 				if (cf_property) {
 					char path[PATH_MAX];
 					Boolean result = CFStringGetCString((CFStringRef)cf_property, path, sizeof(path), kCFStringEncodingUTF8);
@@ -187,16 +187,16 @@ std::vector<SerialPortInfo> scan_serial_ports_extended()
 
 						// Attempt to read out the device friendly name
 						if ((cf_property = IORegistryEntrySearchCFProperty(port, kIOServicePlane,
-						         CFS_u8L("USB Interface Name"), kCFAllocatorDefault,
+						         CFstr("USB Interface Name"), kCFAllocatorDefault,
 						         kIORegistryIterateRecursively | kIORegistryIterateParents)) ||
 						    (cf_property = IORegistryEntrySearchCFProperty(port, kIOServicePlane,
-						         CFS_u8L("USB Product Name"), kCFAllocatorDefault,
+						         CFstr("USB Product Name"), kCFAllocatorDefault,
 						         kIORegistryIterateRecursively | kIORegistryIterateParents)) ||
 						    (cf_property = IORegistryEntrySearchCFProperty(port, kIOServicePlane,
-						         CFS_u8L("Product Name"), kCFAllocatorDefault,
+						         CFstr("Product Name"), kCFAllocatorDefault,
 						         kIORegistryIterateRecursively | kIORegistryIterateParents)) ||
 						    (cf_property = IORegistryEntryCreateCFProperty(port, 
-						         CFS_u8L(kIOTTYDeviceKey), kCFAllocatorDefault, 0))) {
+						         CFstr(kIOTTYDeviceKey), kCFAllocatorDefault, 0))) {
 							// Description limited to 127 char, anything longer would not be user friendly anyway.
 							char description[128];
 							if (CFStringGetCString((CFStringRef)cf_property, description, sizeof(description), kCFStringEncodingUTF8)) {
@@ -210,9 +210,9 @@ std::vector<SerialPortInfo> scan_serial_ports_extended()
 
 						// Attempt to read out the VID & PID
 						int vid, pid;
-						auto cf_vendor = IORegistryEntrySearchCFProperty(port, kIOServicePlane, CFS_u8L("idVendor"),
+						auto cf_vendor = IORegistryEntrySearchCFProperty(port, kIOServicePlane, CFstr("idVendor"),
 							kCFAllocatorDefault, kIORegistryIterateRecursively | kIORegistryIterateParents);
-						auto cf_product = IORegistryEntrySearchCFProperty(port, kIOServicePlane, CFS_u8L("idProduct"),
+						auto cf_product = IORegistryEntrySearchCFProperty(port, kIOServicePlane, CFstr("idProduct"),
 							kCFAllocatorDefault, kIORegistryIterateRecursively | kIORegistryIterateParents);
 						if (cf_vendor && cf_product) {
 							if (CFNumberGetValue((CFNumberRef)cf_vendor, kCFNumberIntType, &vid) &&

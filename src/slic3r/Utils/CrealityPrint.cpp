@@ -88,7 +88,7 @@ wxString CrealityPrint::get_test_ok_msg() const { return _(L("Connected to Creal
 
 wxString CrealityPrint::get_test_failed_msg(wxString& msg) const
 {
-    return GUI::format_wxs_u8L("%s: %s", _L("Could not connect to CrealityPrint"), msg.Truncate(256));
+    return GUI::format_wxstr("%s: %s", _L("Could not connect to CrealityPrint"), msg.Truncate(256));
 }
 
 bool CrealityPrint::test(wxString& msg) const

@@ -141,9 +141,9 @@ public:
     static std::string set_additional_fan(unsigned int speed);
     static std::string set_exhaust_fan(int speed);
     //BBS
-    void set_object_start_s_u8L(std::string start_string) { m_gcode_label_objects_start = start_string; }
+    void set_object_start_str(std::string start_string) { m_gcode_label_objects_start = start_string; }
     bool is_object_start_str_empty() { return m_gcode_label_objects_start.empty(); }
-    void set_object_end_s_u8L(std::string end_string) { m_gcode_label_objects_end = end_string; }
+    void set_object_end_str(std::string end_string) { m_gcode_label_objects_end = end_string; }
     bool is_object_end_str_empty() { return m_gcode_label_objects_end.empty(); }
     void add_object_start_labels(std::string &gcode);
     void add_object_end_labels(std::string &gcode);

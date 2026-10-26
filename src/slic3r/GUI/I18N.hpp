@@ -86,7 +86,7 @@ namespace I18N {
 } // namespace I18N
 
 // Return translated std::string as a wxString
-wxString	L_s_u8L(const std::string &str);
+wxString	L_str(const std::string &str);
 
 } // namespace GUI
 } // namespace Slic3r

@@ -366,7 +366,7 @@ static std::string get_unique_id()
     memset(&buf, 0, sizeof(buf));
     io_registry_entry_t ioRegistryRoot = IORegistryEntryFromPath(kIOMasterPortDefault, "IOService:/");
     if (ioRegistryRoot != MACH_PORT_NULL) {
-        CFStringRef uuidCf = (CFStringRef)IORegistryEntryCreateCFProperty(ioRegistryRoot, CFS_u8L(kIOPlatformUUIDKey), kCFAllocatorDefault, 0);
+        CFStringRef uuidCf = (CFStringRef)IORegistryEntryCreateCFProperty(ioRegistryRoot, CFstr(kIOPlatformUUIDKey), kCFAllocatorDefault, 0);
         IOObjectRelease(ioRegistryRoot);
         CFStringGetCString(uuidCf, buf, buf_size, kCFStringEncodingMacRoman);
         CFRelease(uuidCf);
@@ -647,7 +647,7 @@ SendSystemInfoDialog::SendSystemInfoDialog(wxWindow* parent)
     }
 
     const char* filename = "SendSystemInfoDialog.cpp";
-    assert(strs_u8L(__FILE__, filename));
+    assert(strstr(__FILE__, filename));
 
     // Set dialog background color, fonts, etc.
     SetFont(wxGetApp().normal_font());
@@ -660,14 +660,14 @@ SendSystemInfoDialog::SendSystemInfoDialog(wxWindow* parent)
     auto *topSizer = new wxBoxSizer(wxVERTICAL);
     auto *vsizer = new wxBoxSizer(wxVERTICAL);
 
-    wxString text0  = GUI::format_wxs_u8L(wxEmptyString, app_name);
+    wxString text0  = GUI::format_wxstr(wxEmptyString, app_name);
     wxString text1 = wxEmptyString;
     wxString label2 = wxEmptyString;
 
-     wxString text2 = GUI::format_wxs_u8L(wxEmptyString, std::string("<i>") + filename + "</i>");
+     wxString text2 = GUI::format_wxstr(wxEmptyString, std::string("<i>") + filename + "</i>");
 
     auto* html_window = new wxHtmlWindow(this, wxID_ANY, wxDefaultPosition, wxSize(70*em, 34*em), wxHW_SCROLLBAR_NEVER);
-    wxString html = GUI::format_wxs_u8L(
+    wxString html = GUI::format_wxstr(
             "<html><body bgcolor=%1%><font color=%2%>"
             "<table><tr><td>"
             "<img src = \"" + resources_dir() + "/images/OrcaSlicer_192px.png\" />"

@@ -358,7 +358,7 @@ EXIT:
 void PrusaFileParser::_characters_handler(const XML_Char *s, int len)
 {
     if (m_is_application_key) {
-        std::string s_u8L(s, len);
+        std::string str(s, len);
         if (!str.empty() && str.find("PrusaSlicer") != std::string::npos) m_from_prusa = true;
     }
 }

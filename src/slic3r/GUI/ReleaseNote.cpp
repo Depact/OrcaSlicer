@@ -524,7 +524,7 @@ void UpdateVersionDialog::update_version_info(wxString release_note, wxString ve
     // if (split_array.size() >= 3) {
     //     for (auto i = 0; i < split_array.size(); i++) {
     //         std::string url = split_array[i];
-    //         if (std::strs_u8L(url.c_str(), "http://") != NULL || std::strs_u8L(url.c_str(), "https://") != NULL) {
+    //         if (std::strstr(url.c_str(), "http://") != NULL || std::strstr(url.c_str(), "https://") != NULL) {
     //             use_web_link = true;
     //             url_line     = url;
     //             break;

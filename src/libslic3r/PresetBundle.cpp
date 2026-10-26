@@ -1106,7 +1106,7 @@ PresetBundle::LegacyUserFilamentPresetMigration PresetBundle::migrate_legacy_use
     LegacyUserFilamentPresetMigration     result;
     std::vector<LegacyUserFilamentPreset> written;
     const std::string zip_path = data_dir() + "/filament_preset_migration_" +
-                                 Utils::time2s_u8L(Utils::TimeZone::utc, Utils::TimeFormat::iso8601Z) + "_backup.zip";
+                                 Utils::time2str(Utils::TimeZone::utc, Utils::TimeFormat::iso8601Z) + "_backup.zip";
     // Before the lock: zipping a large folder takes longer than a guard may be held.
     if (!backup_user_folder_to_zip(zip_path))
         return result;

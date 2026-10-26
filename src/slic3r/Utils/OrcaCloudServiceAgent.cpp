@@ -747,17 +747,17 @@ int OrcaCloudServiceAgent::change_user(std::string user_info)
         };
 
         // Check if this is a WebView login message (PKCE flow completion)
-        std::string command = safe_s_u8L(tree, "command");
+        std::string command = safe_str(tree, "command");
         if (command == "user_login") {
             if (!tree.contains("data") || !tree["data"].is_object()) {
                 BOOST_LOG_TRIVIAL(error) << "OrcaCloudServiceAgent: WebView login payload missing data field";
                 return BAMBU_NETWORK_ERR_INVALID_HANDLE;
             }
             const auto& data  = tree["data"];
-            std::string state = safe_s_u8L(data, "state");
+            std::string state = safe_str(data, "state");
 
             // Check for auth code (PKCE authorization code flow)
-            std::string auth_code = safe_s_u8L(data, "code");
+            std::string auth_code = safe_str(data, "code");
             if (!auth_code.empty()) {
                 std::string session_payload;
                 if (!exchange_auth_code(auth_code, state, session_payload)) {
@@ -1833,7 +1833,7 @@ bool OrcaCloudServiceAgent::decode_jwt_expiry(const std::string& token, std::chr
     if (!base64url_decode(payload_b64, payload_bytes))
         return false;
 
-    std::string payload_s_u8L(payload_bytes.begin(), payload_bytes.end());
+    std::string payload_str(payload_bytes.begin(), payload_bytes.end());
     try {
         auto payload = json::parse(payload_str);
         if (payload.contains("exp") && payload["exp"].is_number()) {

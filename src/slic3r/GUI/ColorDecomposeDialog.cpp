@@ -682,11 +682,11 @@ void ColorDecomposeDialog::update_filament_limit_warning()
 
     const unsigned int max_count = static_cast<unsigned int>(m_max_filament_count);
     const wxString warning_text = m_selected_mode == DecomposeMode::MaterialList ?
-        format_wxs_u8L(_L_PLURAL("The material list supports at most %1% color. After Material List decomposition, the material count would exceed %1%. Please delete unused filaments on the main screen before decomposing.",
+        format_wxstr(_L_PLURAL("The material list supports at most %1% color. After Material List decomposition, the material count would exceed %1%. Please delete unused filaments on the main screen before decomposing.",
                                "The material list supports at most %1% colors. After Material List decomposition, the material count would exceed %1%. Please delete unused filaments on the main screen before decomposing.",
                                max_count), max_count) :
         // TRN %2% is the decomposition mode name, "CMYW" or "RYBW"
-        format_wxs_u8L(_L_PLURAL("The material list supports at most %1% color. After %2% decomposition, the material count would exceed %1%. Please delete unused filaments on the main screen before decomposing.",
+        format_wxstr(_L_PLURAL("The material list supports at most %1% color. After %2% decomposition, the material count would exceed %1%. Please delete unused filaments on the main screen before decomposing.",
                                "The material list supports at most %1% colors. After %2% decomposition, the material count would exceed %1%. Please delete unused filaments on the main screen before decomposing.",
                                max_count), max_count, m_selected_mode == DecomposeMode::CMYW ? "CMYW" : "RYBW");
 

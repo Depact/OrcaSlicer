@@ -622,14 +622,14 @@ MeshErrorsInfo ObjectList::get_mesh_errors_info(const int obj_idx, const int vol
     // Create tooltip string, if there are errors
     if (stats.repaired()) {
         const int errors = get_repaired_errors_count(obj_idx, vol_idx);
-        auto_repaired_info = format_wxs_u8L(_L_PLURAL("%1$d error repaired", "%1$d errors repaired", errors), errors);
+        auto_repaired_info = format_wxstr(_L_PLURAL("%1$d error repaired", "%1$d errors repaired", errors), errors);
         tooltip += auto_repaired_info + "\n";
     }
     if (!stats.manifold()) {
-        remaining_info = format_wxs_u8L(_L_PLURAL("Error: %1$d non-manifold edge.", "Error: %1$d non-manifold edges.", stats.open_edges), stats.open_edges);
+        remaining_info = format_wxstr(_L_PLURAL("Error: %1$d non-manifold edge.", "Error: %1$d non-manifold edges.", stats.open_edges), stats.open_edges);
 
         tooltip += _L("Remaining errors") + ":\n";
-        tooltip += "\t" + format_wxs_u8L(_L_PLURAL("%1$d non-manifold edge", "%1$d non-manifold edges", stats.open_edges), stats.open_edges) + "\n";
+        tooltip += "\t" + format_wxstr(_L_PLURAL("%1$d non-manifold edge", "%1$d non-manifold edges", stats.open_edges), stats.open_edges) + "\n";
     }
 
     if (sidebar_info) {
@@ -6441,7 +6441,7 @@ void ObjectList::fix_through_cgal(const std::vector<int> &obj_idxs, const std::v
         blocks.push_back(block);
     }
     if (unchanged_models > 0)
-        blocks.push_back(format_wxs_u8L(_L_PLURAL("%1$d model object needed no repair.", "%1$d model objects needed no repair.", unchanged_models), unchanged_models));
+        blocks.push_back(format_wxstr(_L_PLURAL("%1$d model object needed no repair.", "%1$d model objects needed no repair.", unchanged_models), unchanged_models));
     wxString msg;
     for (const wxString &block : blocks)
         msg += (msg.IsEmpty() ? "" : "\n\n") + block;

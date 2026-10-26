@@ -75,7 +75,7 @@ CopyFileResult copy_file_gui(const std::string &from, const std::string &to, std
     /*wxString src = from_u8(from);
     wxString dest = from_u8(to);
 
-    bool result = CopyFile(src.wc_s_u8L(), dest.wc_s_u8L(), false);
+    bool result = CopyFile(src.wc_str(), dest.wc_str(), false);
     if (!result) {
         DWORD errCode = GetLastError();
         error_message = "Error: " + errCode;
@@ -93,7 +93,7 @@ CopyFileResult copy_file_gui(const std::string &from, const std::string &to, std
     DWORD size = 0;
     DWORD dwRead = 0, dwWrite = 0;
 
-    handlesrc = CreateFile(src.wc_s_u8L(),
+    handlesrc = CreateFile(src.wc_str(),
         GENERIC_READ,
         FILE_SHARE_READ,
         NULL,
@@ -106,7 +106,7 @@ CopyFileResult copy_file_gui(const std::string &from, const std::string &to, std
         goto __finished;
     }
 
-    handledst=CreateFile(dest.wc_s_u8L(),
+    handledst=CreateFile(dest.wc_str(),
         GENERIC_WRITE,
         FILE_SHARE_READ,
         NULL,

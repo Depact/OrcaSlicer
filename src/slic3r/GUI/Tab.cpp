@@ -349,7 +349,7 @@ void Tab::create_preset_tab()
                                    "or click this button.")));
 
     add_scaled_button(panel, &m_search_btn, "search");
-    m_search_btn->SetToolTip(format_wxs_u8L(_L("Search in settings [%1%]"), _L("Ctrl+") + "F"));*/
+    m_search_btn->SetToolTip(format_wxstr(_L("Search in settings [%1%]"), _L("Ctrl+") + "F"));*/
 
     // Bitmaps to be shown on the "Revert to system" aka "Lock to system" button next to each input field.
     add_scaled_bitmap(this, m_bmp_value_lock  , "unlock_normal");
@@ -3638,8 +3638,8 @@ void TabPrintModel::update_model_config()
         m_config->apply_only(local_config, std::vector<std::string>(local_keys.begin(), iter));
         for (; iter != local_keys.end(); ++iter) {
             int n = iter->find('#');
-            auto opt_key = iter->subs_u8L(0, n);
-            n = std::atoi(iter->c_s_u8L() + n + 1);
+            auto opt_key = iter->substr(0, n);
+            n = std::atoi(iter->c_str() + n + 1);
             auto vec = dynamic_cast<ConfigOptionVectorBase *>(m_config->option(opt_key));
             vec->set_at(local_config.option(opt_key), n, n);
         }
@@ -4152,14 +4152,14 @@ bool Tab::validate_custom_gcode(const wxString& title, const std::string& gcode)
         std::string lines = ":\n";
         for (const std::string& keyword : tags)
             lines += ";" + keyword + "\n";
-        wxString reports = format_wxs_u8L(
+        wxString reports = format_wxstr(
             _L_PLURAL("Following line %s contains reserved keywords.\nPlease remove it, or G-code visualization and print time estimation will be broken.",
                       "Following lines %s contain reserved keywords.\nPlease remove them, or G-code visualization and print time estimation will be broken.",
                       tags.size()),
             lines);
         //wxMessageDialog dialog(wxGetApp().mainframe, reports, _L("Found reserved keywords in") + " " + _(title), wxICON_WARNING | wxOK);
         // TRN %1% is the name of the custom G-code setting, e.g. "Machine start G-code".
-        MessageDialog dialog(wxGetApp().mainframe, reports, format_wxs_u8L(_L("Reserved keywords found in %1%"), _(title)), wxICON_WARNING | wxOK);
+        MessageDialog dialog(wxGetApp().mainframe, reports, format_wxstr(_L("Reserved keywords found in %1%"), _(title)), wxICON_WARNING | wxOK);
         dialog.ShowModal();
     }
     return !invalid;
@@ -8115,7 +8115,7 @@ void Tab::delete_preset()
             DeleteConfirmDialog
                 dlg(parent(), wxString(SLIC3R_APP_FULL_NAME) + " - " + _L("Delete"),
                     // TRN %1% is "N filament preset(s)", %2% is "N process preset(s)".
-                    format_wxs_u8L(_L("%1% and %2% are attached to this printer. Those presets would be deleted if the printer is deleted."),
+                    format_wxstr(_L("%1% and %2% are attached to this printer. Those presets would be deleted if the printer is deleted."),
                                  wxString::Format(_L_PLURAL("%d filament preset", "%d filament presets", filament_preset_num), filament_preset_num),
                                  wxString::Format(_L_PLURAL("%d process preset", "%d process presets", process_preset_num), process_preset_num)));
             int res = dlg.ShowModal();

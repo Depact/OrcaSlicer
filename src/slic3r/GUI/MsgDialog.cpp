@@ -65,7 +65,7 @@ MsgDialog::MsgDialog(wxWindow *parent, const wxString &title, const wxString &he
 	, boldfont(wxGetApp().normal_font())
 	, content_sizer(new wxBoxSizer(wxVERTICAL))
     , btn_sizer(new wxBoxSizer(wxHORIZONTAL))
-    , m_forward_s_u8L(forward_str)
+    , m_forward_str(forward_str)
 {
 	boldfont.SetWeight(wxFONTWEIGHT_BOLD);
     SetBackgroundColour(0xFFFFFF);

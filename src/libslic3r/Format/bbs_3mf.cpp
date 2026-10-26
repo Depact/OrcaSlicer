@@ -8776,8 +8776,8 @@ bool _BBS_3MF_Exporter::_add_model_config_file_to_archive(mz_zip_archive& archiv
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << PRINTER_MODEL_ID_ATTR       << "\" " << VALUE_ATTR << "=\"" << plate_data->printer_model_id << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << NOZZLE_DIAMETERS_ATTR       << "\" " << VALUE_ATTR << "=\"" << nozzle_diameters_str << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << TIMELAPSE_TYPE_ATTR << "\" " << VALUE_ATTR << "=\"" << timelapse_type << "\"/>\n";
-                stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << SLICE_PREDICTION_ATTR << "\" " << VALUE_ATTR << "=\"" << plate_data->get_gcode_prediction_s_u8L() << "\"/>\n";
-                stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << SLICE_WEIGHT_ATTR      << "\" " << VALUE_ATTR << "=\"" <<  plate_data->get_gcode_weight_s_u8L() << "\"/>\n";
+                stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << SLICE_PREDICTION_ATTR << "\" " << VALUE_ATTR << "=\"" << plate_data->get_gcode_prediction_str() << "\"/>\n";
+                stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << SLICE_WEIGHT_ATTR      << "\" " << VALUE_ATTR << "=\"" <<  plate_data->get_gcode_weight_str() << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << FIRST_LAYER_TIME_ATTR      << "\" " << VALUE_ATTR << "=\"" <<  plate_data->first_layer_time << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << OUTSIDE_ATTR      << "\" " << VALUE_ATTR << "=\"" << std::boolalpha<< plate_data->toolpath_outside << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << SUPPORT_USED_ATTR << "\" " << VALUE_ATTR << "=\"" << std::boolalpha<< plate_data->is_support_used << "\"/>\n";
@@ -8947,7 +8947,7 @@ bool _BBS_3MF_Exporter::_add_model_config_file_to_archive(mz_zip_archive& archiv
                     for (auto& used_nozzle : used_nozzle_list) {
                         if (!has_multi_nozzle_extruder && nozzle_diameter_option &&
                             used_nozzle.extruder_id >= 0 && used_nozzle.extruder_id < (int) nozzle_diameter_option->values.size()) {
-                            used_nozzle.diameter = get_nozzle_diameter_s_u8L(used_nozzle.extruder_id);
+                            used_nozzle.diameter = get_nozzle_diameter_str(used_nozzle.extruder_id);
                         }
                         stream << "    <" << NOZZLE_TAG << " " << used_nozzle.serialize() << "/>\n";
                     }
@@ -8956,7 +8956,7 @@ bool _BBS_3MF_Exporter::_add_model_config_file_to_archive(mz_zip_archive& archiv
                         stream << "    <" << NOZZLE_TAG << " "
                                << "id=\"" << nozzle_group_id << "\" "
                                << "extruder_id=\"" << nozzle_group_id + 1 << "\" "
-                               << "nozzle_diameter=\"" << get_nozzle_diameter_s_u8L(nozzle_group_id) << "\" "
+                               << "nozzle_diameter=\"" << get_nozzle_diameter_str(nozzle_group_id) << "\" "
                                << "volume_type=\"" << get_nozzle_volume_type(nozzle_group_id) << "\"/>\n";
                     }
                 }

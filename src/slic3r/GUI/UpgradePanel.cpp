@@ -587,7 +587,7 @@ MachineInfoPanel::~MachineInfoPanel()
 void MachineInfoPanel::update_printer_imgs(MachineObject* obj)
 {
     if (!obj) {return;}
-    auto img = obj->get_printer_thumbnail_img_s_u8L();
+    auto img = obj->get_printer_thumbnail_img_str();
     img += "_png";
 
     try
@@ -667,12 +667,12 @@ void MachineInfoPanel::update(MachineObject* obj)
             m_upgrade_progress->SetValue(upgrade_percent);
             m_staticText_upgrading_percent->SetLabelText(wxString::Format("%d%%", upgrade_percent));
         } else if (obj->upgrade_display_state == DevFirmwareUpgradingState::UpgradingFinished) {
-            wxString result_text = obj->get_upgrade_result_s_u8L(obj->upgrade_err_code);
+            wxString result_text = obj->get_upgrade_result_str(obj->upgrade_err_code);
             m_upgrade_progress->SetValue(upgrade_percent);
             m_staticText_upgrading_percent->SetLabelText(wxString::Format("%d%%", upgrade_percent));
         }
 
-        wxString model_id_text = obj->get_printer_type_display_s_u8L();
+        wxString model_id_text = obj->get_printer_type_display_str();
         m_staticText_model_id_val->SetLabelText(model_id_text);
         wxString sn_text = obj->get_dev_id();
         m_staticText_sn_val->SetLabelText(sn_text.MakeUpper());

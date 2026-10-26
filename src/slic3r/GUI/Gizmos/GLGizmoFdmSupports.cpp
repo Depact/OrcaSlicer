@@ -420,7 +420,7 @@ void GLGizmoFdmSupports::on_render_input_window(float x, float y, float bottom_l
     if (m_current_tool != ImGui::GapFillIcon) {
         m_imgui->bbl_checkbox(m_desc["on_overhangs_only"], m_paint_on_overhangs_only);
         if (ImGui::IsItemHovered())
-            m_imgui->tooltip(format_wxs_u8L(_L("Allows painting only on facets selected by: \"%1%\""), m_desc["highlight_by_angle"]),
+            m_imgui->tooltip(format_wxstr(_L("Allows painting only on facets selected by: \"%1%\""), m_desc["highlight_by_angle"]),
                              max_tooltip_width);
     }
 

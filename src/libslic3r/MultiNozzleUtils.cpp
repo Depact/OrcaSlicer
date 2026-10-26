@@ -42,7 +42,7 @@ std::vector<NozzleInfo> build_nozzle_list(std::vector<NozzleGroupInfo> nozzle_gr
 
 std::vector<NozzleInfo> build_nozzle_list(double diameter, const std::vector<int>& filament_nozzle_map, const std::vector<int>& filament_volume_map, const std::vector<int>& filament_map)
 {
-    std::string diameter_str = format_diameter_to_s_u8L(diameter);
+    std::string diameter_str = format_diameter_to_str(diameter);
     std::map<int, std::vector<int>> nozzle_to_filaments;
     for(size_t idx = 0; idx < filament_nozzle_map.size(); ++idx){
         int nozzle_id = filament_nozzle_map[idx];
@@ -192,7 +192,7 @@ std::optional<LayeredNozzleGroupResult> LayeredNozzleGroupResult::create(
     for (size_t extruder_id = 0; extruder_id < nozzle_count.size(); ++extruder_id) {
         for (auto elem : nozzle_count[extruder_id]) {
             NozzleGroupInfo group_info;
-            group_info.diameter     = format_diameter_to_s_u8L(diameter);
+            group_info.diameter     = format_diameter_to_str(diameter);
             group_info.volume_type  = elem.first;
             group_info.nozzle_count = elem.second;
             group_info.extruder_id  = static_cast<int>(extruder_id);
@@ -926,7 +926,7 @@ std::vector<NozzleInfo> load_nozzle_infos_with_compatibility(
         result.reserve(extruder_count);
         for (size_t extruder_id = 0; extruder_id < extruder_count; ++extruder_id) {
             NozzleInfo info;
-            info.diameter    = format_diameter_to_s_u8L(nozzle_diameter[extruder_id]);
+            info.diameter    = format_diameter_to_str(nozzle_diameter[extruder_id]);
             info.group_id    = static_cast<int>(extruder_id);
             info.extruder_id = static_cast<int>(extruder_id);
             info.volume_type = volume_types_fixed[extruder_id];
@@ -947,7 +947,7 @@ std::vector<NozzleInfo> load_nozzle_infos_with_compatibility(
             auto volume_type_str_to_enum = ConfigOptionEnum<NozzleVolumeType>::get_enum_values();
 
             NozzleInfo info;
-            info.diameter = format_diameter_to_s_u8L(filament.nozzle_diameter);
+            info.diameter = format_diameter_to_str(filament.nozzle_diameter);
             info.group_id = group_id;
             // Orca: bounds-check filament_map[filament.id] so a malformed 3mf (filament id
             // beyond the map) degrades to extruder 0 instead of dereferencing out of range.

@@ -717,7 +717,7 @@ wxBoxSizer *PreferencesDialog::create_item_input(wxString title, wxString title2
 
     input->GetTextCtrl()->Bind(wxEVT_TEXT_ENTER, [this, param, input, onchange](wxCommandEvent &e) {
         auto value = input->GetTextCtrl()->GetValue();
-        app_config->set(param, std::string(value.mb_s_u8L()));
+        app_config->set(param, std::string(value.mb_str()));
         app_config->save();
         onchange(value);
         e.Skip();
@@ -725,7 +725,7 @@ wxBoxSizer *PreferencesDialog::create_item_input(wxString title, wxString title2
 
     input->GetTextCtrl()->Bind(wxEVT_KILL_FOCUS, [this, param, input, onchange](wxFocusEvent &e) {
         auto value = input->GetTextCtrl()->GetValue();
-        app_config->set(param, std::string(value.mb_s_u8L()));
+        app_config->set(param, std::string(value.mb_str()));
         onchange(value);
         e.Skip();
     });
@@ -810,7 +810,7 @@ wxBoxSizer *PreferencesDialog::create_camera_orbit_mult_input(wxString title, wx
         double conv = 1.0;
         if (value.ToCDouble(&conv)) {
             conv = conv < min ? min : conv > max ? max : conv;
-            auto strval = std::string(wxString::FromCDouble(conv, 2).mb_s_u8L());
+            auto strval = std::string(wxString::FromCDouble(conv, 2).mb_str());
             input->GetTextCtrl()->SetValue(strval);
             app_config->set(param, strval);
             app_config->save();
@@ -823,7 +823,7 @@ wxBoxSizer *PreferencesDialog::create_camera_orbit_mult_input(wxString title, wx
         double conv = 1.0;
         if (value.ToCDouble(&conv)) {
             conv = conv < min ? min : conv > max ? max : conv;
-            auto strval = std::string(wxString::FromCDouble(conv, 2).mb_s_u8L());
+            auto strval = std::string(wxString::FromCDouble(conv, 2).mb_str());
             input->GetTextCtrl()->SetValue(strval);
             app_config->set(param, strval);
         }
@@ -854,7 +854,7 @@ wxBoxSizer *PreferencesDialog::create_item_decimal_input(wxString title, wxStrin
         double conv = min;
         if (value.ToCDouble(&conv)) {
             conv = conv < min ? min : conv > max ? max : conv;
-            auto strval = std::string(wxString::FromCDouble(conv, decimals).mb_s_u8L());
+            auto strval = std::string(wxString::FromCDouble(conv, decimals).mb_str());
             input->GetTextCtrl()->SetValue(strval);
             app_config->set(param, strval);
         }
@@ -915,7 +915,7 @@ wxBoxSizer *PreferencesDialog::create_item_backup(wxString title, wxString toolt
 
     std::function<void()> backup_interval = [this, input]() {
         m_backup_interval_time = input->GetTextCtrl()->GetValue();
-        app_config->set("backup_interval", std::string(m_backup_interval_time.mb_s_u8L()));
+        app_config->set("backup_interval", std::string(m_backup_interval_time.mb_str()));
         app_config->save();
         long backup_interval = 0;
         m_backup_interval_time.ToLong(&backup_interval);
@@ -969,7 +969,7 @@ wxBoxSizer *PreferencesDialog::create_item_auto_reslice(wxString title, wxString
             seconds = 0;
         wxString sanitized = wxString::Format("%ld", seconds);
         input->GetTextCtrl()->SetValue(sanitized);
-        app_config->set("auto_slice_change_delay_seconds", std::string(sanitized.mb_s_u8L()));
+        app_config->set("auto_slice_change_delay_seconds", std::string(sanitized.mb_str()));
         app_config->save();
     };
 
@@ -1474,7 +1474,7 @@ wxBoxSizer* PreferencesDialog::create_item_link_association( wxString url_prefix
     auto update_current_association_str = [=, &reg_to_current_instance](){
         // get registered binary for given link type
         std::wstring registered_bin;
-        reg_to_current_instance = wxGetApp().check_url_association(url_prefix.wc_s_u8L(), registered_bin);
+        reg_to_current_instance = wxGetApp().check_url_association(url_prefix.wc_str(), registered_bin);
 
         // format registered binary to get only the path and remove excess chars
         if (!registered_bin.empty())
@@ -1495,7 +1495,7 @@ wxBoxSizer* PreferencesDialog::create_item_link_association( wxString url_prefix
         registered_instance_title->SetLabel(current_association_str);
         registered_instance_title->SetMaxSize(wxSize(DESIGN_WINDOW_SIZE.x - FromDIP(DESIGN_LEFT_MARGIN) - FromDIP(40), -1)); // prevent horizontal scroll
     };
-    update_current_association_s_u8L();
+    update_current_association_str();
 
     v_sizer->Add(registered_instance_title, 0, wxALIGN_CENTER_VERTICAL | wxLEFT, FromDIP(DESIGN_LEFT_MARGIN));
 
@@ -1504,7 +1504,7 @@ wxBoxSizer* PreferencesDialog::create_item_link_association( wxString url_prefix
             wxGetApp().associate_url(url_prefix.ToStdWstring());
         else
             wxGetApp().disassociate_url(url_prefix.ToStdWstring());
-        update_current_association_s_u8L();
+        update_current_association_str();
         e.Skip();
     });
 
@@ -2497,7 +2497,7 @@ wxBoxSizer* PreferencesDialog::create_debug_page()
             }
 
             // bbs  backup
-            //app_config->set("backup_interval", std::string(m_backup_interval_time.mb_s_u8L()));
+            //app_config->set("backup_interval", std::string(m_backup_interval_time.mb_str()));
             app_config->save();
             Slic3r::set_backup_interval(boost::lexical_cast<long>(app_config->get("backup_interval")));
 

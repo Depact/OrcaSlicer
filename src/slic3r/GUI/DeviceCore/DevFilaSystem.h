@@ -96,7 +96,7 @@ public:
 
     // setters
     void reset();
-    void UpdateColorFromS_u8L(const std::string& color);
+    void UpdateColorFromstr(const std::string& color);
     void set_hold_count() { hold_count = HOLD_COUNT_MAX; }
 
     // getter

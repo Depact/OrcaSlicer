@@ -457,12 +457,12 @@ void SavePresetDialog::update_info_for_edit_ph_printer(const std::string &preset
 
     if (wxSizerItem *sizer_item = m_radio_sizer->GetItem(size_t(0))) {
         if (wxStaticBoxSizer *stb_sizer = static_cast<wxStaticBoxSizer *>(sizer_item->GetSizer())) {
-            wxString msg_text = format_wxs_u8L(_L("Please choose an action with \"%1%\" preset after saving."), preset_name);
+            wxString msg_text = format_wxstr(_L("Please choose an action with \"%1%\" preset after saving."), preset_name);
             stb_sizer->GetStaticBox()->SetLabel(msg_text);
 
-            wxString choices[] = {format_wxs_u8L(_L("For \"%1%\", change \"%2%\" to \"%3%\" "), m_ph_printer_name, m_old_preset_name, preset_name),
-                                  format_wxs_u8L(_L("For \"%1%\", add \"%2%\" as a new preset"), m_ph_printer_name, preset_name),
-                                  format_wxs_u8L(_L("Simply switch to \"%1%\""), preset_name)};
+            wxString choices[] = {format_wxstr(_L("For \"%1%\", change \"%2%\" to \"%3%\" "), m_ph_printer_name, m_old_preset_name, preset_name),
+                                  format_wxstr(_L("For \"%1%\", add \"%2%\" as a new preset"), m_ph_printer_name, preset_name),
+                                  format_wxstr(_L("Simply switch to \"%1%\""), preset_name)};
 
             size_t n = 0;
             for (const wxString &label : choices) stb_sizer->GetItem(n++)->GetWindow()->SetLabel(label);
