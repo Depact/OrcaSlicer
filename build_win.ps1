@@ -35,8 +35,8 @@
 .PARAMETER Clean
     Delete the preset's build directory before configuring.
 
-.PARAMETER UnityTest
-    Configure with SLIC3R_UNITY_BUILD=ON and build only libslic3r.
+.PARAMETER UnityTestLibslic3r
+    Configure with SLIC3R_UNITY_BUILD=ON and build only libslic3r (quick smoke test).
 
 .PARAMETER NoMetrics
     Skip build-process CPU, core and memory sampling.
@@ -64,7 +64,7 @@ param(
     [string]$Config = "Release",
     [string]$Target,
     [switch]$Clean,
-    [switch]$UnityTest,
+    [switch]$UnityTestLibslic3r,
     [switch]$NoMetrics,
     [ValidateRange(1, 10)]
     [int]$MetricsInterval = 15,
@@ -215,7 +215,7 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
 
     # --- 4. Choose the preset and target ---
     Write-Step "[4/5] Determining build configuration..."
-    if ($UnityTest) {
+    if ($UnityTestLibslic3r) {
         $Preset = "x64-clang-cache"
         if (-not $Target) { $Target = "libslic3r" }
     } elseif (-not $Preset) {
@@ -245,7 +245,7 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
 
     # --- 5. Configure and build ---
     Write-Step "[5/5] Configuring and building..."
-    $timing = Configure-Build -Cmake $cmake -Preset $Preset -BuildDir $buildDir -Config $Config -Target $Target -UnityTest:$UnityTest -MaxJobs $MaxJobs
+    $timing = Configure-Build -Cmake $cmake -Preset $Preset -BuildDir $buildDir -Config $Config -Target $Target -UnityTest:$UnityTestLibslic3r -MaxJobs $MaxJobs
 
     # --- 6. Ccache statistics ---
     Show-CcacheStats -Ccache $ccache -NoMetrics:$NoMetrics
@@ -253,7 +253,7 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
     $total = (Get-Date) - $started
     Write-Host ""
     Write-Host "==========================================" -ForegroundColor Green
-    if ($UnityTest) {
+    if ($UnityTestLibslic3r) {
         Write-Host "  Unity build test PASSED (libslic3r)" -ForegroundColor Green
     } else {
         Write-Host "  Build complete!" -ForegroundColor Green
