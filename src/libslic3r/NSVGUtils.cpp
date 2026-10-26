@@ -5,7 +5,6 @@
 
 #include <boost/nowide/iostream.hpp>
 #include <boost/nowide/fstream.hpp>
-#include <nanosvg/nanosvg.h>
 #include <cstddef>
 #include <string>
 #include <memory>

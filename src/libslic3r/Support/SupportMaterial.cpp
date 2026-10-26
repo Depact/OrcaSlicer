@@ -34,7 +34,6 @@
 #include <map>
 #include <memory>
 #include <boost/log/trivial.hpp>
-#include <boost/container/static_vector.hpp>
 
 #include <set>
 #include <numeric>
@@ -53,7 +52,6 @@
     #include <agg/agg_scanline_p.h>
     #include <agg/agg_rasterizer_scanline_aa.h>
     #include <agg/agg_path_storage.h>
-    #include "PNGReadWrite.hpp"
 #else
     #include "EdgeGrid.hpp"
 #endif // SUPPORT_USE_AGG_RASTERIZER
@@ -80,24 +78,13 @@
 #include "libslic3r/MultiMaterialSegmentation.hpp"
 #include "libslic3r/Support/SupportParameters.hpp"
 #include "libslic3r/SurfaceCollection.hpp"
+#include "SupportConstants.hpp"
 
 namespace Slic3r {
 
 // how much we extend support around the actual contact area
 //FIXME this should be dependent on the nozzle diameter!
 // BBS: change from 1.5 to 1.2
-#define SUPPORT_MATERIAL_MARGIN 1.2
-
-// Increment used to reach MARGIN in steps to avoid trespassing thin objects
-#define NUM_MARGIN_STEPS 3
-
-// Dimensions of a tree-like structure to save material
-#define PILLAR_SIZE (2.5)
-#define PILLAR_SPACING 10
-
-//#define SUPPORT_SURFACES_OFFSET_PARAMETERS jtMiter, 3.
-//#define SUPPORT_SURFACES_OFFSET_PARAMETERS jtMiter, 1.5
-#define SUPPORT_SURFACES_OFFSET_PARAMETERS jtSquare, 0.
 
 static constexpr bool support_with_sheath = false;
 
@@ -396,11 +383,6 @@ inline void layers_append(SupportGeneratorLayersPtr &dst, const SupportGenerator
 {
     dst.insert(dst.end(), src.begin(), src.end());
 }
-
-// Support layer that is covered by some form of dense interface.
-static constexpr const std::initializer_list<SupporLayerType> support_types_interface {
-    SupporLayerType::RaftInterface, SupporLayerType::BottomContact, SupporLayerType::BottomInterface, SupporLayerType::TopContact, SupporLayerType::TopInterface
-};
 
 // Forward declarations for belt floor helpers (defined later in this file).
 // belt_floor_surface_polygon is declared in SupportCommon.hpp (non-static,
@@ -922,14 +904,14 @@ public:
             auto smoothing_distance = scaled<float>(m_extrusion_width);
 #ifdef SLIC3R_DEBUG
             SVG::export_expolygons(debug_out_path("extract_support_from_grid_trimmed-%s-%d-%d-%lf.svg", step_name, iRun, layer_id, print_z),
-                { { { diff_ex(expand(*m_support_polygons, closing_distance), closing(*m_support_polygons, closing_distance, SUPPORT_SURFACES_OFFSET_PARAMETERS)) }, { "closed", "blue",   0.5f } },
-                  { { union_ex(smooth_outward(closing(*m_support_polygons, closing_distance, SUPPORT_SURFACES_OFFSET_PARAMETERS), smoothing_distance)) },           { "regularized", "red", "black", "", scaled<coord_t>(0.1f), 0.5f } },
+                { { { diff_ex(expand(*m_support_polygons, closing_distance), closing(*m_support_polygons, closing_distance, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT)) }, { "closed", "blue",   0.5f } },
+                  { { union_ex(smooth_outward(closing(*m_support_polygons, closing_distance, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT), smoothing_distance)) },           { "regularized", "red", "black", "", scaled<coord_t>(0.1f), 0.5f } },
                   { { union_ex(*m_support_polygons) },                                                                                                              { "src",   "green",  0.5f } },
                 });
 #endif /* SLIC3R_DEBUG */
             //FIXME do we want to trim with the object here? On one side the columns will be thinner, on the other side support interfaces may disappear for snug supports.
-            // return diff(smooth_outward(closing(*m_support_polygons, closing_distance, SUPPORT_SURFACES_OFFSET_PARAMETERS), smoothing_distance), *m_trimming_polygons);
-            return smooth_outward(closing(*m_support_polygons, closing_distance, SUPPORT_SURFACES_OFFSET_PARAMETERS), smoothing_distance);
+            // return diff(smooth_outward(closing(*m_support_polygons, closing_distance, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT), smoothing_distance), *m_trimming_polygons);
+            return smooth_outward(closing(*m_support_polygons, closing_distance, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT), smoothing_distance);
         }
         assert(false);
         return Polygons();
@@ -1261,14 +1243,14 @@ namespace SupportMaterialInternal {
                         poly.points.pop_back();
                         if (poly.area() < 0)
                             poly.reverse();
-                        polygons_append(out, offset(poly, exp, SUPPORT_SURFACES_OFFSET_PARAMETERS));
-                        Polygons holes = offset(poly, - exp, SUPPORT_SURFACES_OFFSET_PARAMETERS);
+                        polygons_append(out, offset(poly, exp, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT));
+                        Polygons holes = offset(poly, - exp, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT);
                         polygons_reverse(holes);
                         polygons_append(out, holes);
                     }
                 } else if (ep.size() >= 2) {
                     // Offset the polyline.
-                    polygons_append(out, offset(ep.polyline, exp, SUPPORT_SURFACES_OFFSET_PARAMETERS));
+                    polygons_append(out, offset(ep.polyline, exp, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT));
                 }
             }
     }
@@ -1301,7 +1283,7 @@ namespace SupportMaterialInternal {
             Polygons lower_grown_slices = expand(lower_layer_polygons,
                 //FIXME to mimic the decision in the perimeter generator, we should use half the external perimeter width.
                 0.5f * float(scale_(print_config.nozzle_diameter.get_at(layerm.region().config().outer_wall_filament_id-1))),
-                SUPPORT_SURFACES_OFFSET_PARAMETERS);
+                Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT);
             // Collect perimeters of this layer.
             //FIXME split_at_first_point() could split a bridge mid-way
         #if 0
@@ -1356,14 +1338,14 @@ namespace SupportMaterialInternal {
         //FIXME add supports at regular intervals to support long bridges!
         bridges = diff(bridges,
                 // Offset unsupported edges into polygons.
-                offset(layerm.unsupported_bridge_edges, scale_(SUPPORT_MATERIAL_MARGIN), SUPPORT_SURFACES_OFFSET_PARAMETERS));
+                offset(layerm.unsupported_bridge_edges, scale_(Slic3r::SUPPORT_MATERIAL_MARGIN_MATERIAL), Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT));
         // Remove bridged areas from the supported areas.
         contact_polygons = diff(contact_polygons, bridges, ApplySafetyOffset::Yes);
 
         #ifdef SLIC3R_DEBUG
             static int iRun = 0;
             SVG::export_expolygons(debug_out_path("support-top-contacts-remove-bridges-run%d.svg", iRun ++),
-                { { { union_ex(offset(layerm.unsupported_bridge_edges, scale_(SUPPORT_MATERIAL_MARGIN), SUPPORT_SURFACES_OFFSET_PARAMETERS)) }, { "unsupported_bridge_edges", "orange", 0.5f } },
+                { { { union_ex(offset(layerm.unsupported_bridge_edges, scale_(Slic3r::SUPPORT_MATERIAL_MARGIN_MATERIAL), Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT)) }, { "unsupported_bridge_edges", "orange", 0.5f } },
                   { { union_ex(contact_polygons) },            { "contact_polygons",           "blue",   0.5f } },
                   { { union_ex(bridges) },                     { "bridges",                    "red",    "black", "", scaled<coord_t>(0.1f), 0.5f } } });
         #endif /* SLIC3R_DEBUG */
@@ -1543,7 +1525,7 @@ static inline ExPolygons detect_overhangs(
                 //FIXME cache the lower layer offset if this layer has multiple regions.
                 diff_polygons =
                     diff(layerm_polygons,
-                            expand(*effective_lower, lower_layer_offset, SUPPORT_SURFACES_OFFSET_PARAMETERS));
+                            expand(*effective_lower, lower_layer_offset, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT));
                 if (buildplate_only && ! annotations.buildplate_covered[layer_id].empty()) {
                     // Don't support overhangs above the top surfaces.
                     // This step is done before the contact surface is calculated by growing the overhang region.
@@ -1553,7 +1535,7 @@ static inline ExPolygons detect_overhangs(
                     // Offset the support regions back to a full overhang, restrict them to the full overhang.
                     // This is done to increase size of the supporting columns below, as they are calculated by
                     // propagating these contact surfaces downwards.
-                    diff_polygons = diff(intersection(expand(diff_polygons, lower_layer_offset, SUPPORT_SURFACES_OFFSET_PARAMETERS), layerm_polygons), *effective_lower);
+                    diff_polygons = diff(intersection(expand(diff_polygons, lower_layer_offset, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT), layerm_polygons), *effective_lower);
                 }
                 //FIXME add user defined filtering here based on minimal area or minimum radius or whatever.
 
@@ -1601,7 +1583,7 @@ static inline ExPolygons detect_overhangs(
             if (diff_polygons.empty() || offset(diff_polygons, -0.1 * fw).empty())
                 continue;
 
-            if (xy_expansion != 0) { diff_polygons = expand(diff_polygons, xy_expansion, SUPPORT_SURFACES_OFFSET_PARAMETERS); }
+            if (xy_expansion != 0) { diff_polygons = expand(diff_polygons, xy_expansion, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT); }
 
             polygons_append(overhang_polygons, diff_polygons);
         } // for each layer.region
@@ -1682,7 +1664,7 @@ static inline std::tuple<Polygons, Polygons, double> detect_contacts(
                 slices_margin.polygons = (slices_margin_offset == 0.f) ?
                     lower_layer_polygons :
                     // What is the purpose of no_interface_offset? Likely to not trim the contact layer by lower layer regions that are too thin to extrude?
-                    offset2(lower_layer.lslices, -no_interface_offset * 0.5f, slices_margin_offset + no_interface_offset * 0.5f, SUPPORT_SURFACES_OFFSET_PARAMETERS);
+                    offset2(lower_layer.lslices, -no_interface_offset * 0.5f, slices_margin_offset + no_interface_offset * 0.5f, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT);
                 if (buildplate_only && !annotations.buildplate_covered[layer_id].empty()) {
                     if (has_enforcer)
                         // Make a backup of trimming polygons before enforcing "on build plate only".
@@ -1717,11 +1699,11 @@ static inline std::tuple<Polygons, Polygons, double> detect_contacts(
                 slices_margin_update(std::min(lower_layer_offset, float(scale_(gap_xy))), no_interface_offset);
                 // Offset the contact polygons outside.
 #if 0
-                for (size_t i = 0; i < NUM_MARGIN_STEPS; ++ i) {
+                for (size_t i = 0; i < Slic3r::SUPPORT_MARGIN_STEPS; ++ i) {
                     diff_polygons = diff(
                         offset(
                             diff_polygons,
-                            scaled<float>(SUPPORT_MATERIAL_MARGIN / NUM_MARGIN_STEPS),
+                            scaled<float>(Slic3r::SUPPORT_MATERIAL_MARGIN_MATERIAL / Slic3r::SUPPORT_MARGIN_STEPS),
                             jtRound,
                             // round mitter limit
                             scale_(0.05)),
@@ -1742,7 +1724,7 @@ static inline std::tuple<Polygons, Polygons, double> detect_contacts(
 #endif // SLIC3R_DEBUG
                 enforcer_polygons = diff(intersection(layer.lslices, enforcer_polygons_src),
                     // Inflate just a tiny bit to avoid intersection of the overhang areas with the object.
-                    expand(lower_layer_polygons, 0.05f * no_interface_offset, SUPPORT_SURFACES_OFFSET_PARAMETERS));
+                    expand(lower_layer_polygons, 0.05f * no_interface_offset, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT));
 #ifdef SLIC3R_DEBUG
                 SVG::export_expolygons(debug_out_path("support-top-contacts-enforcers-run%d-layer%d-z%f.svg", iRun, layer_id, layer.print_z),
                     { { layer.lslices,                                 { "layer.lslices",              "gray",   0.2f } },
@@ -1936,7 +1918,7 @@ static inline void fill_contact_layer(
         if (lower_layer_polygons_for_dense_interface_cache.empty())
             lower_layer_polygons_for_dense_interface_cache = 
                 //FIXME no_interface_offset * 0.6f offset is not quite correct, one shall derive it based on an angle thus depending on layer height.
-            opening(lower_layer_polygons, no_interface_offset * 0.5f, no_interface_offset * (0.6f + 0.5f), SUPPORT_SURFACES_OFFSET_PARAMETERS);
+            opening(lower_layer_polygons, no_interface_offset * 0.5f, no_interface_offset * (0.6f + 0.5f), Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT);
         return lower_layer_polygons_for_dense_interface_cache;
     };
 
@@ -2525,7 +2507,7 @@ static inline SupportGeneratorLayer* detect_bottom_contacts(
     layer_new.idx_object_layer_below = layer_id;
     layer_new.bridging = !slicing_params.zero_gap_interface_bottom && object.config().thick_bridges;
     //FIXME how much to inflate the bottom surface, as it is being extruded with a bridging flow? The following line uses a normal flow.
-    layer_new.polygons = expand(touching, float(support_params.support_material_flow.scaled_width()), SUPPORT_SURFACES_OFFSET_PARAMETERS);
+    layer_new.polygons = expand(touching, float(support_params.support_material_flow.scaled_width()), Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT);
 
     if (!slicing_params.zero_gap_interface_bottom) {
         // Walk the top surfaces, snap the top of the new bottom surface to the closest top of the top surface,
@@ -2630,7 +2612,7 @@ static inline SupportGeneratorLayer* detect_belt_floor_bottom_contacts(
     layer_new.bottom_z = layer.print_z;
     layer_new.idx_object_layer_below = layer_id;
     layer_new.bridging = ! slicing_params.zero_gap_interface_bottom && object.config().thick_bridges;
-    layer_new.polygons = expand(touching, float(support_params.support_material_flow.scaled_width()), SUPPORT_SURFACES_OFFSET_PARAMETERS);
+    layer_new.polygons = expand(touching, float(support_params.support_material_flow.scaled_width()), Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT);
 
     if (! slicing_params.zero_gap_interface_bottom) {
         // Snap to nearby top contact layers to avoid very thin support layers.
@@ -3384,7 +3366,7 @@ void PrintObjectSupportMaterial::trim_support_layers_by_object(
                         coordf_t trimming_offset = is_sharptail ? scale_(sharp_tail_xy_gap) :
                                                    is_overlap ? gap_xy_scaled :
                                                    scale_(no_overlap_xy_gap);
-                        polygons_append(polygons_trimming, offset({ expoly }, trimming_offset, SUPPORT_SURFACES_OFFSET_PARAMETERS));
+                        polygons_append(polygons_trimming, offset({ expoly }, trimming_offset, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT));
                     }
                 }
                 if (!m_slicing_params.zero_gap_interface_top && m_object_config->thick_bridges) {
@@ -3401,7 +3383,7 @@ void PrintObjectSupportMaterial::trim_support_layers_by_object(
                             bool is_overlap = is_layers_overlap(support_layer, object_layer, bridging_height);
                             coordf_t trimming_offset = is_overlap ? gap_xy_scaled : scale_(no_overlap_xy_gap);
                             polygons_append(polygons_trimming, 
-                                offset(region->fill_surfaces.filter_by_type(stBottomBridge), trimming_offset, SUPPORT_SURFACES_OFFSET_PARAMETERS));
+                                offset(region->fill_surfaces.filter_by_type(stBottomBridge), trimming_offset, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT));
                             if (region->region().config().detect_overhang_wall.value)
                                 // Add bridging perimeters.
                                 SupportMaterialInternal::collect_bridging_perimeter_areas(region->perimeters, gap_xy_scaled, polygons_trimming);
@@ -3433,8 +3415,8 @@ void PrintObjectSupportMaterial::clip_by_pillars(
     if (top_contacts.empty())
         return;
 
-    coord_t pillar_size    = scale_(PILLAR_SIZE);
-    coord_t pillar_spacing = scale_(PILLAR_SPACING);
+    coord_t pillar_size    = scale_(Slic3r::TREE_SUPPORT_PILLAR_SIZE);
+    coord_t pillar_spacing = scale_(Slic3r::TREE_SUPPORT_PILLAR_SPACING);
     
     // A regular grid of pillars, filling the 2D bounding box.
     Polygons grid;

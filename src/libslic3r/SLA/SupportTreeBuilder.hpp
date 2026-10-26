@@ -65,7 +65,9 @@ template<class Vec> double distance(const Vec& pp1, const Vec& pp2) {
     return distance(p);
 }
 
-const Vec3d DOWN = {0.0, 0.0, -1.0};
+namespace SupportTreeConstants {
+    inline const Vec3d DOWN = Vec3d(0.0, 0.0, -1.0);
+}
 
 struct SupportTreeNode
 {
@@ -76,14 +78,14 @@ struct SupportTreeNode
 
 // A pinhead originating from a support point
 struct Head: public SupportTreeNode {
-    Vec3d dir = DOWN;
+    Vec3d dir = SupportTreeConstants::DOWN;
     Vec3d pos = {0, 0, 0};
     
     double r_back_mm = 1;
     double r_pin_mm = 0.5;
     double width_mm = 2;
     double penetration_mm = 0.5;
-
+    
     
     // If there is a pillar connecting to this head, then the id will be set.
     long pillar_id = ID_UNSET;
@@ -97,7 +99,7 @@ struct Head: public SupportTreeNode {
          double r_small_mm,
          double length_mm,
          double penetration,
-         const Vec3d &direction = DOWN,  // direction (normal to the dull end)
+         const Vec3d &direction = SupportTreeConstants::DOWN,  // direction (normal to the dull end)
          const Vec3d &offset = {0, 0, 0}      // displacement
          );
 

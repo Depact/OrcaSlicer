@@ -19,10 +19,6 @@
 #include "libslic3r_version.h"
 #include "PlaceholderParser.hpp"
 
-//! macro used to mark string used at localization,
-//! return same string
-#define L(s) Slic3r::I18N::translate(s)
-
 namespace Slic3r
 {
 
@@ -99,7 +95,7 @@ std::string PrintBase::output_filename(const std::string &format, const std::str
             filename.replace_extension(default_ext);
         return filename.string();
     } catch (std::runtime_error &err) {
-        throw Slic3r::PlaceholderParserError(L("Processing of the filename_format template failed.") + "\n" + err.what());
+        throw Slic3r::PlaceholderParserError(_u8L("Processing of the filename_format template failed.") + "\n" + err.what());
     }
 }
 

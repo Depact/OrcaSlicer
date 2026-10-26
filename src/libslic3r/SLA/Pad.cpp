@@ -31,10 +31,6 @@
 #include "libslic3r/BoundingBox.hpp"
 #include "libslic3r/Polygon.hpp"
 
-//! macro used to mark string used at localization,
-//! return same string
-#define L(s) Slic3r::I18N::translate(s)
-
 namespace Slic3r { namespace sla {
 
 namespace {
@@ -524,7 +520,7 @@ std::string PadConfig::validate() const
     if (brim_size_mm < MIN_BRIM_SIZE_MM ||
         bottom_offset() > brim_size_mm + wing_distance() ||
         get_waffle_offset(*this) <= MIN_BRIM_SIZE_MM)
-        return L("Pad brim size is too small for the current configuration.");
+        return _u8L("Pad brim size is too small for the current configuration.");
 
     return "";
 }

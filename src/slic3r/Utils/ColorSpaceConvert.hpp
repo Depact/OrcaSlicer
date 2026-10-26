@@ -1,5 +1,7 @@
 #ifndef slic3r_Utils_ColorSpaceConvert_hpp_
 #define slic3r_Utils_ColorSpaceConvert_hpp_
+#include <algorithm>
+#include <cmath>
 #include <string>
 const int CUSTOM_COLOR_COUNT = 16;
 
@@ -14,7 +16,31 @@ void Lab2RGB(float L, float a, float b, float* R, float* G, float* B);
 void RGB2XYZ(float R, float G, float B, float* X, float* Y, float* Z);
 void XYZ2Lab(float X, float Y, float Z, float* L, float* a, float* b);
 void RGB2Lab(float R, float G, float B, float* L, float* a, float* b);
-void RGB2HSV(float r, float g, float b, float* h, float* s, float* v);
+// Inline so libslic3r can use it without linking libslic3r_gui.
+inline void RGB2HSV(float r, float g, float b, float* h, float* s, float* v)
+{
+    float Cmax = std::max(std::max(r, g), b);
+    float Cmin = std::min(std::min(r, g), b);
+    float delta = Cmax - Cmin;
+
+    if (std::abs(delta) < 0.001f) {
+        *h = 0.f;
+    } else if (Cmax == r) {
+        *h = 60.f * fmod((g - b) / delta, 6.f);
+    } else if (Cmax == g) {
+        *h = 60.f * ((b - r) / delta + 2);
+    } else {
+        *h = 60.f * ((r - g) / delta + 4);
+    }
+
+    if (std::abs(Cmax) < 0.001f) {
+        *s = 0.f;
+    } else {
+        *s = delta / Cmax;
+    }
+
+    *v = Cmax;
+}
 
 float DeltaE00(float l1, float a1, float b1, float l2, float a2, float b2);
 float DeltaE94(float l1, float a1, float b1, float l2, float a2, float b2);

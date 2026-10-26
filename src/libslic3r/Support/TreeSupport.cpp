@@ -25,6 +25,7 @@
 #include "libslic3r/Flow.hpp"
 #include "libslic3r/Polyline.hpp"
 #include "libslic3r/Support/SupportParameters.hpp"
+#include "libslic3r/Support/SupportConstants.hpp"
 #include "libslic3r/Utils.hpp"
 #include "format.hpp"
 #include "ClipperUtils.hpp"
@@ -735,7 +736,9 @@ bool TreeSupport::belt_polygon_landed(const ExPolygon &poly, double print_z) con
     return print_z <= min_floor;
 }
 
-#define SUPPORT_SURFACES_OFFSET_PARAMETERS jtSquare, 0.
+using Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE;
+using Slic3r::SUPPORT_SURFACES_OFFSET_MITER_LIMIT;
+
 void TreeSupport::detect_overhangs(bool check_support_necessity/* = false*/)
 {
     bool tree_support_enable = m_object_config->enable_support.value && is_tree(m_object_config->support_type.value);
@@ -983,7 +986,7 @@ void TreeSupport::detect_overhangs(bool check_support_necessity/* = false*/)
                 }
 
                 // normal overhang
-                ExPolygons lower_layer_offseted = offset_ex(effective_lower, support_offset_scaled, SUPPORT_SURFACES_OFFSET_PARAMETERS);
+                ExPolygons lower_layer_offseted = offset_ex(effective_lower, support_offset_scaled, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT);
                 overhangs_all_layers[layer_nr] = diff_ex(curr_polys, lower_layer_offseted);
 
                 double duration{ std::chrono::duration_cast<second_>(clock_::now() - t0).count() };
@@ -2103,7 +2106,7 @@ Polygons TreeSupport::get_trim_support_regions(
             coordf_t trimming_offset = is_sharptail ? scale_(sharp_tail_xy_gap) :
                 is_overlap ? gap_xy_scaled :
                 scale_(no_overlap_xy_gap);
-            polygons_append(polygons_trimming, offset({ expoly }, trimming_offset, SUPPORT_SURFACES_OFFSET_PARAMETERS));
+            polygons_append(polygons_trimming, offset({ expoly }, trimming_offset, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT));
             }
         }
     if (!m_slicing_params.zero_gap_interface_top && m_object_config->thick_bridges) {
@@ -2120,7 +2123,7 @@ Polygons TreeSupport::get_trim_support_regions(
                 bool is_overlap = is_layers_overlap(support_layer, object_layer, bridging_height);
                 coordf_t trimming_offset = is_overlap ? gap_xy_scaled : scale_(no_overlap_xy_gap);
                 polygons_append(polygons_trimming,
-                    offset(region->fill_surfaces.filter_by_type(stBottomBridge), trimming_offset, SUPPORT_SURFACES_OFFSET_PARAMETERS));
+                    offset(region->fill_surfaces.filter_by_type(stBottomBridge), trimming_offset, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT));
                 }
             if (!some_region_overlaps)
                 break;
@@ -2534,7 +2537,7 @@ void TreeSupport::draw_circles()
                     ExPolygons expanded_base_areas;
                     const float inflate_factor_1st_layer = float(scale_(m_object_config->raft_first_layer_expansion.value));
                     Polygons trimming = offset(m_object->layers().front()->lslices, float(scale_(m_support_params.gap_xy_first_layer)),
-                                               SUPPORT_SURFACES_OFFSET_PARAMETERS);
+                                               Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT);
                     // Orca: Match normal support expansion: grow in steps and re-trim against the object each time.
                     const int nsteps = std::max(5, int(ceil(inflate_factor_1st_layer / m_support_params.first_layer_flow.scaled_width())));
                     const float step = inflate_factor_1st_layer / nsteps;

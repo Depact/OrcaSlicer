@@ -53,7 +53,7 @@
 #include "libslic3r_version.h"
 #include "nlohmann/json.hpp"
 
-using namespace nlohmann;
+using nlohmann::json;
 
 //FIXME for GCodeFlavor and gcfMarlin (for forward-compatibility conversion)
 // This is not nice, likely it would be better to pass the ConfigSubstitutionContext to handle_legacy().

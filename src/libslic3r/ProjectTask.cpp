@@ -20,7 +20,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include "nlohmann/json.hpp"
 
-using namespace nlohmann;
+using nlohmann::json;
 
 namespace pt = boost::property_tree;
 

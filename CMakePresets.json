@@ -1,0 +1,117 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "x64-clang",
+      "displayName": "x64 Clang",
+      "description": "clang-cl + Ninja Multi-Config in build-clang, with Release, RelWithDebInfo and MinSizeRel configurations. Unity build on for libslic3r.",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/build-clang",
+      "architecture": { "value": "x64", "strategy": "external" },
+      "toolset": { "value": "host=x64", "strategy": "external" },
+      "environment": {
+        "NINJA_STATUS": "[%f/%t %p :: %w / %W] "
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-cl",
+        "CMAKE_CXX_COMPILER": "clang-cl",
+        "CMAKE_CONFIGURATION_TYPES": "Release;RelWithDebInfo;MinSizeRel",
+        "ORCA_TOOLS": { "type": "BOOL", "value": "OFF" },
+        "BUILD_TESTS": { "type": "BOOL", "value": "ON" },
+        "SLIC3R_UNITY_BUILD": { "type": "BOOL", "value": "ON" },
+        "SLIC3R_PCH": { "type": "BOOL", "value": "OFF" }
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ],
+          "intelliSenseMode": "windows-clang-x64"
+        }
+      }
+    },
+    {
+      "name": "x64-clang-debug",
+      "displayName": "x64 Clang Debug",
+      "description": "clang-cl + Ninja Multi-Config Debug in build-dbg-clang. Unity build on for libslic3r.",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/build-dbg-clang",
+      "architecture": { "value": "x64", "strategy": "external" },
+      "toolset": { "value": "host=x64", "strategy": "external" },
+      "environment": {
+        "NINJA_STATUS": "[%f/%t %p :: %w / %W] "
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-cl",
+        "CMAKE_CXX_COMPILER": "clang-cl",
+        "ORCA_TOOLS": { "type": "BOOL", "value": "OFF" },
+        "BUILD_TESTS": { "type": "BOOL", "value": "ON" },
+        "SLIC3R_UNITY_BUILD": { "type": "BOOL", "value": "ON" },
+        "SLIC3R_PCH": { "type": "BOOL", "value": "OFF" }
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ],
+          "intelliSenseMode": "windows-clang-x64"
+        }
+      }
+    },
+    {
+      "name": "x64-clang-cache",
+      "displayName": "x64 Clang + ccache",
+      "description": "Same as x64-clang, with ccache as the compiler launcher and build-clang-cache as the binary directory. Clang-cl always builds without a PCH.",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/build-clang-cache",
+      "architecture": { "value": "x64", "strategy": "external" },
+      "toolset": { "value": "host=x64", "strategy": "external" },
+      "environment": {
+        "NINJA_STATUS": "[%f/%t %p :: %w / %W] "
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-cl",
+        "CMAKE_CXX_COMPILER": "clang-cl",
+        "CMAKE_CONFIGURATION_TYPES": "Release;RelWithDebInfo;MinSizeRel",
+        "ORCA_TOOLS": { "type": "BOOL", "value": "OFF" },
+        "BUILD_TESTS": { "type": "BOOL", "value": "ON" },
+        "SLIC3R_UNITY_BUILD": { "type": "BOOL", "value": "ON" },
+        "SLIC3R_PCH": { "type": "BOOL", "value": "OFF" },
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+        "SLIC3R_RELATIVE_DEBUG_PATHS": { "type": "BOOL", "value": "ON" },
+        "DEP_BUILD_DIR": "${sourceDir}/deps/build-clang"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": [ "Windows" ],
+          "intelliSenseMode": "windows-clang-x64"
+        }
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "x64-clang-release",        "configurePreset": "x64-clang", "configuration": "Release" },
+    { "name": "x64-clang-relwithdebinfo", "configurePreset": "x64-clang", "configuration": "RelWithDebInfo" },
+    { "name": "x64-clang-minsizerel",     "configurePreset": "x64-clang", "configuration": "MinSizeRel" },
+    { "name": "x64-clang-debug-build",    "configurePreset": "x64-clang-debug", "configuration": "Debug" },
+    { "name": "x64-clang-cache-release",  "configurePreset": "x64-clang-cache", "configuration": "Release" }
+  ],
+  "testPresets": [
+    {
+      "name": "x64-clang-test-release",
+      "configurePreset": "x64-clang",
+      "configuration": "Release",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "x64-clang-test-relwithdebinfo",
+      "configurePreset": "x64-clang",
+      "configuration": "RelWithDebInfo",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "x64-clang-test-debug",
+      "configurePreset": "x64-clang-debug",
+      "configuration": "Debug",
+      "output": { "outputOnFailure": true }
+    }
+  ]
+}

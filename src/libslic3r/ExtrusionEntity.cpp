@@ -21,8 +21,7 @@
 #include "Utils.hpp"
 #include "libslic3r.h"
 #include "ArcFitter.hpp"
-
-#define L(s) (s)
+#include "I18N.hpp"
 
 namespace Slic3r {
     

@@ -1606,7 +1606,7 @@ static FilamentGroupContext build_filament_group_context(
     // or legacy config can leave any of these arrays short, and get_at clamps.
     context.model_info.filament_info.reserve(filament_nums);
     for (size_t idx = 0; idx < filament_nums; ++idx) {
-        FilamentGroupUtils::FilamentInfo info;
+        FilamentGroupUtils::FilamentGroupInfo info;
         info.color      = print_config.filament_colour.get_at(idx);
         info.type       = print_config.filament_type.get_at(idx);
         info.is_support = print_config.filament_is_support.get_at(idx);

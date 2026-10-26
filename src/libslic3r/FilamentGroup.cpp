@@ -5,7 +5,6 @@
 #include "MultiNozzleUtils.hpp"
 #include "PrintConfig.hpp"
 #include "libslic3r.h"
-#include <queue>
 #include <cstdint>
 #include <cstddef>
 #include <optional>
@@ -22,8 +21,6 @@
 #include <random>
 #include <cassert>
 #include <set>
-#include <sstream>
-#include <boost/log/trivial.hpp>
 #include <vector>
 #include <utility>
 #include <unordered_map>
@@ -427,7 +424,7 @@ namespace Slic3r
     std::vector<int> select_best_group_for_ams(const std::vector<std::vector<int>>& filament_to_nozzles,
         const std::vector<MultiNozzleUtils::NozzleInfo>& nozzle_list,
         const std::vector<unsigned int>& used_filaments,
-        const std::vector<FilamentGroupUtils::FilamentInfo>& used_filament_info,
+        const std::vector<FilamentGroupUtils::FilamentGroupInfo>& used_filament_info,
         const std::vector<std::vector<MachineFilamentInfo>>& machine_filament_info_,
         const bool has_filament_switcher,
         const double color_threshold)
@@ -1056,7 +1053,7 @@ namespace Slic3r
         constexpr int SupportPreferScore = 3;
 
         auto used_filaments = collect_sorted_used_filaments(ctx.model_info.layer_filaments);
-        std::vector<FilamentGroupUtils::FilamentInfo> used_filament_list;
+        std::vector<FilamentGroupUtils::FilamentGroupInfo> used_filament_list;
         for (auto f : used_filaments)
             used_filament_list.emplace_back(ctx.model_info.filament_info[f]);
 
@@ -1258,7 +1255,7 @@ namespace Slic3r
         std::vector<std::vector<int>> memoryed_maps = this->m_memoryed_groups;
         memoryed_maps.insert(memoryed_maps.begin(), ret);
 
-        std::vector<FilamentGroupUtils::FilamentInfo> used_filament_info;
+        std::vector<FilamentGroupUtils::FilamentGroupInfo> used_filament_info;
         for (auto f : used_filaments) {
             used_filament_info.emplace_back(ctx.model_info.filament_info[f]);
         }
@@ -1270,7 +1267,7 @@ namespace Slic3r
     std::vector<int> FilamentGroup::calc_filament_group_for_tpu(int *cost) {
 
         auto used_filaments = collect_sorted_used_filaments(ctx.model_info.layer_filaments);
-        std::vector<FilamentGroupUtils::FilamentInfo> used_filament_list;
+        std::vector<FilamentGroupUtils::FilamentGroupInfo> used_filament_list;
         for (auto f : used_filaments)
             used_filament_list.emplace_back(ctx.model_info.filament_info[f]);
 

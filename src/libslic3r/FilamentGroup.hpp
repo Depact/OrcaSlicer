@@ -80,7 +80,7 @@ namespace Slic3r
         struct ModelInfo {
             std::vector<FlushMatrix> flush_matrix;
             std::vector<std::vector<unsigned int>> layer_filaments;
-            std::vector<FilamentGroupUtils::FilamentInfo> filament_info;
+            std::vector<FilamentGroupUtils::FilamentGroupInfo> filament_info;
             std::vector<std::string> filament_ids;
             std::vector<std::set<int>> unprintable_filaments;
             std::map<int, std::set<NozzleVolumeType>> unprintable_volumes;
@@ -122,7 +122,7 @@ namespace Slic3r
     std::vector<int> select_best_group_for_ams(const std::vector<std::vector<int>> &filament_to_nozzles,
         const std::vector<MultiNozzleUtils::NozzleInfo>& nozzle_list,
         const std::vector<unsigned int>& used_filaments,
-        const std::vector<FilamentGroupUtils::FilamentInfo>& used_filament_info,
+        const std::vector<FilamentGroupUtils::FilamentGroupInfo>& used_filament_info,
         const std::vector<std::vector<FilamentGroupUtils::MachineFilamentInfo>>& machine_filament_info,
         const bool has_filament_switcher = false,
         const double color_delta_threshold = 20);

@@ -373,6 +373,7 @@ set(lisbslic3r_sources
     MutablePriorityQueue.hpp
     NormalUtils.cpp
     NormalUtils.hpp
+    NSVGImplementation.cpp
     NSVGUtils.cpp
     NSVGUtils.hpp
     ObjColorUtils.cpp
@@ -623,6 +624,51 @@ find_package(assimp REQUIRED)
 unset(CMAKE_POLICY_DEFAULT_CMP0167)
 cmake_policy(POP)
 
+# Unity (jumbo) builds for faster compilation with clang-cl + Ninja.
+# Enabled by default for clang-cl + Ninja Multi-Config; MSVC uses PCH instead.
+# Files still excluded, with the conflict that keeps them out:
+# - TextureToColor/*: CGAL/OCCT Handle macro clash
+# - WipeTower.cpp / WipeTower2.cpp: duplicate enum/function/struct definitions
+# - GCodeProcessor.cpp: unused-private-field warnings escalated to errors
+# - SLA/SupportTree.cpp: libnest2d Optimizer namespace conflict
+# - Format/STL.cpp, SL1.cpp, ZipperArchiveImport.cpp: duplicate static helpers
+# - Format/3mf.cpp, bbs_3mf.cpp: same constant names with different values
+# - FilamentMixer.cpp / ColorDecomposeRecipe.cpp: srgb_to_linear ambiguity
+# - MultiMaterialSegmentation.cpp / MutablePolygon.cpp: Eigen operator ambiguity
+# - Support/TreeSupport.cpp: duplicate collect_region_slices_by_type
+# - ClipperZUtils.cpp / Emboss.cpp / BeltSliceStrategy.cpp: clipper2 and Windows header ordering
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_GENERATOR STREQUAL "Ninja Multi-Config" AND SLIC3R_UNITY_BUILD)
+    set_target_properties(libslic3r PROPERTIES
+        UNITY_BUILD ON
+        UNITY_BUILD_BATCH_SIZE 8
+        UNITY_BUILD_MODE BATCH
+    )
+    # Opt out files known to cause issues with unity builds:
+    set_source_files_properties(
+        TextureToColor/TextureToColor.cpp
+        TextureToColor/ColorUtils.cpp
+        GCode/WipeTower.cpp
+        GCode/WipeTower2.cpp
+        GCode/GCodeProcessor.cpp
+        SLA/SupportTree.cpp
+        Format/3mf.cpp
+        Format/bbs_3mf.cpp
+        Format/STL.cpp
+        Format/SL1.cpp
+        Format/ZipperArchiveImport.cpp
+        FilamentMixer.cpp
+        ColorDecomposeRecipe.cpp
+        MultiMaterialSegmentation.cpp
+        MutablePolygon.cpp
+        Support/TreeSupport.cpp
+        ClipperZUtils.cpp
+        Emboss.cpp
+        BeltSliceStrategy.cpp
+        NSVGImplementation.cpp
+        PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
+    )
+endif ()
+
 add_library(libslic3r_cgal STATIC
     CutSurface.hpp CutSurface.cpp
     IntersectionPoints.hpp IntersectionPoints.cpp
@@ -822,6 +868,12 @@ if (WIN32)
     # WIN32_LEAN_AND_MEAN matches the sources that define it themselves; bare
     # NOMINMAX matches the one libigl already passes.
     target_compile_definitions(libslic3r PUBLIC "WIN32_LEAN_AND_MEAN=" "NOMINMAX")
+    # Boost.Regex pulls in its Win32 wchar_t traits, and w32_regex_traits.hpp
+    # only compiles when windows.h already declared the winnls.h API. In a unity
+    # build the include order is decided by CMake, so a batch that reaches
+    # boost::regex before windows.h fails. Nothing here uses a wchar_t regex,
+    # and char regexes never touch those traits, so opt out of them.
+    target_compile_definitions(libslic3r PUBLIC "BOOST_REGEX_NO_W32")
 endif ()
 
 if (SLIC3R_PCH AND NOT SLIC3R_SYNTAXONLY)

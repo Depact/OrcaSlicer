@@ -25,6 +25,7 @@
 #include "Support/SupportCommon.hpp"
 #include "Support/SupportSpotsGenerator.hpp"
 #include "Support/TreeSupport.hpp"
+#include "Support/SupportConstants.hpp"
 #include "Surface.hpp"
 #include "Slicing.hpp"
 #include "Tesselate.hpp"
@@ -94,10 +95,6 @@
 namespace Slic3r { enum class EnforcerBlockerType : int8_t; }
 
 using namespace std::literals;
-
-//! macro used to mark string used at localization,
-//! return same string
-#define L(s) Slic3r::I18N::translate(s)
 
 // #define PRINT_OBJECT_TIMING
 
@@ -508,7 +505,7 @@ void PrintObject::make_perimeters()
     if (! this->set_started(posPerimeters))
         return;
 
-    m_print->set_status(15, L("Generating walls"));
+    m_print->set_status(15, _u8L("Generating walls"));
     BOOST_LOG_TRIVIAL(info) << "Generating walls..." << log_memory_info();
 
     // Revert the typed slices into untyped slices.
@@ -611,7 +608,7 @@ void PrintObject::prepare_infill()
 {
     if (! this->set_started(posPrepareInfill))
         return;
-    m_print->set_status(25, L("Generating infill regions"));
+    m_print->set_status(25, _u8L("Generating infill regions"));
     if (m_typed_slices) {
         // To improve robustness of detect_surfaces_type() when reslicing (working with typed slices), see GH issue #7442.
         // The preceding step (perimeter generator) only modifies extra_perimeters and the extra perimeters are only used by discover_vertical_shells()
@@ -799,7 +796,7 @@ void PrintObject::infill()
     this->prepare_infill();
 
     if (this->set_started(posInfill)) {
-        m_print->set_status(35, L("Generating infill toolpath"));
+        m_print->set_status(35, _u8L("Generating infill toolpath"));
 
         BOOST_LOG_TRIVIAL(debug) << "Filling layers in parallel - start";
         tbb::parallel_for(
@@ -857,7 +854,7 @@ void PrintObject::contour_z()
         return;
     }
 
-    m_print->set_status(40, L("Z contouring"));
+    m_print->set_status(40, _u8L("Z contouring"));
     BOOST_LOG_TRIVIAL(debug) << "Contouring in parallel - start";
 
     TriangleMesh mesh = this->m_model_object->raw_mesh();
@@ -888,7 +885,7 @@ void PrintObject::contour_z()
                 std::scoped_lock lock(mtx);
                 completed++;
                 // TRN Slicing status: layers done, total layers, percentage done.
-                std::string msg = (boost::format(L("Z contoured layer %d/%d (%d%%)")) % (completed) % m_layers.size() % int(double(completed) / m_layers.size() * 100)).str();
+                std::string msg = (boost::format(_u8L("Z contoured layer %d/%d (%d%%)")) % (completed) % m_layers.size() % int(double(completed) / m_layers.size() * 100)).str();
                 m_print->set_status(40, msg);
             }
         }
@@ -920,7 +917,7 @@ void PrintObject::detect_overhangs_for_lift()
         size_t num_layers = this->layer_count();
         size_t num_raft_layers = m_slicing_params.raft_layers();
 
-        m_print->set_status(71, L("Detect overhangs for auto-lift"));
+        m_print->set_status(71, _u8L("Detect overhangs for auto-lift"));
 
         this->clear_overhangs_for_lift();
 
@@ -950,7 +947,7 @@ void PrintObject::generate_support_material(bool with_belt_brim)
         if(!has_support() && !m_print->get_no_check_flag()) {
             // BBS: pop a warning if objects have significant amount of overhangs but support material is not enabled
             // Note: we also need to pop warning if support is disabled and only raft is enabled
-            m_print->set_status(50, L("Checking support necessity"));
+            m_print->set_status(50, _u8L("Checking support necessity"));
             typedef std::chrono::high_resolution_clock clock_;
             typedef std::chrono::duration<double, std::ratio<1> > second_;
             std::chrono::time_point<clock_> t0{ clock_::now() };
@@ -962,9 +959,9 @@ void PrintObject::generate_support_material(bool with_belt_brim)
 
             if (sntype != NoNeedSupp) {
                 std::map<SupportNecessaryType, std::string> messages = {
-                    {SharpTail,L("It seems object %1% has floating regions. Please re-orient the object or enable support generation.")},
-                    {Cantilever,L("It seems object %1% has a floating cantilever. Please re-orient the object or enable support generation.")},
-                    {LargeOverhang,L("It seems object %1% has large overhangs. Please re-orient the object or enable support generation.")} };
+                    {SharpTail,_u8L("It seems object %1% has floating regions. Please re-orient the object or enable support generation.")},
+                    {Cantilever,_u8L("It seems object %1% has a floating cantilever. Please re-orient the object or enable support generation.")},
+                    {LargeOverhang,_u8L("It seems object %1% has large overhangs. Please re-orient the object or enable support generation.")} };
                 std::string warning_message = Slic3r::format(messages[sntype], this->model_object()->name);
                 this->active_step_add_warning(PrintStateBase::WarningLevel::NON_CRITICAL, warning_message, PrintStateBase::SlicingNeedSupportOn);
             }
@@ -979,7 +976,7 @@ void PrintObject::generate_support_material(bool with_belt_brim)
         }
 
         if ((this->has_support() && m_layers.size() > 1) || (this->has_raft() && !m_layers.empty())) {
-            m_print->set_status(50, L("Generating support"));
+            m_print->set_status(50, _u8L("Generating support"));
 
             this->_generate_support_material();
             m_print->throw_if_canceled();
@@ -1041,7 +1038,7 @@ void PrintObject::estimate_curled_extrusions()
 void PrintObject::simplify_extrusion_path()
 {
     if (this->set_started(posSimplifyPath)) {
-        m_print->set_status(75, L("Optimizing toolpath"));
+        m_print->set_status(75, _u8L("Optimizing toolpath"));
         BOOST_LOG_TRIVIAL(debug) << "Simplify extrusion path of object in parallel - start";
         //BBS: infill and walls
         tbb::parallel_for(
@@ -1059,7 +1056,7 @@ void PrintObject::simplify_extrusion_path()
     }
 
     if (this->set_started(posSimplifyInfill)) {
-        m_print->set_status(75, L("Optimizing toolpath"));
+        m_print->set_status(75, _u8L("Optimizing toolpath"));
         BOOST_LOG_TRIVIAL(debug) << "Simplify infill extrusion path of object in parallel - start";
         //BBS: infills
         tbb::parallel_for(
@@ -1077,7 +1074,7 @@ void PrintObject::simplify_extrusion_path()
     }
 
     if (this->set_started(posSimplifySupportPath)) {
-        m_print->set_status(75, L("Optimizing toolpath"));
+        m_print->set_status(75, _u8L("Optimizing toolpath"));
         BOOST_LOG_TRIVIAL(debug) << "Simplify extrusion path of support in parallel - start";
         tbb::parallel_for(
             tbb::blocked_range<size_t>(0, m_support_layers.size()),
@@ -5073,8 +5070,9 @@ void PrintObject::_generate_support_material()
 }
 
 // BBS
-#define SUPPORT_SURFACES_OFFSET_PARAMETERS jtSquare, 0.
-#define SUPPORT_MATERIAL_MARGIN 1.2
+using Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE;
+using Slic3r::SUPPORT_SURFACES_OFFSET_MITER_LIMIT;
+using Slic3r::SUPPORT_MATERIAL_MARGIN_BRIDGE;
 template<typename PolysType>
 void PrintObject::remove_bridges_from_contacts(
     const Layer* lower_layer,
@@ -5099,7 +5097,7 @@ void PrintObject::remove_bridges_from_contacts(
         // Surface supporting this layer, expanded by 0.5 * nozzle_diameter, as we consider this kind of overhang to be sufficiently supported.
         Polygons lower_grown_slices = offset(lower_layer_polygons,
             //FIXME to mimic the decision in the perimeter generator, we should use half the external perimeter width.
-            0.5f * fw, SUPPORT_SURFACES_OFFSET_PARAMETERS);
+            0.5f * fw, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT);
         Polylines overhang_perimeters = diff_pl(layerm->perimeters.as_polylines(), lower_grown_slices);
         // only consider straight overhangs
             // only consider overhangs having endpoints inside layer's slices
@@ -5189,7 +5187,7 @@ void PrintObject::remove_bridges_from_contacts(
         //FIXME add supports at regular intervals to support long bridges!
         bridges = diff(bridges,
             // Offset unsupported edges into polygons.
-            offset(layerm->unsupported_bridge_edges, scale_(SUPPORT_MATERIAL_MARGIN), SUPPORT_SURFACES_OFFSET_PARAMETERS));
+            offset(layerm->unsupported_bridge_edges, scale_(Slic3r::SUPPORT_MATERIAL_MARGIN_BRIDGE), Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT));
         append(all_bridges, bridges);
     }
     if (typeid(overhang_regions) == typeid(ExPolygons*)) {

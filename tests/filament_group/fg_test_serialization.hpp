@@ -38,7 +38,7 @@ inline void from_json(const nlohmann::json& j, Color& c) {
     }
 }
 
-inline void to_json(nlohmann::json& j, const FilamentInfo& fi) {
+inline void to_json(nlohmann::json& j, const FilamentGroupInfo& fi) {
     j = nlohmann::json{
         {"color", fi.color},
         {"type", fi.type},
@@ -47,7 +47,7 @@ inline void to_json(nlohmann::json& j, const FilamentInfo& fi) {
     };
 }
 
-inline void from_json(const nlohmann::json& j, FilamentInfo& fi) {
+inline void from_json(const nlohmann::json& j, FilamentGroupInfo& fi) {
     fi.color = j.at("color").get<Color>();
     j.at("type").get_to(fi.type);
     j.at("is_support").get_to(fi.is_support);
@@ -165,7 +165,7 @@ inline void from_json(const nlohmann::json& j, FilamentGroupContext::ModelInfo& 
 
     mi.filament_info.clear();
     for (auto& item : j.at("filament_info"))
-        mi.filament_info.push_back(item.get<FilamentGroupUtils::FilamentInfo>());
+        mi.filament_info.push_back(item.get<FilamentGroupUtils::FilamentGroupInfo>());
 
     j.at("filament_ids").get_to(mi.filament_ids);
 

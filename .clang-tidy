@@ -13,7 +13,7 @@ Checks: '-*,misc-include-cleaner,google-global-names-in-headers'
 WarningsAsErrors: '*'
 CheckOptions:
   # Missing includes only. Builds without the precompiled header break on these.
-  misc-include-cleaner.UnusedIncludes: false
+  misc-include-cleaner.UnusedIncludes: true
   # Headers that declare a symbol but are not the one to include: per-platform
   # implementations of wxWidgets and Boost.Thread (a Linux run would suggest the
   # GTK or pthread one), library internals and forward declarations (MSVC's STL
@@ -50,6 +50,8 @@ CheckOptions:
     admesh[/\\]stl\.h;
     boost[/\\]thread[/\\](pthread|win32)[/\\].*;
     boost[/\\]regex[/\\]v[0-9]+[/\\].*;
+    boost[/\\]regex\.hpp;
+    boost[/\\]format\.hpp;
     curl[/\\](easy|multi|system|urlapi|header|options|websockets|mprintf)\.h;
     oneapi[/\\]tbb[/\\].*;
     opencv2[/\\]core[/\\]hal[/\\].*;
