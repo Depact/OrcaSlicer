@@ -22,7 +22,7 @@ function Start-BuildMonitor {
     param([string]$CsvPath, [int]$IntervalSeconds)
     $worker = {
         param($Path, $Interval)
-        $header = "timestamp,build_cpu_percent,build_cores,build_rss_gb,cores_compiler,cores_linker,cores_build,cores_ccache"
+        $header = "timestamp,build_cpu_percent,build_cores,build_rss_gb,cores_compiler,cores_linker,cores_build,cores_ccache,cpu_compiler,cpu_linker,cpu_build,cpu_ccache,ram_compiler,ram_linker,ram_build,ram_ccache"
         Set-Content -LiteralPath $Path -Value $header -Encoding ASCII
         $toolCategory = @{
             "clang-cl" = "compiler"
@@ -43,21 +43,29 @@ function Start-BuildMonitor {
         # live for only a few seconds still contribute their CPU time.
         $pollInterval = [math]::Max(1, [math]::Min(2, $reportInterval))
 
-        function Write-Sample($Time, $CpuPercent, $Cores, $RssGb, $CategoryCores) {
+        function Write-Sample($Time, $CpuPercent, $Cores, $RssGb, $CategoryCores, $CategoryCpu, $CategoryRss) {
             $categoryText = (@($CategoryCores) | ForEach-Object {
                 $_.ToString("0.00", [Globalization.CultureInfo]::InvariantCulture)
             }) -join ","
-            $line = "{0},{1},{2},{3},{4}" -f $Time.ToString("o"),
+            $cpuText = (@($CategoryCpu) | ForEach-Object {
+                $_.ToString("0.0", [Globalization.CultureInfo]::InvariantCulture)
+            }) -join ","
+            $ramText = (@($CategoryRss) | ForEach-Object {
+                $_.ToString("0.00", [Globalization.CultureInfo]::InvariantCulture)
+            }) -join ","
+            $line = "{0},{1},{2},{3},{4},{5},{6}" -f $Time.ToString("o"),
                 $CpuPercent.ToString("0.0", [Globalization.CultureInfo]::InvariantCulture),
                 $Cores.ToString("0.00", [Globalization.CultureInfo]::InvariantCulture),
                 $RssGb.ToString("0.00", [Globalization.CultureInfo]::InvariantCulture),
-                $categoryText
+                $categoryText, $cpuText, $ramText
             Add-Content -LiteralPath $Path -Value $line -Encoding ASCII
         }
 
         $start = Get-Date
         $zeroCores = @(0.0, 0.0, 0.0, 0.0)
-        Write-Sample $start 0.0 0.0 0.0 $zeroCores
+        $zeroCpu = @(0.0, 0.0, 0.0, 0.0)
+        $zeroRss = @(0.0, 0.0, 0.0, 0.0)
+        Write-Sample $start 0.0 0.0 0.0 $zeroCores $zeroCpu $zeroRss
         $windowStart = $start
         $accumulatedCpu = @{}
         foreach ($category in $categories) { $accumulatedCpu[$category] = 0.0 }
@@ -70,6 +78,7 @@ function Start-BuildMonitor {
                 $now = Get-Date
                 $currentCpu = @{}
                 $currentCategory = @{}
+                $currentRss = @{}
                 $rss = 0.0
                 foreach ($name in $toolCategory.Keys) {
                     $category = $toolCategory[$name]
@@ -79,7 +88,8 @@ function Start-BuildMonitor {
                             $id = [int]$process.Id
                             $currentCpu[$id] = $cpuSeconds
                             $currentCategory[$id] = $category
-                            $rss += [double]$process.WorkingSet64
+                            $currentRss[$id] = [double]$process.WorkingSet64
+                            $rss += $currentRss[$id]
                         } catch {
                             # The process can exit between enumeration and reading its counters.
                         }
@@ -104,8 +114,26 @@ function Start-BuildMonitor {
                 $windowSeconds = ($now - $windowStart).TotalSeconds
                 if ($windowSeconds -ge $reportInterval) {
                     $categoryCores = @()
+                    $categoryCpu = @()
+                    $categoryRss = @()
                     foreach ($category in $categories) {
                         $categoryCores += [math]::Max(0.0, $accumulatedCpu[$category] / $windowSeconds)
+                        # Calculate per-process CPU% for this category
+                        $catProcesses = @($currentCpu.Keys | Where-Object { $currentCategory[$_] -eq $category })
+                        $catCpu = 0.0
+                        $catRss = 0.0
+                        foreach ($pid in $catProcesses) {
+                            $lastCpu = $previousCpu[$pid]
+                            $delta = if ($null -eq $lastCpu -or $currentCpu[$pid] -lt $lastCpu) {
+                                $currentCpu[$pid]
+                            } else {
+                                $currentCpu[$pid] - $lastCpu
+                            }
+                            $catCpu += if ($windowSeconds -gt 0) { $delta / $windowSeconds } else { 0.0 }
+                            $catRss += $currentRss[$pid]
+                        }
+                        $categoryCpu += $catCpu
+                        $categoryRss += $catRss / 1GB
                     }
                     $cores = ($categoryCores | Measure-Object -Sum).Sum
                     if ($cores -gt $logical -and $cores -gt 0) {
@@ -116,7 +144,7 @@ function Start-BuildMonitor {
                         $cores = [double]$logical
                     }
                     $cpuPercent = if ($logical -gt 0) { 100.0 * $cores / $logical } else { 0.0 }
-                    Write-Sample $now $cpuPercent $cores ($maxRss / 1GB) $categoryCores
+                    Write-Sample $now $cpuPercent $cores ($maxRss / 1GB) $categoryCores $categoryCpu $categoryRss
                     $windowStart = $now
                     foreach ($category in $categories) { $accumulatedCpu[$category] = 0.0 }
                     $maxRss = 0.0

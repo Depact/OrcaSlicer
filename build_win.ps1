@@ -292,8 +292,6 @@ console.print(Rule(char="━", style="green"))
 
     $total = (Get-Date) - $started
     Write-Host ""
-    $total = (Get-Date) - $started
-    Write-Host ""
     $python = Get-Command py -ErrorAction SilentlyContinue
     if ($python) {
         & $python -c '

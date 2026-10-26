@@ -21,6 +21,14 @@ FIELDS = (
     "cores_linker",
     "cores_build",
     "cores_ccache",
+    "cpu_compiler",
+    "cpu_linker",
+    "cpu_build",
+    "cpu_ccache",
+    "ram_compiler",
+    "ram_linker",
+    "ram_build",
+    "ram_ccache",
 )
 
 STACKS = (
@@ -28,6 +36,20 @@ STACKS = (
     ("cores_linker", "linker", "bright_yellow", "="),
     ("cores_build", "build", "bright_cyan", "+"),
     ("cores_ccache", "ccache", "bright_magenta", "."),
+)
+
+CPU_STACKS = (
+    ("cpu_compiler", "compiler", "bright_green", "#"),
+    ("cpu_linker", "linker", "bright_yellow", "="),
+    ("cpu_build", "build", "bright_cyan", "+"),
+    ("cpu_ccache", "ccache", "bright_magenta", "."),
+)
+
+RAM_STACKS = (
+    ("ram_compiler", "compiler", "bright_green", "#"),
+    ("ram_linker", "linker", "bright_yellow", "="),
+    ("ram_build", "build", "bright_cyan", "+"),
+    ("ram_ccache", "ccache", "bright_magenta", "."),
 )
 
 
@@ -120,6 +142,16 @@ def summary(rows: list[dict]) -> dict | None:
     for key, _label, _color, _char in STACKS:
         if pick_field(rows, key):
             stack[key] = [row[key] for row in rows]
+    # Build per-process stacks
+    cpu_stack = {}
+    ram_stack = {}
+    for key, _label, _color, _char in CPU_STACKS:
+        if pick_field(rows, key):
+            cpu_stack[key] = [row[key] for row in rows]
+    for key, _label, _color, _char in RAM_STACKS:
+        if pick_field(rows, key):
+            ram_stack[key] = [row[key] for row in rows]
+
     return {
         "start": rows[0]["time"],
         "end": rows[-1]["time"],
@@ -129,6 +161,8 @@ def summary(rows: list[dict]) -> dict | None:
         "cores": [row[core_key] for row in rows] if core_key else [],
         "ram": [row[ram_key] for row in rows],
         "stack": stack if len(stack) == len(STACKS) else {},
+        "cpu_stack": cpu_stack if len(cpu_stack) == len(CPU_STACKS) else {},
+        "ram_stack": ram_stack if len(ram_stack) == len(RAM_STACKS) else {},
         "has_cpu": bool(cpu_key and core_key),
     }
 
@@ -159,7 +193,17 @@ def render_rich(rows: list[dict], title: str, height: int, ascii_only: bool) -> 
         ))
         # Per-process cores stacked chart - shows core usage by tool
         charts.append(render_stacked_chart(
-            info["stack"], height, width, info["start"], info["end"],
+            info["stack"], STACKS, height, width, info["start"], info["end"],
+            info["duration"], ascii_only,
+        ))
+        # Per-process CPU% stacked chart - shows CPU% by tool
+        charts.append(render_stacked_chart(
+            info["cpu_stack"], CPU_STACKS, height, width, info["start"], info["end"],
+            info["duration"], ascii_only,
+        ))
+        # Per-process RAM stacked chart - shows RAM by tool
+        charts.append(render_stacked_chart(
+            info["ram_stack"], RAM_STACKS, height, width, info["start"], info["end"],
             info["duration"], ascii_only,
         ))
         # RAM chart - total RAM used by build
@@ -220,7 +264,7 @@ def render_chart(label, values, low, high, height, width, color, fmt,
                  box=box.ASCII if block == "#" else box.ROUNDED)
 
 
-def render_stacked_chart(stack, height, width, start, end, duration, ascii_only, ram_values=None):
+def render_stacked_chart(stack, stacks, height, width, start, end, duration, ascii_only):
     from rich import box
     from rich.console import Group
     from rich.panel import Panel
@@ -229,7 +273,7 @@ def render_stacked_chart(stack, height, width, start, end, duration, ascii_only,
     first_len = len(next(iter(stack.values())))
     bars = max(1, min(width // 2, first_len))
     series = []
-    for key, label, color, ascii_char in STACKS:
+    for key, label, color, ascii_char in stacks:
         series.append((label, color, ascii_char, bucket_avg(stack[key], bars)))
     totals = [sum(values[index] for _label, _color, _char, values in series)
               for index in range(bars)]
