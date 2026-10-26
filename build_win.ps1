@@ -147,7 +147,7 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
     if (-not $vsInstall) {
         throw "Visual Studio 2022 or newer with the C++ toolset was not found. Install the 'Desktop development with C++' workload."
     }
-    Write-Host "  -> Visual Studio: $vsInstall"
+    Write-Host "  -> Visual Studio: $vsInstall" -ForegroundColor Gray
 
     $clangCl = $null
     if ($env:ORCA_CLANG_CL) {
@@ -184,9 +184,9 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
         }
     }
 
-    Write-Host "  -> clang-cl: $clangCl"
-    Write-Host "  -> cmake:    $cmake"
-    if ($ccache) { Write-Host "  -> ccache:   $ccache" }
+    Write-Host "  -> clang-cl: $clangCl" -ForegroundColor Gray
+    Write-Host "  -> cmake:    $cmake" -ForegroundColor Gray
+    if ($ccache) { Write-Host "  -> ccache:   $ccache" -ForegroundColor Gray }
 
     # --- 2. Capture the Visual Studio environment ---
     Write-Step "[2/5] Setting up the Visual Studio environment..."
@@ -203,7 +203,7 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
     if (-not $NoMetrics) {
         $metricsCsv = Join-Path $env:TEMP "orca-build-metrics-$PID.csv"
         Remove-Item $metricsCsv -ErrorAction SilentlyContinue
-        Write-Host "  -> Sampling build-process CPU, cores and RAM every ${MetricsInterval}s (2s poll)..."
+        Write-Host "  -> Sampling build-process CPU, cores and RAM every ${MetricsInterval}s (2s poll)..." -ForegroundColor Gray
         try {
             $metricsJob = Start-BuildMonitor -CsvPath $metricsCsv -IntervalSeconds $MetricsInterval
         } catch {
