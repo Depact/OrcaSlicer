@@ -57,14 +57,14 @@ PluginsConfigDialog::~PluginsConfigDialog() { m_alive->store(false, std::memory_
 nlohmann::json PluginsConfigDialog::localized_strings() const
 {
     return {
-        {"no_capabilities", TR("This preset does not use any plugin capabilities")},
-        {"capabilities_label", TR("Capabilities used by this preset")},
-        {"config_json_label", TR("Capability configuration (JSON)")},
-        {"config_frame_title", TR("Plugin configuration")},
-        {"restore_title", TR("Discard this preset's override and use the global configuration again")},
-        {"restore_defaults", TR("Restore defaults")},
-        {"save", TR("Save")},
-        {"invalid_json", TR("Invalid JSON")},
+        {"no_capabilities", _u8L("This preset does not use any plugin capabilities")},
+        {"capabilities_label", _u8L("Capabilities used by this preset")},
+        {"config_json_label", _u8L("Capability configuration (JSON)")},
+        {"config_frame_title", _u8L("Plugin configuration")},
+        {"restore_title", _u8L("Discard this preset's override and use the global configuration again")},
+        {"restore_defaults", _u8L("Restore defaults")},
+        {"save", _u8L("Save")},
+        {"invalid_json", _u8L("Invalid JSON")},
     };
 }
 
@@ -215,7 +215,7 @@ void PluginsConfigDialog::send_capability_config(const PluginCapabilityId& id)
             PythonGILState gil;
             response["custom_html"] = cap->get_config_ui();
         } catch (const std::exception& ex) {
-            response["error"] = into_u8(GUI::format_wxstr(_L("The plugin's configuration UI failed to load (%1%). Showing the default editor."),
+            response["error"] = into_u8(GUI::format_wxs_u8L(_L("The plugin's configuration UI failed to load (%1%). Showing the default editor."),
                                                           from_u8(ex.what())));
         }
     }

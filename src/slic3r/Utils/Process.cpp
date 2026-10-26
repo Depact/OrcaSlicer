@@ -49,7 +49,7 @@ static void start_new_slicer_or_gcodeviewer(const NewSlicerInstanceType instance
 	path += (instance_type == NewSlicerInstanceType::Slicer) ? "orca-slicer.exe" : "bambu-gcodeviewer.exe";
 	std::vector<const wchar_t*> args;
 	args.reserve(4);
-	args.emplace_back(path.wc_str());
+	args.emplace_back(path.wc_s_u8L());
 	if (!paths_to_open.empty()) {
 		for (const auto& file : paths_to_open)
 			args.emplace_back(file);
@@ -133,7 +133,7 @@ static void start_new_slicer_or_gcodeviewer(const NewSlicerInstanceType instance
 {
 	std::vector<wxString> paths;
 	if (path_to_open != nullptr)
-		paths.emplace_back(path_to_open->wc_str());
+		paths.emplace_back(path_to_open->wc_s_u8L());
 	start_new_slicer_or_gcodeviewer(instance_type, paths, single_instance);
 }
 

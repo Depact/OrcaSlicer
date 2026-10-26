@@ -901,7 +901,7 @@ void NotificationManager::HintNotification::render_text(ImGuiWrapper& imgui, con
 			if (i == 1 && m_endlines.size() > 2 && !m_multiline) {
 				// second line with "more" hypertext
 				line = m_text1.substr(m_endlines[0] + (m_text1[m_endlines[0]] == '\n' || m_text1[m_endlines[0]] == ' ' ? 1 : 0), m_endlines[1] - m_endlines[0] - (m_text1[m_endlines[0]] == '\n' || m_text1[m_endlines[0]] == ' ' ? 1 : 0));
-				while (ImGui::CalcTextSize(line.c_str()).x > m_window_width - m_window_width_offset - ImGui::CalcTextSize((".." + TR("More")).c_str()).x) {
+				while (ImGui::CalcTextSize(line.c_str()).x > m_window_width - m_window_width_offset - ImGui::CalcTextSize((".." + _u8L("More")).c_str()).x) {
 					line = line.substr(0, line.length() - 1);
 				}
 				line += "..";
@@ -928,7 +928,7 @@ void NotificationManager::HintNotification::render_text(ImGuiWrapper& imgui, con
 	}
 	//hyperlink text
 	if (!m_multiline && m_lines_count > 2) {
-		render_hypertext(imgui, x_offset + ImGui::CalcTextSize((line + " ").c_str()).x, starting_y + shift_y, TR("More"), true);
+		render_hypertext(imgui, x_offset + ImGui::CalcTextSize((line + " ").c_str()).x, starting_y + shift_y, _u8L("More"), true);
 	}
 	else if (!m_hypertext.empty()) {
 		render_hypertext(imgui, x_offset + ImGui::CalcTextSize((line + (line.empty() ? "" : " ")).c_str()).x, starting_y + (m_endlines.size() - 1) * shift_y, m_hypertext);
@@ -1034,7 +1034,7 @@ void NotificationManager::HintNotification::render_preferences_button(ImGuiWrapp
 		ImGui::PushStyleColor(ImGuiCol_Border, { 0,0,0,0 });
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 8 * scale, 1 * scale });
 		ImGui::BeginTooltip();
-		imgui.text(TR("Open Preferences"));
+		imgui.text(_u8L("Open Preferences"));
 		ImGui::EndTooltip();
 		ImGui::PopStyleColor(2);
 		ImGui::PopStyleVar();
@@ -1080,7 +1080,7 @@ void NotificationManager::HintNotification::render_right_arrow_button(ImGuiWrapp
 		ImGui::PushStyleColor(ImGuiCol_Border, { 0,0,0,0 });
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 8 * scale, 1 * scale });
 		ImGui::BeginTooltip();
-		imgui.text(TR("Open next tip"));
+		imgui.text(_u8L("Open next tip"));
 		ImGui::EndTooltip();
 		ImGui::PopStyleColor(2);
 		ImGui::PopStyleVar();
@@ -1133,7 +1133,7 @@ void NotificationManager::HintNotification::render_documentation_button(ImGuiWra
 		ImGui::PushStyleColor(ImGuiCol_Border, { 0,0,0,0 });
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 8 * scale, 1 * scale });
 		ImGui::BeginTooltip();
-		imgui.text(TR("Open documentation in web browser"));
+		imgui.text(_u8L("Open documentation in web browser"));
 		ImGui::EndTooltip();
 		ImGui::PopStyleColor(2);
 		ImGui::PopStyleVar();

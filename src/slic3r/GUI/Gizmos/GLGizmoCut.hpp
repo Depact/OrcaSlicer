@@ -198,7 +198,7 @@ class GLGizmoCut3D : public GLGizmoBase
         bool valid() const { return m_valid; }
         bool is_one_object() const;
         const std::vector<Part>& parts() const { return m_parts; }
-        const std::vector<size_t>* get_ignored_contours_ptr() const { return (valid() ? &m_ignored_contours : nullptr); }
+        const std::vector<size_t>* get_ignored_contours_p_u8L() const { return (valid() ? &m_ignored_contours : nullptr); }
 
         std::vector<Cut::Part> get_cut_parts();
 
@@ -346,9 +346,9 @@ protected:
     void render_tooltip_button(float x, float y);
 
     bool wants_enter_leave_snapshots() const override       { return true; }
-    std::string get_gizmo_entering_text() const override    { return TR("Entering Cut gizmo"); }
-    std::string get_gizmo_leaving_text() const override     { return TR("Leaving Cut gizmo"); }
-    std::string get_action_snapshot_name() const override   { return TR("Cut gizmo editing"); }
+    std::string get_gizmo_entering_text() const override    { return _u8L("Entering Cut gizmo"); }
+    std::string get_gizmo_leaving_text() const override     { return _u8L("Leaving Cut gizmo"); }
+    std::string get_action_snapshot_name() const override   { return _u8L("Cut gizmo editing"); }
 
     void data_changed(bool is_serializing) override; 
     Transform3d get_cut_matrix(const Selection& selection);

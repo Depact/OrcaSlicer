@@ -985,7 +985,7 @@ std::string CoolingBuffer::apply_layer_cooldown(
             const char *end = line_start;
             for (; end < line_end && *end != ';'; ++ end);
             // Find the 'F' word.
-            const char *fpos            = strstr(line_start + 2, " F") + 2;
+            const char *fpos            = strs_u8L(line_start + 2, " F") + 2;
             int         new_feedrate    = current_feedrate;
             // Modify the F word of the current G-code line.
             bool        modify          = false;

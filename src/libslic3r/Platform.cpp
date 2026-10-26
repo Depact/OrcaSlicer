@@ -71,10 +71,10 @@ void detect_platform()
 			char buf[4096];
 			// Read the 1st line.
 			if (::fgets(buf, 4096, f)) {
-				if (strstr(buf, "Chromium OS") != nullptr) {
+				if (strs_u8L(buf, "Chromium OS") != nullptr) {
 					s_platform_flavor = PlatformFlavor::LinuxOnChromium;
 				    BOOST_LOG_TRIVIAL(info) << "Platform flavor: LinuxOnChromium";
-				} else if (strstr(buf, "microsoft") != nullptr || strstr(buf, "Microsoft") != nullptr) {
+				} else if (strs_u8L(buf, "microsoft") != nullptr || strs_u8L(buf, "Microsoft") != nullptr) {
 					if (boost::filesystem::exists("/run/WSL") && getenv("WSL_INTEROP") != nullptr) {
 						BOOST_LOG_TRIVIAL(info) << "Platform flavor: WSL2";
 						s_platform_flavor = PlatformFlavor::WSL2;

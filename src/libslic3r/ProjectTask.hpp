@@ -269,7 +269,7 @@ public:
     std::vector<BBLSubTask*>    subtasks;
     std::map<std::string, BBLSliceInfo*> slice_info; /* slice info of subtasks, key: plate idx, 1, 2, 3, etc... */
 
-    std::string task_status_str() {
+    std::string task_status_s_u8L() {
         if (task_status == TaskStatus::TASK_ACTIVE) {
             return "active";
         }

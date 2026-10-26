@@ -30,7 +30,7 @@ TextureDisplacementDebugJob::TextureDisplacementDebugJob(
 
 void TextureDisplacementDebugJob::process(Ctl &ctl)
 {
-    const std::string status = TR("Capturing bake stages");
+    const std::string status = _u8L("Capturing bake stages");
     ctl.update_status(1, status);
 
     // Only ever touches m_input (captured by value before this job was queued) and local state - and,

@@ -25,7 +25,7 @@ public:
     ExtrusionSimulator();
     ~ExtrusionSimulator();
 
-    // Size of the image, that will be returned by image_ptr().
+    // Size of the image, that will be returned by image_p_u8L().
     // The image may be bigger than the viewport as many graphics drivers 
     // expect the size of a texture to be rounded to a power of two.
     void  		set_image_size(const Point &image_size);
@@ -41,10 +41,10 @@ public:
     // In the future, spreading and suqashing of a material will be simulated.
     void		extrude_to_accumulator(const ExtrusionPath &path, const Point &shift, ExtrusionSimulationType simulationType);
     // Evaluate the content of the accumulator and paint it into the viewport.
-    // After this call the image_ptr() call will return a valid image.
+    // After this call the image_p_u8L() call will return a valid image.
     void		evaluate_accumulator(ExtrusionSimulationType simulationType);
     // An RGBA image of image_size, to be loaded into a GPU texture.
-    const void* image_ptr() const;
+    const void* image_p_u8L() const;
 
 private:
 	Point					    	image_size;

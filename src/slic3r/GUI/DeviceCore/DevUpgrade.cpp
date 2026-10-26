@@ -122,7 +122,7 @@ void DevUpgrade::ParseUpgradeDisplayState(const json &upgrade_state_jj)
 #define UpgradeFlashFailed -3
 #define UpgradePrinting -4
 
-wxString DevUpgrade::GetUpgradeErrCodeStr() const
+wxString DevUpgrade::GetUpgradeErrCodeS_u8L() const
 {
     switch (m_upgrade_err_code) {
     case UpgradeNoError: return _L("Update successful.");

@@ -384,7 +384,7 @@ namespace Emboss
         Transform3d m_tr_inv;
         double z_scale;
     public:
-        ProjectTransform(std::unique_ptr<IProjection> core, const Transform3d &tr) : m_core(std::move(core)), m_tr(tr)
+        ProjectTransform(std::unique_ptr<IProjection> core, const Transform3d &tr) : m_core(std::move(core)), m__u8L(tr)
         {
             m_tr_inv = m_tr.inverse();
             z_scale  = (m_tr.linear() * Vec3d::UnitZ()).norm();

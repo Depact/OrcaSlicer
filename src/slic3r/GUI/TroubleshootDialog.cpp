@@ -319,8 +319,8 @@ TroubleshootDialog::TroubleshootDialog()
         wxString os = GetOStype();
         if(!os.IsEmpty())
             url += "&os_type=%22" + os +"%22";
-        url += "&version="     + encodeStr(wxString(SoftFever_VERSION));
-        url += "&os_version="  + encodeStr(GetOSinfo());
+        url += "&version="     + encodeS_u8L(wxString(SoftFever_VERSION));
+        url += "&os_version="  + encodeS_u8L(GetOSinfo());
         wxLaunchDefaultBrowser(url);
     });
 
@@ -457,7 +457,7 @@ wxString TroubleshootDialog::GetSysInfoAll()
 };
 
 /*
-wxString TroubleshootDialog::GetConfigStr()
+wxString TroubleshootDialog::GetConfigS_u8L()
 {
     wxString config_path = wxGetApp().app_config->config_path();
     std::ifstream file(config_path.ToUTF8().data());
@@ -1122,7 +1122,7 @@ bool TroubleshootDialog::RestartApplication()
     wxString cmd = wxString::Format(R"("%s")", execPath);
     
     // CreateProcess needs a mutable buffer for lpCommandLine
-    std::vector<wchar_t> cmdBuf(cmd.wc_str(), cmd.wc_str() + cmd.length() + 1);
+    std::vector<wchar_t> cmdBuf(cmd.wc_s_u8L(), cmd.wc_s_u8L() + cmd.length() + 1);
 
     STARTUPINFO         si = { sizeof(si) };
     PROCESS_INFORMATION pi = {};

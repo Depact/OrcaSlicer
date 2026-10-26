@@ -287,7 +287,7 @@ void MediaPlayCtrl::SetMachineObject(MachineObject* obj)
             m_device_busy    = obj->is_camera_busy_off();
             m_tutk_state     = obj->tutk_state;
 
-            if (DevPrinterConfigUtil::get_printer_series_str(obj->printer_type) == "series_o" && BBLNetworkPlugin::instance().use_legacy_network()) {
+            if (DevPrinterConfigUtil::get_printer_series_s_u8L(obj->printer_type) == "series_o" && BBLNetworkPlugin::instance().use_legacy_network()) {
                 // Legacy plugin cannot support remote play for H2D, force using local mode
                 m_remote_proto = LiveviewRemote::LVR_None;
             }
@@ -531,7 +531,7 @@ void MediaPlayCtrl::Play()
     if (agent) {
         std::string protocols[] = {"", "\"tutk\"", "\"agora\"", "\"tutk\",\"agora\""};
         agent->get_camera_url(m_machine + "|" + m_dev_ver + "|" + protocols[m_remote_proto],
-                [this, m = m_machine, v = agent_version, dv = m_dev_ver, token = std::weak_ptr(m_token)](std::string url) {
+                [this, m = m_machine, v = agent_version, dv = m_dev_ver, token = std::weak_p_u8L(m_token)](std::string url) {
             if (token.expired()) {
                 BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ": token has been expired";
                 return;

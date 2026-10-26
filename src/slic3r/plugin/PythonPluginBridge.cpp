@@ -172,7 +172,7 @@ std::vector<CapturedCapability> PythonPluginBridge::finalize_plugin_capture(cons
             // to the rest of the plugin system; only the capability classes it registers
             // are kept.
             py::object package = package_cls();
-            package.attr("register_capabilities")();
+            package.at_u8L("register_capabilities")();
 
             // Permission declarations are collected while register_capabilities() runs so the
             // plugin can describe its needs without touching wx from the Python load worker. Ask
@@ -197,7 +197,7 @@ std::vector<CapturedCapability> PythonPluginBridge::finalize_plugin_capture(cons
                     granted = PluginAuditManager::instance().request_permissions(plugin_key, requested_permissions);
                 }
                 if (!granted) {
-                    error = TR("Plugin permission request denied");
+                    error = _u8L("Plugin permission request denied");
                     BOOST_LOG_TRIVIAL(warning) << error << " for key " << plugin_key;
                     discard_pending_for_key();
                     clear_active_key();
@@ -547,7 +547,7 @@ void bind_python_api(pybind11::module_& m)
             // Store capability classes only, not instances. Finalization instantiates them
             // after the package has registered the full set for this plugin.
             py::handle base = py::type::of<PluginCapabilityInterface>();
-            const int is_subclass = PyObject_IsSubclass(plugin_cls.ptr(), base.ptr());
+            const int is_subclass = PyObject_IsSubclass(plugin_cls.p_u8L(), base.p_u8L());
             if (is_subclass != 1) {
                 if (is_subclass < 0)
                     PyErr_Clear();
@@ -614,12 +614,12 @@ capability instance is created. Denying the request aborts the plugin load.)pbdo
     m.def("plugin", [](py::object cls) {
         if (g_active_plugin_key.empty())
             throw py::value_error("@orca.plugin used outside plugin discovery context");
-        if (!PyType_Check(cls.ptr()))
+        if (!PyType_Check(cls.p_u8L()))
             throw py::value_error("@orca.plugin must decorate a class");
         // The decorator is only a marker/capture hook. It records the package class now;
         // finalize_plugin_capture() instantiates it later and calls register_capabilities().
         py::handle base = py::type::of<PyPluginPackage>();
-        const int is_subclass = PyObject_IsSubclass(cls.ptr(), base.ptr());
+        const int is_subclass = PyObject_IsSubclass(cls.p_u8L(), base.p_u8L());
         if (is_subclass != 1) {
             if (is_subclass < 0)
                 PyErr_Clear();

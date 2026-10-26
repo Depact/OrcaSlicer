@@ -183,9 +183,9 @@ private:
 class PyObjectPtr
 {
 public:
-    explicit PyObjectPtr(PyObject* obj = nullptr) : m_obj(obj) {}
+    explicit PyObjectP_u8L(PyObject* obj = nullptr) : m_obj(obj) {}
 
-    ~PyObjectPtr() {
+    ~PyObjectP_u8L() {
         if (m_obj) {
             Py_DECREF(m_obj);
         }
@@ -210,7 +210,7 @@ public:
 private:
     PyObject* m_obj;
 
-    PyObjectPtr(const PyObjectPtr&) = delete;
+    PyObjectP_u8L(const PyObjectPtr&) = delete;
     PyObjectPtr& operator=(const PyObjectPtr&) = delete;
 };
 

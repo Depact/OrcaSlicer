@@ -410,7 +410,7 @@ void MultiMachinePickPage::update_selected_count()
     }
 
     for (int j = 0; j < selected_multi_devices.size(); j++) {
-        app_config->set_str("multi_devices",  std::to_string(j), selected_multi_devices[j]);
+        app_config->set_s_u8L("multi_devices",  std::to_string(j), selected_multi_devices[j]);
     }
     app_config->save();
 }

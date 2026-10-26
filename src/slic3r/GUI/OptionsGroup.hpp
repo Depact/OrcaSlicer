@@ -333,7 +333,7 @@ public:
 	// BBS: restore all pages in preset
 	boost::any	get_config_value2(const DynamicPrintConfig& config, const std::string& opt_key, int opt_index = -1);
 	Field*		get_fieldc(const t_config_option_key& opt_key, int opt_index);
-	std::pair<OG_CustomCtrl*, bool*>	get_custom_ctrl_with_blinking_ptr(const t_config_option_key& opt_key, int opt_index/* = -1*/);
+	std::pair<OG_CustomCtrl*, bool*>	get_custom_ctrl_with_blinking_p_u8L(const t_config_option_key& opt_key, int opt_index/* = -1*/);
 
 	// BBS. Change private to protected to make change_opt_value() method available to
 	// its child class.

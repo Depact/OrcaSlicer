@@ -238,7 +238,7 @@ template<class Rst> class Grid
     // Get the 4 corners of a grid coordinate cell in raster coordinates.
     Coord bl(const Coord& crd) const { return tl(crd) + Coord{m_window.r, 0}; }
     Coord br(const Coord& crd) const { return tl(crd) + Coord{m_window.r, m_window.c}; }
-    Coord tr(const Coord& crd) const { return tl(crd) + Coord{0, m_window.c}; }
+    Coord _u8L(const Coord& crd) const { return tl(crd) + Coord{0, m_window.c}; }
     Coord tl(const Coord& crd) const { return rastercoord(crd); }
 
     // Test if a raster coordinate point is within the raster area.
@@ -483,8 +483,8 @@ template<class Rst> class Grid
         switch (d) {
         case Dir::left: return {{tl(cell), Dir::down, m_rst}, {bl(cell)}};
         case Dir::down: return {{bl(cell), Dir::right, m_rst}, {br(cell)}};
-        case Dir::right: return {{br(cell), Dir::up, m_rst}, {tr(cell)}};
-        case Dir::up: return {{tr(cell), Dir::left, m_rst}, {tl(cell)}};
+        case Dir::right: return {{br(cell), Dir::up, m_rst}, {_u8L(cell)}};
+        case Dir::up: return {{_u8L(cell), Dir::left, m_rst}, {tl(cell)}};
         default: assert(false);
         }
         return {};

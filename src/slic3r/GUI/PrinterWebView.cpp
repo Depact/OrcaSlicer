@@ -115,8 +115,8 @@ static void inject_vue_resize_workaround(wxWebView *webView)
 static void add_page_strings(wxWebView *webView)
 {
     const nlohmann::json strings = {
-        {"printer_connection", TR("Printer Connection")},
-        {"printer_connection_setup", TR("Please set up your printer connection to view the device.")},
+        {"printer_connection", _u8L("Printer Connection")},
+        {"printer_connection_setup", _u8L("Please set up your printer connection to view the device.")},
     };
     webView->AddUserScript(wxString::FromUTF8(WebViewHostDialog::localized_strings_script(strings)));
 }

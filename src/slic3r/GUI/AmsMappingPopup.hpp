@@ -186,8 +186,8 @@ public:
     int  get_real_offset();
     void render(wxDC &dc) override;
     void doRender(wxDC &dc) override;
-    void set_material_index_str(std::string str);
-    const std::string &get_material_index_str() { return m_material_index; }
+    void set_material_index_s_u8L(std::string str);
+    const std::string &get_material_index_s_u8L() { return m_material_index; }
 private:
     std::string m_material_index;
 };
@@ -376,8 +376,8 @@ public:
     void reset_ams_info();
     void set_reset_callback(ResetCallback callback);
     void  show_reset_button();
-    void  set_material_index_str(std::string str) { m_material_index = str; }
-    const std::string &get_material_index_str() { return m_material_index; }
+    void  set_material_index_s_u8L(std::string str) { m_material_index = str; }
+    const std::string &get_material_index_s_u8L() { return m_material_index; }
 
 public:
     void msw_rescale();

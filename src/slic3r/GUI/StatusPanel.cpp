@@ -3520,7 +3520,7 @@ void StatusPanel::update_ams(MachineObject *obj)
     }
 
     // must select a current can
-    m_ams_control->UpdateAms(obj->get_printer_series_str(), obj->printer_type, ams_info, ext_info, *obj->GetExtderSystem(), obj->get_dev_id(), obj, false);
+    m_ams_control->UpdateAms(obj->get_printer_series_s_u8L(), obj->printer_type, ams_info, ext_info, *obj->GetExtderSystem(), obj->get_dev_id(), obj, false);
     m_ams_control->UpdateAmsDryControl(obj);
 
     last_tray_exist_bits  = obj->tray_exist_bits;
@@ -3811,7 +3811,7 @@ void StatusPanel::update_subtask(MachineObject *obj)
                 int width = m_project_task_panel->get_bitmap_thumbnail()->GetSize().x;
                 int height = m_project_task_panel->get_bitmap_thumbnail()->GetSize().y;
                 if (m_calib_method == CALI_METHOD_AUTO || m_calib_method == CalibrationMethod::CALI_METHOD_NEW_AUTO) {
-                    std::string image_name = obj->get_auto_pa_cali_thumbnail_img_str();
+                    std::string image_name = obj->get_auto_pa_cali_thumbnail_img_s_u8L();
                     if (m_calib_mode == CalibMode::Calib_PA_Line) {
                         if (obj->is_multi_extruders()) {
                             int cur_ext_id = obj->GetExtderSystem()->GetCurrentExtderId();

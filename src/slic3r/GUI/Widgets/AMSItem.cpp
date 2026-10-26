@@ -4081,7 +4081,7 @@ void FeedDirectionDialog::OnRadioClicked(wxCommandEvent& evt)
             m_extruderImage->setExtruderUsed("left");
             m_load_extruder_id = 1;
             {
-                SetTitle(format_wxstr(_L("Load %1% to %2%"), m_filament_id, _L(DevPrinterConfigUtil::get_toolhead_display_name(m_printer_type, DEPUTY_EXTRUDER_ID, ToolHeadComponent::Extruder, ToolHeadNameCase::LowerCase))));
+                SetTitle(format_wxs_u8L(_L("Load %1% to %2%"), m_filament_id, _L(DevPrinterConfigUtil::get_toolhead_display_name(m_printer_type, DEPUTY_EXTRUDER_ID, ToolHeadComponent::Extruder, ToolHeadNameCase::LowerCase))));
             }
         }
         else if (clicked == m_rightRadio)
@@ -4090,7 +4090,7 @@ void FeedDirectionDialog::OnRadioClicked(wxCommandEvent& evt)
             m_extruderImage->setExtruderUsed("right");
             m_load_extruder_id = 0;
             {
-                SetTitle(format_wxstr(_L("Load %1% to %2%"), m_filament_id, _L(DevPrinterConfigUtil::get_toolhead_display_name(m_printer_type, MAIN_EXTRUDER_ID, ToolHeadComponent::Extruder, ToolHeadNameCase::LowerCase))));
+                SetTitle(format_wxs_u8L(_L("Load %1% to %2%"), m_filament_id, _L(DevPrinterConfigUtil::get_toolhead_display_name(m_printer_type, MAIN_EXTRUDER_ID, ToolHeadComponent::Extruder, ToolHeadNameCase::LowerCase))));
             }
         }
     }

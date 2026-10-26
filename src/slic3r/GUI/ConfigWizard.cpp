@@ -804,10 +804,10 @@ void PageMaterials::set_compatible_printers_html_window(const std::vector<std::s
     const auto text_clr = wxGetApp().get_label_clr_default();
     const auto bgr_clr_str = encode_color(ColorRGB(bgr_clr.Red(), bgr_clr.Green(), bgr_clr.Blue()));
     const auto text_clr_str = encode_color(ColorRGB(text_clr.Red(), text_clr.Green(), text_clr.Blue()));
-    wxString first_line = format_wxstr(_L("%1% marked with <b>*</b> are <b>not</b> compatible with some installed printers."), materials->technology == T_FFF ? _L("Filaments") : _L("SLA materials"));
+    wxString first_line = format_wxs_u8L(_L("%1% marked with <b>*</b> are <b>not</b> compatible with some installed printers."), materials->technology == T_FFF ? _L("Filaments") : _L("SLA materials"));
     wxString text;
     if (all_printers) {
-        wxString second_line = format_wxstr(_L("All installed printers are compatible with the selected %1%."), materials->technology == T_FFF ? _L("filament") : _L("SLA material"));
+        wxString second_line = format_wxs_u8L(_L("All installed printers are compatible with the selected %1%."), materials->technology == T_FFF ? _L("filament") : _L("SLA material"));
         text = wxString::Format(
             "<html>"
             "<style>"
@@ -1446,7 +1446,7 @@ public:
 
 PageTemperatures::PageTemperatures(ConfigWizard *parent)
     : ConfigWizardPage(parent, _L("Nozzle and Bed Temperatures"), _L("Temperatures"), 1)
-    , spin_extr(new SpinCtrlDouble(this))
+    , spin_ex_u8L(new SpinCtrlDouble(this))
     , spin_bed (new SpinCtrlDouble(this))
 {
     // BBS: FIXME
@@ -2473,7 +2473,7 @@ bool ConfigWizard::priv::apply_config(AppConfig *app_config, PresetBundle *prese
     }
 
     //BBS: remove snapshot logic
-    /*if (snapshot && ! take_config_snapshot_cancel_on_error(*app_config, snapshot_reason, "", TR("Do you want to continue changing the configuration?")))
+    /*if (snapshot && ! take_config_snapshot_cancel_on_error(*app_config, snapshot_reason, "", _u8L("Do you want to continue changing the configuration?")))
         return false;*/
 
     if (check_unsaved_preset_changes &&

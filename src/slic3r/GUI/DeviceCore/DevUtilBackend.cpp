@@ -31,7 +31,7 @@ namespace Slic3r
 Slic3r::MultiNozzleUtils::NozzleInfo DevUtilBackend::GetNozzleInfo(const DevNozzle& dev_nozzle)
 {
     MultiNozzleUtils::NozzleInfo info;
-    info.diameter = dev_nozzle.GetNozzleDiameterStr().ToStdString();
+    info.diameter = dev_nozzle.GetNozzleDiameterS_u8L().ToStdString();
     info.volume_type = DevNozzle::ToNozzleVolumeType(dev_nozzle.GetNozzleFlowType());
     info.extruder_id = dev_nozzle.GetLogicExtruderId();
 

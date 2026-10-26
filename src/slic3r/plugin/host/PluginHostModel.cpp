@@ -80,7 +80,7 @@ void host_bindings::register_model(py::module_& host)
             // copy-on-write snapshot); the const_pointer_cast only serves the
             // binding's shared_ptr holder — the TriangleMesh binding exposes
             // read-only methods (see the immutability rule in PluginHostMesh.cpp).
-            return std::const_pointer_cast<TriangleMesh>(volume.get_mesh_shared_ptr());
+            return std::const_pointer_cast<TriangleMesh>(volume.get_mesh_shared_p_u8L());
         }, "Return the volume's TriangleMesh (local coordinates) for vertex/triangle access.")
         .def("mesh_errors_count", [](const ModelVolume& volume) { return volume.get_repaired_errors_count(); })
         .def("is_fdm_support_painted", &ModelVolume::is_fdm_support_painted)

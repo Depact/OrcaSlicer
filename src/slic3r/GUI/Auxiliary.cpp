@@ -417,7 +417,7 @@ void AuFile::on_input_enter(wxCommandEvent &evt)
     if (fs::exists(new_dir_path)) existing = true;
 
     if (m_valid_type == Valid && existing) {
-        info_line    = from_u8((boost::format(TR("The name \"%1%\" already exists.")) % new_file_name).str());
+        info_line    = from_u8((boost::format(_u8L("The name \"%1%\" already exists.")) % new_file_name).str());
         m_valid_type = NoValid;
     }
 

@@ -21,7 +21,7 @@ public:
     bool                    IsUpgrading() const { return m_upgrade_display_state == DevFirmwareUpgradeState::UpgradingInProgress; }
     bool                    IsUpgradeAvaliable() const { return m_upgrade_display_state == DevFirmwareUpgradeState::UpgradingAvaliable; }
     DevFirmwareUpgradeState GetUpgradeState() const { return m_upgrade_display_state; }
-    std::string             GetUpgradeStatusStr() const { return m_upgrade_status; }
+    std::string             GetUpgradeStatusS_u8L() const { return m_upgrade_status; }
 
     // upgrade request
     bool IsUpgradeConsistencyRequest() const { return m_upgrade_consistency_request; }
@@ -32,11 +32,11 @@ public:
     std::map<std::string, DevFirmwareVersionInfo> GetNewVersionList() const { return m_new_ver_list; }
 
     // upgrading
-    std::string GetUpgradeModuleStr() const { return m_upgrade_module; }
-    std::string GetUpgradeProgressStr() const { return m_upgrade_progress; }
+    std::string GetUpgradeModuleS_u8L() const { return m_upgrade_module; }
+    std::string GetUpgradeProgressS_u8L() const { return m_upgrade_progress; }
     int         GetUpgradeProgressInt() const;
-    std::string GetUpgradeMessageStr() const { return m_upgrade_message; }
-    wxString    GetUpgradeErrCodeStr() const;
+    std::string GetUpgradeMessageS_u8L() const { return m_upgrade_message; }
+    wxString    GetUpgradeErrCodeS_u8L() const;
 
 public:
     // ctrls

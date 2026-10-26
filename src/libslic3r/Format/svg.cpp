@@ -144,11 +144,11 @@ bool get_svg_profile(const char *path, std::vector<Element_Info> &element_infos,
     NSVGimage *svg_data = nullptr;
     svg_data            = nsvgParseFromFile(path, "mm", 96.0f);
     if (svg_data == nullptr) {
-        message = TR("import svg failed: could not open svg.");
+        message = _u8L("import svg failed: could not open svg.");
         return false;
     }
     if (svg_data->shapes == nullptr) {
-        message = TR("import svg failed: could not parse imported svg data.");
+        message = _u8L("import svg failed: could not parse imported svg data.");
         return false;
     }
 

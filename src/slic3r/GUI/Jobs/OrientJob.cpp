@@ -213,7 +213,7 @@ static void setMinimalSupportAreaPrams(Slic3r::orientation::OrientParams &out)
 
 void OrientJob::process(Ctl &ctl)
 {
-    static const auto arrangestr = TR("Orienting...");
+    static const auto arrangestr = _u8L("Orienting...");
 
     ctl.update_status(0, arrangestr);
     ctl.call_on_main_thread([this]{ prepare(); }).wait();;
@@ -237,7 +237,7 @@ void OrientJob::process(Ctl &ctl)
     params.progressind = [this, count, &ctl](unsigned st, std::string orientstr) {
         st += m_unprintable.size();
         // TRN Progress status. %1% is the name of the object being oriented.
-        if (st > 0) ctl.update_status(int(st / float(count) * 100), GUI::format(TR("Orienting %1%"), orientstr));
+        if (st > 0) ctl.update_status(int(st / float(count) * 100), GUI::format(_u8L("Orienting %1%"), orientstr));
     };
 
     orientation::orient(m_selected, m_unselected, params);
@@ -251,8 +251,8 @@ void OrientJob::process(Ctl &ctl)
 
     // finalize just here.
     ctl.update_status(100,
-        ctl.was_canceled() ? TR("Orienting canceled.")
-        : TR(ss.str().c_str()));
+        ctl.was_canceled() ? _u8L("Orienting canceled.")
+        : _u8L(ss.str().c_str()));
     wxGetApp().plater()->show_status_message(ctl.was_canceled() ? "Orienting canceled." : ss.str());
 }
 

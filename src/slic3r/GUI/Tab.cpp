@@ -349,7 +349,7 @@ void Tab::create_preset_tab()
                                    "or click this button.")));
 
     add_scaled_button(panel, &m_search_btn, "search");
-    m_search_btn->SetToolTip(format_wxstr(_L("Search in settings [%1%]"), _L("Ctrl+") + "F"));*/
+    m_search_btn->SetToolTip(format_wxs_u8L(_L("Search in settings [%1%]"), _L("Ctrl+") + "F"));*/
 
     // Bitmaps to be shown on the "Revert to system" aka "Lock to system" button next to each input field.
     add_scaled_bitmap(this, m_bmp_value_lock  , "unlock_normal");
@@ -824,18 +824,18 @@ wxString Tab::translate_category(const wxString& title, Preset::Type preset_type
     if (preset_type == Preset::TYPE_PRINTER && title.Contains("Extruder ")) {
         auto preset = wxGetApp().preset_bundle;
         if (preset && preset->is_bbl_vendor()) {
-            if (title == "Extruder 1") return tr(L("Left Extruder"));
-            if (title == "Extruder 2") return tr(L("Right Extruder"));
+            if (title == "Extruder 1") return _u8L(L("Left Extruder"));
+            if (title == "Extruder 2") return _u8L(L("Right Extruder"));
         }
-        return tr(L("Extruder")) + title.SubString(8, title.Last());
+        return _u8L(L("Extruder")) + title.SubString(8, title.Last());
     }
     // Orca: one "Extruder" page serves all extruders; name it "Extruders" when there are several.
     if (preset_type == Preset::TYPE_PRINTER && title == "Extruder") {
         auto preset = wxGetApp().preset_bundle;
         if (preset && preset->get_printer_extruder_count() > 1)
-            return tr(L("Extruders"));
+            return _u8L(L("Extruders"));
     }
-    return tr(title);
+    return _u8L(title);
 }
 
 void Tab::OnActivate()
@@ -1796,7 +1796,7 @@ Line* Tab::get_line(const t_config_option_key& opt_key)
     return m_active_page ? m_active_page->get_line(opt_key) : nullptr;
 }
 
-std::pair<OG_CustomCtrl*, bool*> Tab::get_custom_ctrl_with_blinking_ptr(const t_config_option_key& opt_key, int opt_index/* = -1*/)
+std::pair<OG_CustomCtrl*, bool*> Tab::get_custom_ctrl_with_blinking_p_u8L(const t_config_option_key& opt_key, int opt_index/* = -1*/)
 {
     if (!m_active_page)
         return {nullptr, nullptr};
@@ -1804,7 +1804,7 @@ std::pair<OG_CustomCtrl*, bool*> Tab::get_custom_ctrl_with_blinking_ptr(const t_
     std::pair<OG_CustomCtrl*, bool*> ret = {nullptr, nullptr};
 
     for (auto opt_group : m_active_page->m_optgroups) {
-        ret = opt_group->get_custom_ctrl_with_blinking_ptr(opt_key, opt_index);
+        ret = opt_group->get_custom_ctrl_with_blinking_p_u8L(opt_key, opt_index);
         if (ret.first && ret.second)
             break;
     }
@@ -2545,7 +2545,7 @@ void Tab::activate_option(const std::string& opt_key, const wxString& category)
            set_focus(field->getWindow());
     }
 
-    m_highlighter.init(get_custom_ctrl_with_blinking_ptr(opt_key));
+    m_highlighter.init(get_custom_ctrl_with_blinking_p_u8L(opt_key));
 }
 
 void Tab::apply_searcher()
@@ -3638,8 +3638,8 @@ void TabPrintModel::update_model_config()
         m_config->apply_only(local_config, std::vector<std::string>(local_keys.begin(), iter));
         for (; iter != local_keys.end(); ++iter) {
             int n = iter->find('#');
-            auto opt_key = iter->substr(0, n);
-            n = std::atoi(iter->c_str() + n + 1);
+            auto opt_key = iter->subs_u8L(0, n);
+            n = std::atoi(iter->c_s_u8L() + n + 1);
             auto vec = dynamic_cast<ConfigOptionVectorBase *>(m_config->option(opt_key));
             vec->set_at(local_config.option(opt_key), n, n);
         }
@@ -4152,14 +4152,14 @@ bool Tab::validate_custom_gcode(const wxString& title, const std::string& gcode)
         std::string lines = ":\n";
         for (const std::string& keyword : tags)
             lines += ";" + keyword + "\n";
-        wxString reports = format_wxstr(
+        wxString reports = format_wxs_u8L(
             _L_PLURAL("Following line %s contains reserved keywords.\nPlease remove it, or G-code visualization and print time estimation will be broken.",
                       "Following lines %s contain reserved keywords.\nPlease remove them, or G-code visualization and print time estimation will be broken.",
                       tags.size()),
             lines);
         //wxMessageDialog dialog(wxGetApp().mainframe, reports, _L("Found reserved keywords in") + " " + _(title), wxICON_WARNING | wxOK);
         // TRN %1% is the name of the custom G-code setting, e.g. "Machine start G-code".
-        MessageDialog dialog(wxGetApp().mainframe, reports, format_wxstr(_L("Reserved keywords found in %1%"), _(title)), wxICON_WARNING | wxOK);
+        MessageDialog dialog(wxGetApp().mainframe, reports, format_wxs_u8L(_L("Reserved keywords found in %1%"), _(title)), wxICON_WARNING | wxOK);
         dialog.ShowModal();
     }
     return !invalid;
@@ -5333,7 +5333,7 @@ void TabPrinter::build_fff()
 
                         if (errors != enum_bitmask<ThumbnailError>()) {
                             // TRN: The first argument is the parameter's name; the second argument is its value.
-                            std::string error_str = format(TR("Invalid value provided for parameter %1%: %2%"), "thumbnails", val);
+                            std::string error_str = format(_u8L("Invalid value provided for parameter %1%: %2%"), "thumbnails", val);
                             error_str += GCodeThumbnails::get_error_string(errors);
                             InfoDialog(parent(), _L("G-code flavor is switched"), from_u8(error_str)).ShowModal();
                         }
@@ -7962,7 +7962,7 @@ void Tab::save_preset(std::string name /*= ""*/, bool detach, bool save_to_proje
     // focus currently.is there anything better than this ?
 //!	m_tabctrl->OnSetFocus();
     if (from_input) {
-        SavePresetDialog dlg(m_parent, m_type, m_mode, detach ? TR("Detached") : "");
+        SavePresetDialog dlg(m_parent, m_type, m_mode, detach ? _u8L("Detached") : "");
         dlg.Show(false);
         dlg.input_name_from_other(input_name);
         wxCommandEvent evt(wxEVT_TEXT, GetId());
@@ -7973,7 +7973,7 @@ void Tab::save_preset(std::string name /*= ""*/, bool detach, bool save_to_proje
     }
 
     if (name.empty()) {
-        SavePresetDialog dlg(m_parent, m_type, m_mode, detach ? TR("Detached") : "");
+        SavePresetDialog dlg(m_parent, m_type, m_mode, detach ? _u8L("Detached") : "");
         if (!m_just_edit) {
             if (dlg.ShowModal() != wxID_OK)
                 return;
@@ -8115,7 +8115,7 @@ void Tab::delete_preset()
             DeleteConfirmDialog
                 dlg(parent(), wxString(SLIC3R_APP_FULL_NAME) + " - " + _L("Delete"),
                     // TRN %1% is "N filament preset(s)", %2% is "N process preset(s)".
-                    format_wxstr(_L("%1% and %2% are attached to this printer. Those presets would be deleted if the printer is deleted."),
+                    format_wxs_u8L(_L("%1% and %2% are attached to this printer. Those presets would be deleted if the printer is deleted."),
                                  wxString::Format(_L_PLURAL("%d filament preset", "%d filament presets", filament_preset_num), filament_preset_num),
                                  wxString::Format(_L_PLURAL("%d process preset", "%d process presets", process_preset_num), process_preset_num)));
             int res = dlg.ShowModal();
@@ -8182,7 +8182,7 @@ void Tab::delete_preset()
     }
 
     if (is_base_preset && (current_preset.type == Preset::Type::TYPE_FILAMENT)) {
-        msg += from_u8(TR("Are you sure to delete the selected preset?\nIf the preset corresponds to a filament currently in use on your printer, please reset the filament information for that slot."));
+        msg += from_u8(_u8L("Are you sure to delete the selected preset?\nIf the preset corresponds to a filament currently in use on your printer, please reset the filament information for that slot."));
     } else {
         msg += _L("Are you sure you want to delete the selected preset?");
     }
@@ -9729,7 +9729,7 @@ void TabSLAPrint::update_description_lines()
     //        {
     //            bool elev = !m_config->opt_bool("pad_enable") || !m_config->opt_bool("pad_around_object");
     //            m_support_object_elevation_description_line->SetText(elev ? "" :
-    //                from_u8((boost::format(TR("\"%1%\" is disabled because \"%2%\" is on in \"%3%\" category.\n"
+    //                from_u8((boost::format(_u8L("\"%1%\" is disabled because \"%2%\" is on in \"%3%\" category.\n"
     //                    "To enable \"%1%\", please switch off \"%2%\""))
     //                    % _L("Object elevation") % _L("Pad around object") % _L("Pad")).str()));
     //        }

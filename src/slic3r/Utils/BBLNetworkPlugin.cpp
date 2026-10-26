@@ -98,7 +98,7 @@ int BBLNetworkPlugin::initialize(bool using_backup, const std::string& version)
     if (version.empty()) {
         BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << ": version is required but not provided";
         set_load_error(
-            TR("Network library version not specified"),
+            _u8L("Network library version not specified"),
             "A version must be specified to load the network library",
             ""
         );
@@ -151,7 +151,7 @@ int BBLNetworkPlugin::initialize(bool using_backup, const std::string& version)
         std::string library_path = get_libpath_in_current_directory(std::string(BAMBU_NETWORK_LIBRARY));
         if (library_path.empty()) {
             set_load_error(
-                TR("Network library not found"),
+                _u8L("Network library not found"),
                 "Could not locate versioned library: " + library,
                 library
             );
@@ -167,7 +167,7 @@ int BBLNetworkPlugin::initialize(bool using_backup, const std::string& version)
         char* dll_error = dlerror();
         BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << ": dlopen failed: " << (dll_error ? dll_error : "unknown error");
         set_load_error(
-            TR("Failed to load network library"),
+            _u8L("Failed to load network library"),
             dll_error ? std::string(dll_error) : "Unknown dlopen error",
             library
         );
@@ -177,7 +177,7 @@ int BBLNetworkPlugin::initialize(bool using_backup, const std::string& version)
     if (!m_networking_module) {
         if (!m_load_error.has_error) {
             set_load_error(
-                TR("Network library failed to load"),
+                _u8L("Network library failed to load"),
                 "LoadLibrary/dlopen returned null",
                 library
             );

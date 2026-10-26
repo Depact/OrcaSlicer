@@ -94,7 +94,7 @@ bool FlashAir::upload(PrintHostUpload upload_data, ProgressFn prorgess_fn, Error
         strDest.insert(0,"/");
     }
 
-	auto urlPrepare = make_url("upload.cgi", "WRITEPROTECT=ON&FTIME", timestamp_str());
+	auto urlPrepare = make_url("upload.cgi", "WRITEPROTECT=ON&FTIME", timestamp_s_u8L());
     auto urlSetDir = make_url("upload.cgi","UPDIR",strDest);
 	auto urlUpload = make_url("upload.cgi");
 
@@ -117,7 +117,7 @@ bool FlashAir::upload(PrintHostUpload upload_data, ProgressFn prorgess_fn, Error
 			res = boost::icontains(body, "SUCCESS");
 			if (! res) {
 				BOOST_LOG_TRIVIAL(error) << boost::format("%1%: Request completed but no SUCCESS message was received.") % name;
-				error_fn(format_error(body, TR("Unknown error occurred"), 0));
+				error_fn(format_error(body, _u8L("Unknown error occurred"), 0));
 			}
 		})
 		.perform_sync();
@@ -138,7 +138,7 @@ bool FlashAir::upload(PrintHostUpload upload_data, ProgressFn prorgess_fn, Error
             res = boost::icontains(body, "SUCCESS");
             if (! res) {
                 BOOST_LOG_TRIVIAL(error) << boost::format("%1%: Request completed but no SUCCESS message was received.") % name;
-                error_fn(format_error(body, TR("Unknown error occurred"), 0));
+                error_fn(format_error(body, _u8L("Unknown error occurred"), 0));
             }
         })
         .perform_sync();
@@ -154,7 +154,7 @@ bool FlashAir::upload(PrintHostUpload upload_data, ProgressFn prorgess_fn, Error
 			res = boost::icontains(body, "SUCCESS");
 			if (! res) {
 				BOOST_LOG_TRIVIAL(error) << boost::format("%1%: Request completed but no SUCCESS message was received.") % name;
-				error_fn(format_error(body, TR("Unknown error occurred"), 0));
+				error_fn(format_error(body, _u8L("Unknown error occurred"), 0));
 			}
 		})
 		.on_error([&](std::string body, std::string error, unsigned status) {
@@ -175,7 +175,7 @@ bool FlashAir::upload(PrintHostUpload upload_data, ProgressFn prorgess_fn, Error
 	return res;
 }
 
-std::string FlashAir::timestamp_str() const
+std::string FlashAir::timestamp_s_u8L() const
 {
 	auto t = std::time(nullptr);
 	auto tm = *std::localtime(&t);

@@ -87,10 +87,10 @@ GLGizmoSimplify::GLGizmoSimplify(GLCanvas3D &       parent,
     , m_show_wireframe(false)
     , m_move_to_center(false)
     // translation for GUI size
-    , tr_mesh_name(TR("Mesh name"))
-    , tr_triangles(TR("Triangles"))
-    , tr_detail_level(TR("Detail level"))
-    , tr_decimate_ratio(TR("Decimate ratio"))
+    , tr_mesh_name(_u8L("Mesh name"))
+    , tr_triangles(_u8L("Triangles"))
+    , tr_detail_level(_u8L("Detail level"))
+    , tr_decimate_ratio(_u8L("Decimate ratio"))
 {}
 
 GLGizmoSimplify::~GLGizmoSimplify()
@@ -135,7 +135,7 @@ void GLGizmoSimplify::add_simplify_suggestion_notification(
         std::string t = GUI::format(_L(
             "Processing model '%1%' with more than 1M triangles "
             "could be slow. It is highly recommended to simplify the model."), objects[object_id]->name);
-        std::string hypertext = TR("Simplify model");
+        std::string hypertext = _u8L("Simplify model");
 
         std::function<bool(wxEvtHandler *)> open_simplify =
             [object_id](wxEvtHandler *) {
@@ -162,7 +162,7 @@ void GLGizmoSimplify::add_simplify_suggestion_notification(
 
 std::string GLGizmoSimplify::on_get_name() const
 {
-    return TR("Simplify");
+    return _u8L("Simplify");
 }
 
 void GLGizmoSimplify::on_render_input_window(float x, float y, float bottom_limit)
@@ -285,11 +285,11 @@ void GLGizmoSimplify::on_render_input_window(float x, float y, float bottom_limi
     m_imgui->disabled_begin(m_configuration.use_count);
     ImGui::Text("%s", tr_detail_level.c_str());
     std::vector<std::string> reduce_captions = {
-        static_cast<std::string>(TR("Extra high")),
-        static_cast<std::string>(TR("High")),
-        static_cast<std::string>(TR("Medium")),
-        static_cast<std::string>(TR("Low")),
-        static_cast<std::string>(TR("Extra low"))
+        static_cast<std::string>(_u8L("Extra high")),
+        static_cast<std::string>(_u8L("High")),
+        static_cast<std::string>(_u8L("Medium")),
+        static_cast<std::string>(_u8L("Low")),
+        static_cast<std::string>(_u8L("Extra low"))
     };
     ImGui::SameLine(bottom_left_width);
     ImGui::PushItemWidth(bottom_left_width - space_size);
@@ -390,7 +390,7 @@ void GLGizmoSimplify::on_render_input_window(float x, float y, float bottom_limi
         apply_simplify();
     }
     else if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && is_worker_running) {
-        ImGui::SetTooltip("%s", TR("Unable to apply when processing preview").c_str());
+        ImGui::SetTooltip("%s", _u8L("Unable to apply when processing preview").c_str());
     }
     m_imgui->pop_confirm_button_style();
     m_imgui->disabled_end(); // state !settings
@@ -403,7 +403,7 @@ void GLGizmoSimplify::on_render_input_window(float x, float y, float bottom_limi
         close();
     }
     else if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && is_cancelling)
-        ImGui::SetTooltip("%s", TR("Operation already cancelling. Please wait a few seconds.").c_str());
+        ImGui::SetTooltip("%s", _u8L("Operation already cancelling. Please wait a few seconds.").c_str());
     m_imgui->pop_cancel_button_style();
     m_imgui->disabled_end(); // state cancelling
 

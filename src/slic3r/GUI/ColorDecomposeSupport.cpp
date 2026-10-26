@@ -342,7 +342,7 @@ bool prepare_decompose_mixed_result(
         missing_comp.official_component = official_component;
         missing_comp.preset_name = preset_name;
         // TRN %1% is a color name such as "Cyan", %2% is a filament type such as "PLA Basic"
-        missing_comp.display_name = format_wxstr(_L_CONTEXT("%1% %2%", "Color and filament type"),
+        missing_comp.display_name = format_wxs_u8L(_L_CONTEXT("%1% %2%", "Color and filament type"),
                                                  decompose_base_color_display(comp.base_color), wxString::FromUTF8(basic_type));
         missing.push_back(std::move(missing_comp));
         out_result.components.push_back(0);

@@ -92,7 +92,7 @@ bool resolve_allowed_plugin_root(const PluginDescriptor& descriptor,
 
     const fs::path plugin_root = resolve_plugin_root_from_descriptor(descriptor);
     if (plugin_root.empty()) {
-        error = TR("Plugin folder could not be determined.");
+        error = _u8L("Plugin folder could not be determined.");
         return false;
     }
 
@@ -103,7 +103,7 @@ bool resolve_allowed_plugin_root(const PluginDescriptor& descriptor,
         resolved_root = fs::absolute(plugin_root, ec);
     }
     if (ec || resolved_root.empty()) {
-        error = GUI::format(TR("Failed to resolve plugin folder: %1%"), plugin_root.string());
+        error = GUI::format(_u8L("Failed to resolve plugin folder: %1%"), plugin_root.string());
         return false;
     }
 
@@ -123,7 +123,7 @@ bool delete_plugin_root(const boost::filesystem::path& resolved_root, const std:
     const auto removed_count = fs::remove_all(resolved_root, ec);
     if (ec) {
         // TRN %1% is a folder path, %2% the system error message.
-        error = GUI::format(TR("Failed to delete plugin folder %1%: %2%"), resolved_root.string(), ec.message());
+        error = GUI::format(_u8L("Failed to delete plugin folder %1%: %2%"), resolved_root.string(), ec.message());
         return false;
     }
 
@@ -669,7 +669,7 @@ bool extract_zip_to_directory(const boost::filesystem::path& zip_path, const boo
 
     ZipReaderGuard reader;
     if (!open_zip_reader(&reader.archive, zip_path.string())) {
-        error = "Failed to open plugin zip: " + MZ_Archive::get_errorstr(mz_zip_get_last_error(&reader.archive));
+        error = "Failed to open plugin zip: " + MZ_Archive::get_errors_u8L(mz_zip_get_last_error(&reader.archive));
         return false;
     }
     reader.opened = true;
@@ -679,7 +679,7 @@ bool extract_zip_to_directory(const boost::filesystem::path& zip_path, const boo
     mz_zip_archive_file_stat stat;
     for (mz_uint i = 0; i < num_entries; ++i) {
         if (!mz_zip_reader_file_stat(&reader.archive, i, &stat)) {
-            error = "Failed to read plugin zip entry metadata: " + MZ_Archive::get_errorstr(mz_zip_get_last_error(&reader.archive));
+            error = "Failed to read plugin zip entry metadata: " + MZ_Archive::get_errors_u8L(mz_zip_get_last_error(&reader.archive));
             return false;
         }
 
@@ -727,7 +727,7 @@ bool extract_zip_to_directory(const boost::filesystem::path& zip_path, const boo
         // Shared with the rest of the archive code: long-path capable and binary-safe.
         if (!extract_zip_entry_to_file(&reader.archive, stat.m_file_index, output_path)) {
             error = "Failed to extract plugin zip entry " + relative_key + ": " +
-                    MZ_Archive::get_errorstr(mz_zip_get_last_error(&reader.archive));
+                    MZ_Archive::get_errors_u8L(mz_zip_get_last_error(&reader.archive));
             return false;
         }
     }
@@ -1000,7 +1000,7 @@ bool read_wheel_plugin_metadata(const boost::filesystem::path& whl_path, PluginD
 
     ZipReaderGuard reader;
     if (!open_zip_reader(&reader.archive, whl_path.string())) {
-        error = "Failed to open wheel as zip: " + MZ_Archive::get_errorstr(mz_zip_get_last_error(&reader.archive));
+        error = "Failed to open wheel as zip: " + MZ_Archive::get_errors_u8L(mz_zip_get_last_error(&reader.archive));
         return false;
     }
     reader.opened = true;
@@ -1199,7 +1199,7 @@ boost::filesystem::path find_installed_plugin_entry(const boost::filesystem::pat
     namespace fs = boost::filesystem;
 
     if (!fs::exists(plugin_dir) || !fs::is_directory(plugin_dir)) {
-        error = GUI::format(TR("Plugin directory does not exist: %1%"), plugin_dir.string());
+        error = GUI::format(_u8L("Plugin directory does not exist: %1%"), plugin_dir.string());
         return {};
     }
 
@@ -1216,7 +1216,7 @@ boost::filesystem::path find_installed_plugin_entry(const boost::filesystem::pat
         if (ext == ".py") {
             if (!py_entry.empty()) {
                 // TRN %1% and %2% are file names.
-                error = GUI::format(TR("Plugin directory contains multiple .py files: %1% and %2%"),
+                error = GUI::format(_u8L("Plugin directory contains multiple .py files: %1% and %2%"),
                                     py_entry.filename().string(), it->path().filename().string());
                 return {};
             }
@@ -1224,7 +1224,7 @@ boost::filesystem::path find_installed_plugin_entry(const boost::filesystem::pat
         } else if (ext == ".whl") {
             if (!whl_entry.empty()) {
                 // TRN %1% and %2% are file names.
-                error = GUI::format(TR("Plugin directory contains multiple .whl files: %1% and %2%"),
+                error = GUI::format(_u8L("Plugin directory contains multiple .whl files: %1% and %2%"),
                                     whl_entry.filename().string(), it->path().filename().string());
                 return {};
             }
@@ -1233,7 +1233,7 @@ boost::filesystem::path find_installed_plugin_entry(const boost::filesystem::pat
     }
 
     if (!py_entry.empty() && !whl_entry.empty()) {
-        error = TR("Plugin directory contains both .py and .whl entry files");
+        error = _u8L("Plugin directory contains both .py and .whl entry files");
         return {};
     }
 
@@ -1243,7 +1243,7 @@ boost::filesystem::path find_installed_plugin_entry(const boost::filesystem::pat
     if (!whl_entry.empty())
         return whl_entry;
 
-    error = TR("Plugin directory does not contain a .py or .whl entry file");
+    error = _u8L("Plugin directory does not contain a .py or .whl entry file");
     return {};
 }
 
@@ -1260,34 +1260,34 @@ std::vector<std::string> collect_resource_texture_files(const std::string& dir,
     error.clear();
 
     if (dir.empty()) {
-        error = TR("Resource texture directory is not set");
+        error = _u8L("Resource texture directory is not set");
         return files;
     }
     if (plugin_root.empty()) {
-        error = TR("Plugin folder could not be determined.");
+        error = _u8L("Plugin folder could not be determined.");
         return files;
     }
 
     boost::system::error_code ec;
     const fs::path resolved_dir = fs::weakly_canonical(fs::path(dir), ec);
     if (ec) {
-        error = TR("Resource texture directory could not be resolved");
+        error = _u8L("Resource texture directory could not be resolved");
         return files;
     }
 
     if (!fs::is_directory(resolved_dir, ec) || ec) {
-        error = TR("Resource texture path is not a directory");
+        error = _u8L("Resource texture path is not a directory");
         return files;
     }
 
     const fs::path resolved_root = fs::weakly_canonical(fs::path(plugin_root), ec);
     if (ec) {
-        error = TR("Plugin folder could not be resolved");
+        error = _u8L("Plugin folder could not be resolved");
         return files;
     }
 
     if (!is_inside_allowed_root(resolved_dir, resolved_root)) {
-        error = TR("Resource texture directory is outside the plugin folder");
+        error = _u8L("Resource texture directory is outside the plugin folder");
         return files;
     }
 
@@ -1312,7 +1312,7 @@ std::vector<std::string> collect_resource_texture_files(const std::string& dir,
     }
 
     if (ec) {
-        error = TR("Resource texture directory could not be read");
+        error = _u8L("Resource texture directory could not be read");
         return {};
     }
 

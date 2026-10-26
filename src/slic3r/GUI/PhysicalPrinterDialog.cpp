@@ -83,7 +83,7 @@ PhysicalPrinterDialog::PhysicalPrinterDialog(wxWindow* parent) :
     m_presets = tab->get_presets();
     const Preset &sel_preset  = m_presets->get_selected_preset();
     std::string suffix = TR_CONTEXT(L_CONTEXT("Copy", "PresetName"), "PresetName");
-    std::string   preset_name = sel_preset.is_default ? TR("Untitled") : sel_preset.is_system ? (boost::format(("%1% - %2%")) % sel_preset.name % suffix).str() : sel_preset.name;
+    std::string   preset_name = sel_preset.is_default ? _u8L("Untitled") : sel_preset.is_system ? (boost::format(("%1% - %2%")) % sel_preset.name % suffix).str() : sel_preset.name;
 
     auto input_sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -397,7 +397,7 @@ void PhysicalPrinterDialog::build_printhost_settings(ConfigOptionsGroup* m_optgr
     port_line.append_widget(print_host_printers);
     m_optgroup->append_line(port_line);
 
-    const auto ca_file_hint = TR("HTTPS CA file is optional. It is only needed if you use HTTPS with a self-signed certificate.");
+    const auto ca_file_hint = _u8L("HTTPS CA file is optional. It is only needed if you use HTTPS with a self-signed certificate.");
 
     if (Http::ca_file_supported()) {
         option = m_optgroup->get_option("printhost_cafile");
@@ -437,9 +437,9 @@ void PhysicalPrinterDialog::build_printhost_settings(ConfigOptionsGroup* m_optgr
         line.full_width = 1;
 
         line.widget = [ca_file_hint](wxWindow* parent) {
-            std::string info = TR("HTTPS CA File") + ":\n\t" +
-                (boost::format(TR("On this system, %s uses HTTPS certificates from the system Certificate Store or Keychain.")) % SLIC3R_APP_NAME).str() +
-                "\n\t" + TR("To use a custom CA file, please import your CA file into Certificate Store / Keychain.");
+            std::string info = _u8L("HTTPS CA File") + ":\n\t" +
+                (boost::format(_u8L("On this system, %s uses HTTPS certificates from the system Certificate Store or Keychain.")) % SLIC3R_APP_NAME).str() +
+                "\n\t" + _u8L("To use a custom CA file, please import your CA file into Certificate Store / Keychain.");
 
             //auto txt = new wxStaticText(parent, wxID_ANY, from_u8((boost::format("%1%\n\n\t%2%") % info % ca_file_hint).str()));
             auto txt = new wxStaticText(parent, wxID_ANY, from_u8((boost::format("%1%\n\t%2%") % info % ca_file_hint).str()));
@@ -606,9 +606,9 @@ void PhysicalPrinterDialog::update_preset_input() {
 
     if (m_valid_type == Valid && existing && m_preset_name != m_presets->get_selected_preset_name()) {
         if (existing->is_compatible)
-            info_line = from_u8((boost::format(TR("Preset \"%1%\" already exists.")) % m_preset_name).str());
+            info_line = from_u8((boost::format(_u8L("Preset \"%1%\" already exists.")) % m_preset_name).str());
         else
-            info_line = from_u8((boost::format(TR("Preset \"%1%\" already exists and is incompatible with the current printer.")) % m_preset_name).str());
+            info_line = from_u8((boost::format(_u8L("Preset \"%1%\" already exists and is incompatible with the current printer.")) % m_preset_name).str());
         info_line += "\n" + _L("Please note that saving will overwrite the current preset.");
         m_valid_type = Warning;
     }

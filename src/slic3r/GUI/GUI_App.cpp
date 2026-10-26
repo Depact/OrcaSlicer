@@ -736,7 +736,7 @@ wxString file_wildcards(FileType file_type, const std::string &custom_extension)
             mask += boost::to_upper_copy(std::string(ext));
         }
     const wxString translated_title = Slic3r::GUI::I18N::translate(data.title_id);
-    return GUI::format_wxstr("%s (%s)|%s", translated_title, title, mask);
+    return GUI::format_wxs_u8L("%s (%s)|%s", translated_title, title, mask);
 }
 
 static std::string libslic3r_translate_callback(const char *s) { return wxGetTranslation(wxString(s, wxConvUTF8)).utf8_str().data(); }
@@ -896,7 +896,7 @@ static void generic_exception_handle()
     } catch (const std::exception& ex) {
         BOOST_LOG_TRIVIAL(error) << boost::format("Uncaught exception: %1%") % ex.what();
         flush_logs();
-        wxLogError(format_wxstr(_L("OrcaSlicer got an unhandled exception: %1%"), ex.what()));
+        wxLogError(format_wxs_u8L(_L("OrcaSlicer got an unhandled exception: %1%"), ex.what()));
         throw;
     }
 //#endif
@@ -908,7 +908,7 @@ void GUI_App::toggle_show_gcode_window()
     app_config->set_bool("show_gcode_window", m_show_gcode_window);
 }
 
-std::vector<std::string> GUI_App::split_str(std::string src, std::string separator)
+std::vector<std::string> GUI_App::split_s_u8L(std::string src, std::string separator)
 {
     std::string::size_type pos;
     std::vector<std::string> result;
@@ -2676,7 +2676,7 @@ void GUI_App::init_webview_runtime()
         BOOST_LOG_TRIVIAL(info) << "WebView2 runtime installed successfully.";
     } else {
         BOOST_LOG_TRIVIAL(error) << "WebView2 runtime installation failed or still not detected.";
-        wxMessageBox(format_wxstr(_L("The Microsoft WebView2 Runtime could not be installed.\n"
+        wxMessageBox(format_wxs_u8L(_L("The Microsoft WebView2 Runtime could not be installed.\n"
                                      "Some features, including the setup wizard, may appear blank until it is installed.\n"
                                      "Please install it manually from %1% and restart Orca Slicer."),
                                   "https://developer.microsoft.com/microsoft-edge/webview2/"),
@@ -3170,10 +3170,10 @@ bool GUI_App::on_init_inner()
     // before GTK widget realization).
     g_log_set_handler("Gtk", G_LOG_LEVEL_CRITICAL,
         [](const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data) {
-            if (message && (strstr(message, "gtk_widget_set_allocation") ||
-                            strstr(message, "WIDGET_REALIZED_FOR_EVENT") ||
-                            strstr(message, "gtk_widget_get_style_context") ||
-                            strstr(message, "gtk_style_context_add_provider")))
+            if (message && (strs_u8L(message, "gtk_widget_set_allocation") ||
+                            strs_u8L(message, "WIDGET_REALIZED_FOR_EVENT") ||
+                            strs_u8L(message, "gtk_widget_get_style_context") ||
+                            strs_u8L(message, "gtk_style_context_add_provider")))
                 return;
             g_log_default_handler(log_domain, log_level, message, user_data);
         }, nullptr);
@@ -3794,7 +3794,7 @@ bool GUI_App::on_init_inner()
     if (m_config_corrupted) {
         m_config_corrupted = false;
         show_error(nullptr,
-                   TR(
+                   _u8L(
                        "The OrcaSlicer configuration file may be corrupted and cannot be parsed.\nOrcaSlicer has attempted to recreate the "
                        "configuration file.\nPlease note, application settings will be lost, but printer profiles will not be affected."));
     }
@@ -4682,7 +4682,7 @@ void GUI_App::UpdateDVCDarkUI(wxDataViewCtrl* dvc, bool highlited/* = false*/)
         wxItemAttr attr;
         attr.SetTextColour(NppDarkMode::GetTextColor());
         attr.SetFont(m_normal_font);
-        dvc->SetHeaderAttr(attr);
+        dvc->SetHeaderAt_u8L(attr);
     }
 #endif //_MSW_DARK_MODE
     if (dvc->HasFlag(wxDV_ROW_LINES))
@@ -5871,24 +5871,24 @@ void GUI_App::on_http_error(wxCommandEvent &evt)
             // The agent injects the local preset name into every 409 conflict body, so this is
             // normally populated; fall back to a generic header if it is somehow missing.
             const std::string header = conflict_preset_name.empty()
-                ? TR("Cloud sync conflict:")
-                : format(TR("Cloud sync conflict for preset \"%s\":"), conflict_preset_name);
+                ? _u8L("Cloud sync conflict:")
+                : format(_u8L("Cloud sync conflict for preset \"%s\":"), conflict_preset_name);
 
             switch (conflict_code) {
             case -1:
-                text = header + " " + TR("This preset has a newer version in OrcaCloud.\n"
+                text = header + " " + _u8L("This preset has a newer version in OrcaCloud.\n"
                             "Pull downloads the cloud copy. Force push overwrites it with your local preset.");
                 break;
             case -2:
-                text = header + " " + TR("A preset with this name already exists in OrcaCloud.\n"
+                text = header + " " + _u8L("A preset with this name already exists in OrcaCloud.\n"
                             "Pull downloads the cloud copy. Force push overwrites it with your local preset.");
                 break;
             case -3:
-                text = header + " " + TR("A preset with the same name was previously deleted from the cloud.\n"
+                text = header + " " + _u8L("A preset with the same name was previously deleted from the cloud.\n"
                             "Delete will delete your local preset. Force push overwrites it with your local preset.");
                 break;
             default:
-                text = header + " " + TR("There was an unexpected or unidentified preset conflict.\n"
+                text = header + " " + _u8L("There was an unexpected or unidentified preset conflict.\n"
                             "Pull downloads the cloud copy. Force push overwrites it with your local preset.");
                 break;
             };
@@ -5909,7 +5909,7 @@ void GUI_App::on_http_error(wxCommandEvent &evt)
                         return false;
                     const wxString confirm_msg = conflict_preset_name.empty()
                         ? _L("Force push will overwrite the cloud copy with your local preset changes.\nDo you want to continue?")
-                        : format_wxstr(_L("Force push will overwrite the cloud copy of preset \"%s\" with your local changes.\nDo you want to continue?"),
+                        : format_wxs_u8L(_L("Force push will overwrite the cloud copy of preset \"%s\" with your local changes.\nDo you want to continue?"),
                                        conflict_preset_name);
                     MessageDialog dlg(mainframe, confirm_msg, _L("Resolve cloud sync conflict"),
                                       wxCENTER | wxYES_NO | wxNO_DEFAULT | wxICON_WARNING);
@@ -7077,7 +7077,7 @@ void GUI_App::check_legacy_user_filament_presets(bool by_user)
                           "Add those printers back to your presets now? Your presets are backed up first. You can also do this "
                           "later from Help > Migrate Filament Presets.") + "\n";
     for (const LegacyUserFilamentPreset &legacy : legacy_presets) {
-        message += "\n" + format_wxstr(_L("%1% (based on %2%)"), legacy.preset, legacy.parent);
+        message += "\n" + format_wxs_u8L(_L("%1% (based on %2%)"), legacy.preset, legacy.parent);
         for (const std::string &printer : legacy.printers)
             message += "\n    " + from_u8(printer);
     }
@@ -7104,7 +7104,7 @@ void GUI_App::check_legacy_user_filament_presets(bool by_user)
         return;
     }
     if (failed.size() == legacy_presets.size()) {
-        show_error(mainframe, format_wxstr(_L("Your filament presets could not be migrated. A backup of your presets was saved to:\n%1%"), backup));
+        show_error(mainframe, format_wxs_u8L(_L("Your filament presets could not be migrated. A backup of your presets was saved to:\n%1%"), backup));
         return;
     }
     // Ask the sync loop to push on its next pass instead of its next 60 s round, which shortens the time the migrated
@@ -7117,7 +7117,7 @@ void GUI_App::check_legacy_user_filament_presets(bool by_user)
         tab->update_changed_ui();
     }
 
-    message = format_wxstr(_L("Your filament presets were migrated. Select them again in the filament list where you used them.\n\n"
+    message = format_wxs_u8L(_L("Your filament presets were migrated. Select them again in the filament list where you used them.\n\n"
                               "A backup of your presets was saved to:\n%1%"), backup);
     if (!failed.empty()) {
         message += "\n\n" + _L("These presets could not be migrated:");
@@ -7533,7 +7533,7 @@ void GUI_App::sync_preset(Preset* preset, bool force)
             size_limit_dialog_notified = true;
             if (mainframe == nullptr)
                 return;
-            auto msg = format_wxstr(_L("The preset \"%s\" is too large to sync to the cloud (exceeds 1MB). Please reduce the preset size by removing custom configurations or use it locally only."), name);
+            auto msg = format_wxs_u8L(_L("The preset \"%s\" is too large to sync to the cloud (exceeds 1MB). Please reduce the preset size by removing custom configurations or use it locally only."), name);
             MessageDialog(mainframe, msg, _L("Sync user presets"), wxICON_WARNING | wxOK).ShowModal();
         });
         // NOTE: Don't return here - let execution continue to save the sync_info
@@ -8101,7 +8101,7 @@ void GUI_App::start_sync_user_preset(bool with_progress_dlg)
                                 .plater()
                                 ->get_notification_manager()
                                 ->push_notification(NotificationType::CustomNotification,
-                                                    NotificationManager::NotificationLevel::RegularNotificationLevel, TR("There is an update available. Open the preset bundle dialog to update it."));
+                                                    NotificationManager::NotificationLevel::RegularNotificationLevel, _u8L("There is an update available. Open the preset bundle dialog to update it."));
 
                             update_available = false;
                         }
@@ -8716,12 +8716,12 @@ ConfigOptionMode GUI_App::get_mode()
     return app_config->get_bool("developer_mode") ? comDevelop : get_saved_mode();
 }
 
-std::string GUI_App::get_saved_mode_str()
+std::string GUI_App::get_saved_mode_s_u8L()
 {
     return saved_mode_to_string(get_saved_mode());
 }
 
-std::string GUI_App::get_mode_str()
+std::string GUI_App::get_mode_s_u8L()
 {
     return effective_mode_to_string(get_mode());
 }
@@ -8818,7 +8818,7 @@ bool GUI_App::show_modal_ip_address_enter_dialog(bool input_sn, wxString title)
 
             BOOST_LOG_TRIVIAL(info) << "User enter IP address is " << ip_address;
             if (!ip_address.empty()) {
-                wxGetApp().app_config->set_str("ip_address", obj->get_dev_id(), ip_address.ToStdString());
+                wxGetApp().app_config->set_s_u8L("ip_address", obj->get_dev_id(), ip_address.ToStdString());
                 wxGetApp().app_config->save();
 
                 obj->set_dev_ip(ip_address.ToStdString());
@@ -9303,7 +9303,7 @@ bool GUI_App::check_print_host_queue()
     // Show dialog
     wxString job_string = wxString();
     for (const auto& job : jobs) {
-        job_string += format_wxstr("   %1% : %2% \n", job.first, job.second);
+        job_string += format_wxs_u8L("   %1% : %2% \n", job.first, job.second);
     }
     wxString message;
     message += _(L("The uploads are still ongoing")) + ":\n\n" + job_string +"\n" + _(L("Stop them and continue anyway?"));
@@ -10402,7 +10402,7 @@ void GUI_App::start_download(std::string url)
     // ORCA: non-throwing probe, as in init_download_path(); ec is deliberately unread.
     boost::system::error_code ec;
     if (dest_folder.empty() || !boost::filesystem::is_directory(dest_folder, ec)) {
-        std::string msg = TR("Could not start URL download. Destination folder is not set. Please choose destination folder in Configuration Wizard.");
+        std::string msg = _u8L("Could not start URL download. Destination folder is not set. Please choose destination folder in Configuration Wizard.");
         BOOST_LOG_TRIVIAL(error) << msg;
         show_error(nullptr, msg);
         return;

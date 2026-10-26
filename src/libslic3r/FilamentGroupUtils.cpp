@@ -62,7 +62,7 @@ namespace FilamentGroupUtils
         return r != other.r || g != other.g || b != other.b || a != other.a;
     }
 
-    std::string Color::to_hex_str(bool include_alpha) const {
+    std::string Color::to_hex_s_u8L(bool include_alpha) const {
         std::ostringstream oss;
         oss << "#" << std::hex << std::setfill('0')
             << std::setw(2) << static_cast<int>(r)

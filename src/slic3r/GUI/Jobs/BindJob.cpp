@@ -23,8 +23,8 @@ wxDEFINE_EVENT(EVT_BIND_MACHINE_SUCCESS, wxCommandEvent);
 wxDEFINE_EVENT(EVT_BIND_MACHINE_FAIL, wxCommandEvent);
 
 
-static auto waiting_auth_str = TR("Logging in");
-static auto login_failed_str = TR("Login failed");
+static auto waiting_auth_str = _u8L("Logging in");
+static auto login_failed_str = _u8L("Login failed");
 
 
 BindJob::BindJob(std::string dev_id, std::string dev_ip, std::string dev_model, std::string sec_link, std::string ssdp_version)
@@ -78,30 +78,30 @@ void BindJob::process(Ctl &ctl)
 
             if (stage == BindJobStage::LoginStageConnect) {
                 curr_percent = 15;
-                msg = TR("Logging in");
+                msg = _u8L("Logging in");
             } else if (stage == BindJobStage::LoginStageLogin) {
                 curr_percent = 30;
-                msg = TR("Logging in");
+                msg = _u8L("Logging in");
             } else if (stage == BindJobStage::LoginStageWaitForLogin) {
                 curr_percent = 45;
-                msg = TR("Logging in");
+                msg = _u8L("Logging in");
             } else if (stage == BindJobStage::LoginStageGetIdentify) {
                 curr_percent = 60;
-                msg = TR("Logging in");
+                msg = _u8L("Logging in");
             } else if (stage == BindJobStage::LoginStageWaitAuth) {
                 curr_percent = 80;
-                msg = TR("Logging in");
+                msg = _u8L("Logging in");
             } else if (stage == BindJobStage::LoginStageFinished) {
                 curr_percent = 100;
-                msg = TR("Logging in");
+                msg = _u8L("Logging in");
             } else {
-                msg = TR("Logging in");
+                msg = _u8L("Logging in");
             }
 
             if (code != 0) {
-                msg = TR("Login failed");
+                msg = _u8L("Login failed");
                 if (code == BAMBU_NETWORK_ERR_TIMEOUT) {
-                    msg += TR("Please check the printer network connection.");
+                    msg += _u8L("Please check the printer network connection.");
                 }
             }
             update_status(ctl, curr_percent, msg);

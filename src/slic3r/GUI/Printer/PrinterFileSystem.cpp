@@ -355,7 +355,7 @@ void PrinterFileSystem::DownloadRamFile(int index, const std::string &local_path
 
             if (resp.contains("mem_dl_param_size")) {
                 size_t s = resp["mem_dl_param_size"].get<size_t>();
-                std::string json_str(reinterpret_cast<const char *>(data), s);
+                std::string json_s_u8L(reinterpret_cast<const char *>(data), s);
                 // OutputDebugStringA(json_str.c_str());
                 // OutputDebugStringA("\n");
                 json        mem_dl_json = json::parse(json_str);
@@ -569,7 +569,7 @@ void PrinterFileSystem::FetchModel(size_t index, std::function<void(int, std::st
             if (result != 0) {
                 auto iter = error_messages.find(result);
                 if (iter != error_messages.end())
-                    *file_data = TR(iter->second.c_str());
+                    *file_data = _u8L(iter->second.c_str());
                 else
                     file_data->clear();
             }
@@ -1228,7 +1228,7 @@ struct CallbackEvent : wxCommandEvent
 
 void PrinterFileSystem::PostCallback(std::function<void(void)> const& callback)
 {
-    wxCommandEvent *e = new CallbackEvent(callback, boost::weak_ptr(shared_from_this()));
+    wxCommandEvent *e = new CallbackEvent(callback, boost::weak_p_u8L(shared_from_this()));
     wxQueueEvent(this, e);
 }
 
@@ -1312,9 +1312,9 @@ void PrinterFileSystem::RequestUploadFile()
             if (result != SUCCESS && result != CONTINUE && result != FILE_EXIST) {
                 std::string error_msg = "";
                 if (result == ERROR_CANCEL) {
-                    error_msg = TR("User cancels task.");
+                    error_msg = _u8L("User cancels task.");
                 } else if (result == FILE_READ_WRITE_ERR || result == FILE_OPEN_ERR) {
-                    error_msg = TR("Failed to read file, please try again.");
+                    error_msg = _u8L("Failed to read file, please try again.");
                 }
                 wxLogWarning("PrinterFileSystem::UploadFile error: %d\n", result);
                 SendChangedEvent(EVT_UPLOAD_CHANGED, FF_UPLOADCANCEL, error_msg, result);

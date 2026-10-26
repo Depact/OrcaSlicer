@@ -44,7 +44,7 @@ inline pybind11::object json_to_py(const nlohmann::json& j, int depth = 0)
     case json::value_t::number_integer:  return py::int_(j.get<std::int64_t>());
     case json::value_t::number_unsigned: return py::int_(j.get<std::uint64_t>());
     case json::value_t::number_float:    return py::float_(j.get<double>());
-    case json::value_t::string:          return py::str(j.get<std::string>());
+    case json::value_t::string:          return py::s_u8L(j.get<std::string>());
     case json::value_t::array: {
         py::list lst;
         for (const auto& e : j)
@@ -54,7 +54,7 @@ inline pybind11::object json_to_py(const nlohmann::json& j, int depth = 0)
     case json::value_t::object: {
         py::dict d;
         for (auto it = j.begin(); it != j.end(); ++it)
-            d[py::str(it.key())] = json_to_py(it.value(), depth + 1);
+            d[py::s_u8L(it.key())] = json_to_py(it.value(), depth + 1);
         return d;
     }
     default: return py::none();
@@ -84,7 +84,7 @@ inline nlohmann::json py_to_json(const pybind11::handle& o, int depth = 0)
     if (py::isinstance<py::dict>(o)) {
         json obj = json::object();
         for (auto item : py::reinterpret_borrow<py::dict>(o))
-            obj[py::str(item.first).cast<std::string>()] = py_to_json(item.second, depth + 1);
+            obj[py::s_u8L(item.first).cast<std::string>()] = py_to_json(item.second, depth + 1);
         return obj;
     }
     if (py::isinstance<py::list>(o) || py::isinstance<py::tuple>(o)) {
@@ -93,7 +93,7 @@ inline nlohmann::json py_to_json(const pybind11::handle& o, int depth = 0)
             arr.push_back(py_to_json(e, depth + 1));
         return arr;
     }
-    return py::str(o).cast<std::string>(); // fallback: str()
+    return py::s_u8L(o).cast<std::string>(); // fallback: s_u8L()
 }
 
 struct PluginPermissions

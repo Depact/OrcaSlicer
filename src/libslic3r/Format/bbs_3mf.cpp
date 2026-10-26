@@ -522,7 +522,7 @@ public:
     version_error(const char* what_arg) : Slic3r::FileIOError(what_arg) {}
 };
 
-const char* bbs_get_attribute_value_charptr(const char** attributes, unsigned int attributes_size, const char* attribute_key)
+const char* bbs_get_attribute_value_charp_u8L(const char** attributes, unsigned int attributes_size, const char* attribute_key)
 {
     if ((attributes == nullptr) || (attributes_size == 0) || (attributes_size % 2 != 0) || (attribute_key == nullptr))
         return nullptr;
@@ -537,14 +537,14 @@ const char* bbs_get_attribute_value_charptr(const char** attributes, unsigned in
 
 std::string bbs_get_attribute_value_string(const char** attributes, unsigned int attributes_size, const char* attribute_key)
 {
-    const char* text = bbs_get_attribute_value_charptr(attributes, attributes_size, attribute_key);
+    const char* text = bbs_get_attribute_value_charp_u8L(attributes, attributes_size, attribute_key);
     return (text != nullptr) ? text : "";
 }
 
 float bbs_get_attribute_value_float(const char** attributes, unsigned int attributes_size, const char* attribute_key)
 {
     float value = 0.0f;
-    if (const char *text = bbs_get_attribute_value_charptr(attributes, attributes_size, attribute_key); text != nullptr)
+    if (const char *text = bbs_get_attribute_value_charp_u8L(attributes, attributes_size, attribute_key); text != nullptr)
         fast_float::from_chars(text, text + strlen(text), value);
     return value;
 }
@@ -552,21 +552,21 @@ float bbs_get_attribute_value_float(const char** attributes, unsigned int attrib
 int bbs_get_attribute_value_int(const char** attributes, unsigned int attributes_size, const char* attribute_key)
 {
     int value = 0;
-    if (const char *text = bbs_get_attribute_value_charptr(attributes, attributes_size, attribute_key); text != nullptr)
+    if (const char *text = bbs_get_attribute_value_charp_u8L(attributes, attributes_size, attribute_key); text != nullptr)
         boost::spirit::qi::parse(text, text + strlen(text), boost::spirit::qi::int_, value);
     return value;
 }
 
 bool bbs_get_attribute_value_bool(const char** attributes, unsigned int attributes_size, const char* attribute_key)
 {
-    const char* text = bbs_get_attribute_value_charptr(attributes, attributes_size, attribute_key);
+    const char* text = bbs_get_attribute_value_charp_u8L(attributes, attributes_size, attribute_key);
     return (text != nullptr) ? (bool)::atoi(text) : true;
 }
 
 void add_vec3(std::stringstream &stream, const Slic3r::Vec3f &tr)
 {
     for (unsigned r = 0; r < 3; ++r) {
-        stream << tr(r);
+        stream << _u8L(r);
         if (r != 2)
             stream << " ";
     }
@@ -2902,7 +2902,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 //ConfigSubstitution config_substitution;
                 //config_substitution.opt_def   = optdef;
                 //config_substitution.old_value = value;
-                //config_substitution.new_value = ConfigOptionUniquePtr(opt->clone());
+                //config_substitution.new_value = ConfigOptionUniqueP_u8L(opt->clone());
                 preset->loading_substitutions.emplace_back(std::move(config_substitutions[i]));
             }*/
             if (!config_substitutions.empty()) {
@@ -4039,7 +4039,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             m_curr_object->geometry.mmu_segmentation.push_back(bbs_get_attribute_value_string(attributes, num_attributes, MMU_SEGMENTATION_ATTR));
             m_curr_object->geometry.fuzzy_skin.push_back(bbs_get_attribute_value_string(attributes, num_attributes, CUSTOM_FUZZY_SKIN_ATTR));
             for (int slot = 0; slot < int(TEXTURE_DISPLACEMENT_MAX_LAYERS); ++slot)
-                if (const char *paint = bbs_get_attribute_value_charptr(attributes, num_attributes, TEXTURE_DISPLACEMENT_ATTRS[slot])) {
+                if (const char *paint = bbs_get_attribute_value_charp_u8L(attributes, num_attributes, TEXTURE_DISPLACEMENT_ATTRS[slot])) {
                     std::vector<std::string> &mask = m_curr_object->geometry.texture_displacement[slot];
                     mask.resize(m_curr_object->geometry.triangles.size());
                     mask.back() = paint;
@@ -4125,7 +4125,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         std::string path = bbs_get_attribute_value_string(attributes, num_attributes, PPATH_ATTR);
         Transform3d transform = bbs_get_transform_from_3mf_specs_string(bbs_get_attribute_value_string(attributes, num_attributes, TRANSFORM_ATTR));
         int printable = bbs_get_attribute_value_bool(attributes, num_attributes, PRINTABLE_ATTR);
-        if (const char* auto_drop = bbs_get_attribute_value_charptr(attributes, num_attributes, AUTO_DROP_ATTR); auto_drop != nullptr && !::atoi(auto_drop))
+        if (const char* auto_drop = bbs_get_attribute_value_charp_u8L(attributes, num_attributes, AUTO_DROP_ATTR); auto_drop != nullptr && !::atoi(auto_drop))
             m_items_auto_drop_off.insert(object_id);
         return !m_load_model || _create_object_instance(path, object_id, transform, printable, 1);
     }
@@ -4495,7 +4495,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
         // int instances_count_id = bbs_get_attribute_value_int(attributes, num_attributes, INSTANCESCOUNT_ATTR);
 
         ObjectMetadata metadata;
-        if (bbs_get_attribute_value_charptr(attributes, num_attributes, AUTO_DROP_ATTR) != nullptr)
+        if (bbs_get_attribute_value_charp_u8L(attributes, num_attributes, AUTO_DROP_ATTR) != nullptr)
             metadata.auto_drop = bbs_get_attribute_value_bool(attributes, num_attributes, AUTO_DROP_ATTR);
         m_objects_metadata.insert({ object_id, std::move(metadata) });
         m_curr_config.object_id = object_id;
@@ -5915,7 +5915,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
             current_object->geometry.mmu_segmentation.push_back(bbs_get_attribute_value_string(attributes, num_attributes, MMU_SEGMENTATION_ATTR));
             current_object->geometry.fuzzy_skin.push_back(bbs_get_attribute_value_string(attributes, num_attributes, CUSTOM_FUZZY_SKIN_ATTR));
             for (int slot = 0; slot < int(TEXTURE_DISPLACEMENT_MAX_LAYERS); ++slot)
-                if (const char *paint = bbs_get_attribute_value_charptr(attributes, num_attributes, TEXTURE_DISPLACEMENT_ATTRS[slot])) {
+                if (const char *paint = bbs_get_attribute_value_charp_u8L(attributes, num_attributes, TEXTURE_DISPLACEMENT_ATTRS[slot])) {
                     std::vector<std::string> &mask = current_object->geometry.texture_displacement[slot];
                     mask.resize(current_object->geometry.triangles.size());
                     mask.back() = paint;
@@ -7366,7 +7366,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                             continue;
                         volume_count++;
                         if (m_share_mesh) {
-                            auto iter = m_shared_meshes.find(volume->mesh_ptr().get());
+                            auto iter = m_shared_meshes.find(volume->mesh_p_u8L().get());
                             if (iter != m_shared_meshes.end())
                             {
                                 const ModelVolume* shared_volume = iter->second.second;
@@ -7386,7 +7386,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                                     continue;
                                 }
                             }
-                            const_cast<_BBS_3MF_Exporter *>(this)->m_shared_meshes.insert({volume->mesh_ptr().get(), {&object_data, volume}});
+                            const_cast<_BBS_3MF_Exporter *>(this)->m_shared_meshes.insert({volume->mesh_p_u8L().get(), {&object_data, volume}});
                         }
                         if (m_from_backup_save)
                             volume_id = (volume_count << 16 | backup_id);
@@ -7842,7 +7842,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
     {
         for (unsigned c = 0; c < 4; ++c) {
             for (unsigned r = 0; r < 3; ++r) {
-                stream << tr(r, c);
+                stream << _u8L(r, c);
                 if (r != 2 || c != 3) stream << " ";
             }
         }
@@ -8776,8 +8776,8 @@ bool _BBS_3MF_Exporter::_add_model_config_file_to_archive(mz_zip_archive& archiv
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << PRINTER_MODEL_ID_ATTR       << "\" " << VALUE_ATTR << "=\"" << plate_data->printer_model_id << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << NOZZLE_DIAMETERS_ATTR       << "\" " << VALUE_ATTR << "=\"" << nozzle_diameters_str << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << TIMELAPSE_TYPE_ATTR << "\" " << VALUE_ATTR << "=\"" << timelapse_type << "\"/>\n";
-                stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << SLICE_PREDICTION_ATTR << "\" " << VALUE_ATTR << "=\"" << plate_data->get_gcode_prediction_str() << "\"/>\n";
-                stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << SLICE_WEIGHT_ATTR      << "\" " << VALUE_ATTR << "=\"" <<  plate_data->get_gcode_weight_str() << "\"/>\n";
+                stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << SLICE_PREDICTION_ATTR << "\" " << VALUE_ATTR << "=\"" << plate_data->get_gcode_prediction_s_u8L() << "\"/>\n";
+                stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << SLICE_WEIGHT_ATTR      << "\" " << VALUE_ATTR << "=\"" <<  plate_data->get_gcode_weight_s_u8L() << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << FIRST_LAYER_TIME_ATTR      << "\" " << VALUE_ATTR << "=\"" <<  plate_data->first_layer_time << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << OUTSIDE_ATTR      << "\" " << VALUE_ATTR << "=\"" << std::boolalpha<< plate_data->toolpath_outside << "\"/>\n";
                 stream << "    <" << METADATA_TAG << " " << KEY_ATTR << "=\"" << SUPPORT_USED_ATTR << "\" " << VALUE_ATTR << "=\"" << std::boolalpha<< plate_data->is_support_used << "\"/>\n";
@@ -8947,7 +8947,7 @@ bool _BBS_3MF_Exporter::_add_model_config_file_to_archive(mz_zip_archive& archiv
                     for (auto& used_nozzle : used_nozzle_list) {
                         if (!has_multi_nozzle_extruder && nozzle_diameter_option &&
                             used_nozzle.extruder_id >= 0 && used_nozzle.extruder_id < (int) nozzle_diameter_option->values.size()) {
-                            used_nozzle.diameter = get_nozzle_diameter_str(used_nozzle.extruder_id);
+                            used_nozzle.diameter = get_nozzle_diameter_s_u8L(used_nozzle.extruder_id);
                         }
                         stream << "    <" << NOZZLE_TAG << " " << used_nozzle.serialize() << "/>\n";
                     }
@@ -8956,7 +8956,7 @@ bool _BBS_3MF_Exporter::_add_model_config_file_to_archive(mz_zip_archive& archiv
                         stream << "    <" << NOZZLE_TAG << " "
                                << "id=\"" << nozzle_group_id << "\" "
                                << "extruder_id=\"" << nozzle_group_id + 1 << "\" "
-                               << "nozzle_diameter=\"" << get_nozzle_diameter_str(nozzle_group_id) << "\" "
+                               << "nozzle_diameter=\"" << get_nozzle_diameter_s_u8L(nozzle_group_id) << "\" "
                                << "volume_type=\"" << get_nozzle_volume_type(nozzle_group_id) << "\"/>\n";
                     }
                 }

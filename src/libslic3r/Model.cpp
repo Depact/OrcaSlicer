@@ -2973,7 +2973,7 @@ size_t ModelVolume::split(unsigned int max_extruders, bool remap_paint)
     for (TriangleMesh &mesh : meshes)
         if (!mesh.empty()) {
             std::unique_ptr<ModelVolume> part(new ModelVolume(object, *this, std::move(mesh)));
-            if (const std::shared_ptr<const TriangleMesh> &hull = part->get_convex_hull_shared_ptr();
+            if (const std::shared_ptr<const TriangleMesh> &hull = part->get_convex_hull_shared_p_u8L();
                 hull != nullptr && !hull->its.vertices.empty() && !hull->its.indices.empty())
                 parts.emplace_back(std::move(part));
         }

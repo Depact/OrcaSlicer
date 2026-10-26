@@ -123,7 +123,7 @@ const std::string& var_dir();
 std::string var(const std::string &file_name);
 
 // Snap a nozzle diameter to the closest supported value and format it as a string (e.g. 0.4 -> "0.4").
-std::string format_diameter_to_str(double diameter, int precision = 1);
+std::string format_diameter_to_s_u8L(double diameter, int precision = 1);
 
 // Set a path with various static definition data (for example the initial config bundles).
 void set_resources_dir(const std::string &path);
@@ -531,8 +531,8 @@ template<typename T> struct IsTriviallyCopyable : public std::is_trivially_copya
 // A very lightweight ROII wrapper around C FILE.
 // The old C file API is much faster than C++ streams, thus they are recommended for processing large / huge files.
 struct FilePtr {
-    FilePtr(FILE *f) : f(f) {}
-    ~FilePtr() { this->close(); }
+    FileP_u8L(FILE *f) : f(f) {}
+    ~FileP_u8L() { this->close(); }
     void close() {
         if (this->f) {
             ::fclose(this->f);

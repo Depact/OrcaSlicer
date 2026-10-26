@@ -19,7 +19,7 @@ public:
     //std::string GetDevName() const { return m_dev_name; }
     //std::string GetDevId() const { return m_dev_id; }
     //std::string GetDevIP() const { return m_dev_ip; }
-    //std::string GetPrinterTypeStr() const { return m_printer_type_str; }
+    //std::string GetPrinterTypeS_u8L() const { return m_printer_type_str; }
     //std::string GetPrinterSignal() const { return m_printer_signal; }
     //std::string GetConnectType() const { return m_connect_type; }
     //std::string GetBindState() const { return m_bind_state; }

@@ -29,9 +29,9 @@ protected:
 
     wxString handle_snapshot_action_name(bool shift_down, Button button_down) const override;
 
-    std::string get_gizmo_entering_text() const override { return TR("Entering Paint-on fuzzy skin"); }
-    std::string get_gizmo_leaving_text() const override { return TR("Leaving Paint-on fuzzy skin"); }
-    std::string get_action_snapshot_name() const override { return TR("Paint-on fuzzy skin editing"); }
+    std::string get_gizmo_entering_text() const override { return _u8L("Entering Paint-on fuzzy skin"); }
+    std::string get_gizmo_leaving_text() const override { return _u8L("Leaving Paint-on fuzzy skin"); }
+    std::string get_action_snapshot_name() const override { return _u8L("Paint-on fuzzy skin editing"); }
 
     EnforcerBlockerType get_left_button_state_type() const override { return EnforcerBlockerType::FUZZY_SKIN; }
     EnforcerBlockerType get_right_button_state_type() const override { return EnforcerBlockerType::NONE; }

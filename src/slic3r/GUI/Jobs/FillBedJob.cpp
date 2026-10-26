@@ -241,7 +241,7 @@ void FillBedJob::prepare()
 
 void FillBedJob::process(Ctl &ctl)
 {
-    auto statustxt = TR("Filling");
+    auto statustxt = _u8L("Filling");
     ctl.call_on_main_thread([this] { prepare(); }).wait();
     ctl.update_status(0, statustxt);
 
@@ -269,7 +269,7 @@ void FillBedJob::process(Ctl &ctl)
     params.progressind = [this, &ctl](unsigned st,std::string str="") {
          if (st > 0)
              // TRN Progress status of Fill bed. %1% is the name of the object being copied.
-             ctl.update_status(st * 100 / status_range(), GUI::format(TR("Filling %1%"), str));
+             ctl.update_status(st * 100 / status_range(), GUI::format(_u8L("Filling %1%"), str));
     };
 
     params.on_packed = [&do_stop] (const ArrangePolygon &ap) {
@@ -296,8 +296,8 @@ void FillBedJob::process(Ctl &ctl)
 
     // finalize just here.
     ctl.update_status(100, ctl.was_canceled() ?
-                                       TR("Bed filling canceled.") :
-                                       TR("Bed filling done."));
+                                       _u8L("Bed filling canceled.") :
+                                       _u8L("Bed filling done."));
 }
 
 FillBedJob::FillBedJob(bool instances) : m_plater{wxGetApp().plater()}, m_instances{instances} {}

@@ -15,10 +15,10 @@
 namespace Slic3r {
 
 FlowErrorNegativeSpacing::FlowErrorNegativeSpacing() : 
-	FlowError(TR("Flow::spacing() produced negative spacing. Did you set some extrusion width too small?")) {}
+	FlowError(_u8L("Flow::spacing() produced negative spacing. Did you set some extrusion width too small?")) {}
 
 FlowErrorNegativeFlow::FlowErrorNegativeFlow() :
-    FlowError(TR("Flow::mm3_per_mm() produced negative flow. Did you set some extrusion width too small?")) {}
+    FlowError(_u8L("Flow::mm3_per_mm() produced negative flow. Did you set some extrusion width too small?")) {}
 
 // This static method returns a sane extrusion width default.
 float Flow::auto_extrusion_width(FlowRole role, float nozzle_diameter)
@@ -65,7 +65,7 @@ static inline FlowRole opt_key_to_flow_role(const std::string &opt_key)
 static inline void throw_on_missing_variable(const std::string &opt_key, const char *dependent_opt_key) 
 {
 	// TRN %1% and %2% are names of settings.
-	throw FlowErrorMissingVariable((boost::format(TR("Failed to calculate line width of %1%. Cannot get value of \"%2%\".")) % opt_key % dependent_opt_key).str());
+	throw FlowErrorMissingVariable((boost::format(_u8L("Failed to calculate line width of %1%. Cannot get value of \"%2%\".")) % opt_key % dependent_opt_key).str());
 }
 
 // Used to provide hints to the user on default extrusion width values, and to provide reasonable values to the PlaceholderParser.
@@ -161,7 +161,7 @@ Flow Flow::with_spacing(float new_spacing) const
         assert(m_width >= m_height);
         out.m_width += new_spacing - m_spacing;
         if (out.m_width < out.m_height)
-            throw Slic3r::InvalidArgument(TR("Invalid spacing supplied to Flow::with_spacing(), check your layer height and extrusion width."));
+            throw Slic3r::InvalidArgument(_u8L("Invalid spacing supplied to Flow::with_spacing(), check your layer height and extrusion width."));
     }
     out.m_spacing = new_spacing;
     return out;

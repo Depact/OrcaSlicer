@@ -192,7 +192,7 @@ public:
 //        const wxPoint & pos   = wxDefaultPosition,
 //        const wxSize &  size  = wxDefaultSize,
 //        long            style = wxTAB_TRAVERSAL | wxNO_BORDER,
-//        const wxString &name  = wxASCII_STR(wxPanelNameStr)
+//        const wxString &name  = wxASCII_S_u8L(wxPanelNameStr)
 //    );
 //
 //public:

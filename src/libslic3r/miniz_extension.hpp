@@ -25,11 +25,11 @@ public:
     
     MZ_Archive();
     
-    static std::string get_errorstr(mz_zip_error mz_err);
+    static std::string get_errors_u8L(mz_zip_error mz_err);
     
-    std::string get_errorstr() const
+    std::string get_errors_u8L() const
     {
-        return get_errorstr(arch.m_last_error) + "!";
+        return get_errors_u8L(arch.m_last_error) + "!";
     }
 
     bool is_alive() const

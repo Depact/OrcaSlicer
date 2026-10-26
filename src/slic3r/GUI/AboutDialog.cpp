@@ -173,7 +173,7 @@ wxString CopyrightsDialog::get_html_text()
         _L("This software uses open source components whose copyright and other proprietary rights belong to their respective owners"));
 
     for (auto& entry : m_entries) {
-        text += format_wxstr(
+        text += format_wxs_u8L(
                     "%s<br/>"
                     , entry.lib_name);
 

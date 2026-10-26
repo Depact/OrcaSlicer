@@ -167,7 +167,7 @@ void Downloader::start_download(const std::string& full_url)
         // Orca: show error
         NotificationManager* ntf_mngr = wxGetApp().notification_manager();
         ntf_mngr->push_notification(NotificationType::CustomNotification, NotificationManager::NotificationLevel::ErrorNotificationLevel,
-                                    TR("Could not start download due to malformed URL"));
+                                    _u8L("Could not start download due to malformed URL"));
 		return;
 	}
     size_t id = get_next_id();
@@ -202,7 +202,7 @@ void Downloader::on_error(wxCommandEvent& event)
     BOOST_LOG_TRIVIAL(error) << "Download error: " << event.GetString();
 	NotificationManager* ntf_mngr = wxGetApp().notification_manager();
     ntf_mngr->set_download_URL_error(id, into_u8(event.GetString()));
-	show_error(nullptr, format_wxstr(L"%1%\n%2%", _L("The download has failed") + ":", event.GetString()));
+	show_error(nullptr, format_wxs_u8L(L"%1%\n%2%", _L("The download has failed") + ":", event.GetString()));
 }
 void Downloader::on_complete(wxCommandEvent& event)
 {

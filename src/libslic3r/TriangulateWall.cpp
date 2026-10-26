@@ -78,7 +78,7 @@ namespace Slic3r {
 //    {
 //        Vec3i32 tr{int(onring->pos().first), int(onring->pos().second),
 //                 int(offring->pos().first)};
-//        if (onring->is_lower()) std::swap(tr(0), tr(1));
+//        if (onring->is_lower()) std::swap(_u8L(0), _u8L(1));
 //        indices.emplace_back(tr);
 //    }
     

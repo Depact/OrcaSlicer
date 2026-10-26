@@ -33,22 +33,22 @@ public:
     typedef T element_type;
 
     /// @brief Default constructor
-    clonable_ptr() noexcept :
+    clonable_p_u8L() noexcept :
         px(nullptr)
     {
     }
     /// @brief Constructor with the provided pointer to manage
-    explicit clonable_ptr(T* p) noexcept :
+    explicit clonable_p_u8L(T* p) noexcept :
         px(p)
     {
     }
     /// @brief Copy constructor, clones by calling the rhs.clone() method
-    clonable_ptr(const clonable_ptr& rhs) :
+    clonable_p_u8L(const clonable_ptr& rhs) :
 		px(rhs ? rhs.px->clone() : nullptr)
     {
     }
     /// @brief Move constructor, never throws
-    clonable_ptr(clonable_ptr&& rhs) noexcept :
+    clonable_p_u8L(clonable_ptr&& rhs) noexcept :
         px(rhs.px)
     {
         rhs.px = nullptr;
@@ -69,7 +69,7 @@ public:
         return *this;
     }
     /// @brief the destructor releases its ownership and destroy the object
-    inline ~clonable_ptr() noexcept
+    inline ~clonable_p_u8L() noexcept
     {
         destroy();
     }

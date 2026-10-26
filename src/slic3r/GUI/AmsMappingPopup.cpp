@@ -265,7 +265,7 @@ void MaterialItem::match(bool mat)
 
 static constexpr size_t MAPPED_NOZZLE_STR_MAX_CHARS_PER_LINE = 7;
 
-static wxString s_wrap_mapped_nozzle_str(const wxString& text)
+static wxString s_wrap_mapped_nozzle_s_u8L(const wxString& text)
 {
     if (text.length() <= MAPPED_NOZZLE_STR_MAX_CHARS_PER_LINE) {
         return text;
@@ -313,7 +313,7 @@ static int s_get_mapped_nozzle_str_line_count(const wxString& text)
         return 0;
     }
 
-    return std::max(1, static_cast<int>(wxSplit(s_wrap_mapped_nozzle_str(text), '\n', '\0').size()));
+    return std::max(1, static_cast<int>(wxSplit(s_wrap_mapped_nozzle_s_u8L(text), '\n', '\0').size()));
 }
 
 void MaterialItem::doRender(wxDC& dc)
@@ -571,7 +571,7 @@ void MaterialItem::doRender(wxDC& dc)
         int bitmap_l = wheel_left + (m_ams_wheel_mitem.GetBmpWidth() - m_rack_nozzle_bitmap.GetBmpWidth()) / 2 + FromDIP(2);
         dc.DrawBitmap(m_rack_nozzle_bitmap.bmp(), bitmap_l, bitmap_y);
 
-        const wxString wrapped_nozzle_str = s_wrap_mapped_nozzle_str(m_mapped_nozzle_str);
+        const wxString wrapped_nozzle_str = s_wrap_mapped_nozzle_s_u8L(m_mapped_nozzle_str);
         dc.SetFont(::Label::Head_12);
         // Orca: no box-fit get_suitable_font_size overload here; the wrapped slot string is short, so the
         // fixed Head_12 label font (set above) renders it cleanly.
@@ -821,7 +821,7 @@ void MaterialSyncItem::doRender(wxDC &dc)
     //not draw m_ams_not_match
 }
 
-void MaterialSyncItem::set_material_index_str(std::string str) {
+void MaterialSyncItem::set_material_index_s_u8L(std::string str) {
     m_material_index = str;
 }
 

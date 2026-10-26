@@ -2173,7 +2173,7 @@ SupportGeneratorLayersPtr PrintObjectSupportMaterial::top_contact_layers(
     // BBS: tree support is selected so normal supports need not be generated.
     // Note we still need to go through the following steps if support is disabled but raft is enabled.
     if (m_object_config->enable_support.value && (m_object_config->support_type.value != stNormalAuto && m_object_config->support_type.value != stNormal)) {
-        return SupportGeneratorLayersPtr();
+        return SupportGeneratorLayersP_u8L();
     }
 
     // Slice support enforcers / support blockers.
@@ -2215,7 +2215,7 @@ SupportGeneratorLayersPtr PrintObjectSupportMaterial::top_contact_layers(
     ); // end tbb::parallel_for
 
     if (object.print()->canceled())
-        return SupportGeneratorLayersPtr();
+        return SupportGeneratorLayersP_u8L();
 
     // check if the sharp tails should be extended higher
     bool detect_first_sharp_tail_only = false;
@@ -2307,7 +2307,7 @@ SupportGeneratorLayersPtr PrintObjectSupportMaterial::top_contact_layers(
     }
 
     if (object.print()->canceled())
-        return SupportGeneratorLayersPtr();
+        return SupportGeneratorLayersP_u8L();
 
     // BBS group overhang clusters
     const bool config_remove_small_overhangs = m_object_config->support_remove_small_overhang.value;
@@ -2381,7 +2381,7 @@ SupportGeneratorLayersPtr PrintObjectSupportMaterial::top_contact_layers(
     }
 
     if (object.print()->canceled())
-        return SupportGeneratorLayersPtr();
+        return SupportGeneratorLayersP_u8L();
 
     for (size_t layer_id = layer_id_start; layer_id < num_layers; layer_id++) {
         const Layer& layer = *object.layers()[layer_id];
@@ -2739,7 +2739,7 @@ SupportGeneratorLayersPtr PrintObjectSupportMaterial::bottom_contact_layers_and_
     SupportGeneratorLayerStorage &layer_storage, std::vector<Polygons> &layer_support_areas) const
 {
     if (top_contacts.empty())
-        return SupportGeneratorLayersPtr();
+        return SupportGeneratorLayersP_u8L();
 
 #ifdef SLIC3R_DEBUG
     static size_t s_iRun = 0;

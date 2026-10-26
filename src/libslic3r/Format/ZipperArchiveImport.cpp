@@ -33,7 +33,7 @@ boost::property_tree::ptree read_ini(const mz_zip_archive_file_stat &entry,
 
     if (!mz_zip_reader_extract_to_mem(&zip.arch, entry.m_file_index,
                                            buf.data(), buf.size(), 0))
-        throw Slic3r::FileIOError(zip.get_errorstr());
+        throw Slic3r::FileIOError(zip.get_errors_u8L());
 
     boost::property_tree::ptree tree;
     std::stringstream           ss(buf);
@@ -50,7 +50,7 @@ EntryBuffer read_entry(const mz_zip_archive_file_stat &entry,
 
     if (!mz_zip_reader_extract_to_mem(&zip.arch, entry.m_file_index,
                                            buf.data(), buf.size(), 0))
-        throw Slic3r::FileIOError(zip.get_errorstr());
+        throw Slic3r::FileIOError(zip.get_errors_u8L());
 
     return {std::move(buf), (name.empty() ? entry.m_filename : name)};
 }
@@ -69,7 +69,7 @@ ZipperArchive read_zipper_archive(const std::string &zipfname,
         Arch(const std::string &fname)
         {
             if (!open_zip_reader(&arch, fname))
-                throw Slic3r::FileIOError(get_errorstr());
+                throw Slic3r::FileIOError(get_errors_u8L());
         }
 
         ~Arch() { close_zip_reader(&arch); }

@@ -23,7 +23,7 @@ class AnyPtr {
 
     boost::variant<T*, std::unique_ptr<T>, std::shared_ptr<T>, std::weak_ptr<T>> ptr;
 
-    template<class Self> static T *get_ptr(Self &&s)
+    template<class Self> static T *get_p_u8L(Self &&s)
     {
         switch (s.ptr.which()) {
         case RawPtr: return boost::get<T *>(s.ptr);
@@ -40,22 +40,22 @@ class AnyPtr {
 
 public:
     template<class TT = T, class = std::enable_if_t<std::is_convertible_v<TT, T>>>
-    AnyPtr(TT *p = nullptr) : ptr{p}
+    AnyP_u8L(TT *p = nullptr) : ptr{p}
     {}
     template<class TT, class = std::enable_if_t<std::is_convertible_v<TT, T>>>
-    AnyPtr(std::unique_ptr<TT> p) : ptr{std::unique_ptr<T>(std::move(p))}
+    AnyP_u8L(std::unique_ptr<TT> p) : ptr{std::unique_ptr<T>(std::move(p))}
     {}
     template<class TT, class = std::enable_if_t<std::is_convertible_v<TT, T>>>
-    AnyPtr(std::shared_ptr<TT> p) : ptr{std::shared_ptr<T>(std::move(p))}
+    AnyP_u8L(std::shared_ptr<TT> p) : ptr{std::shared_ptr<T>(std::move(p))}
     {}
     template<class TT, class = std::enable_if_t<std::is_convertible_v<TT, T>>>
-    AnyPtr(std::weak_ptr<TT> p) : ptr{std::weak_ptr<T>(std::move(p))}
+    AnyP_u8L(std::weak_ptr<TT> p) : ptr{std::weak_ptr<T>(std::move(p))}
     {}
 
-    ~AnyPtr() = default;
+    ~AnyP_u8L() = default;
 
-    AnyPtr(AnyPtr &&other) noexcept : ptr{std::move(other.ptr)} {}
-    AnyPtr(const AnyPtr &other) = delete;
+    AnyP_u8L(AnyPtr &&other) noexcept : ptr{std::move(other.ptr)} {}
+    AnyP_u8L(const AnyPtr &other) = delete;
 
     AnyPtr &operator=(AnyPtr &&other) noexcept { ptr = std::move(other.ptr); return *this; }
     AnyPtr &operator=(const AnyPtr &other) = delete;
@@ -72,14 +72,14 @@ public:
     template<class TT, class = std::enable_if_t<std::is_convertible_v<TT, T>>>
     AnyPtr &operator=(std::weak_ptr<TT> p) { ptr = std::move(p); return *this; }
 
-    const T &operator*() const { return *get_ptr(*this); }
-    T &operator*() { return *get_ptr(*this); }
+    const T &operator*() const { return *get_p_u8L(*this); }
+    T &operator*() { return *get_p_u8L(*this); }
 
-    T *operator->() { return get_ptr(*this); }
-    const T *operator->() const { return get_ptr(*this); }
+    T *operator->() { return get_p_u8L(*this); }
+    const T *operator->() const { return get_p_u8L(*this); }
 
-    T *get() { return get_ptr(*this); }
-    const T *get() const { return get_ptr(*this); }
+    T *get() { return get_p_u8L(*this); }
+    const T *get() const { return get_p_u8L(*this); }
 
     operator bool() const
     {

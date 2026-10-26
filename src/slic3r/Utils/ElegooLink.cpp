@@ -124,7 +124,7 @@ namespace Slic3r {
             AppConfig* app_cfg = GUI::get_app_config();
             if (app_cfg == nullptr)
                 return;
-            app_cfg->set_str(ELEGOO_DEV_SN_SECTION, host_ip, sn);
+            app_cfg->set_s_u8L(ELEGOO_DEV_SN_SECTION, host_ip, sn);
         }
 
         enum class ElegooPrinterType {
@@ -159,9 +159,9 @@ namespace Slic3r {
 
                 const int error_code = root.get<int>("error_code", -1);
                 if (error_code != 0) {
-                    error_message = root.get<std::string>("message", TR("Printer returned an error"));
+                    error_message = root.get<std::string>("message", _u8L("Printer returned an error"));
                     if (error_message.empty())
-                        error_message = TR("Printer returned an error");
+                        error_message = _u8L("Printer returned an error");
                     error_message += " (" + std::to_string(error_code) + ")";
                     return false;
                 }
@@ -169,13 +169,13 @@ namespace Slic3r {
                 if (serial_number != nullptr) {
                     const auto system_info = root.get_child_optional("system_info");
                     if (!system_info) {
-                        error_message = TR("Missing system_info in response");
+                        error_message = _u8L("Missing system_info in response");
                         return false;
                     }
 
                     const auto sn = system_info->get_optional<std::string>("sn");
                     if (!sn || sn->empty()) {
-                        error_message = TR("Missing printer serial number in response");
+                        error_message = _u8L("Missing printer serial number in response");
                         return false;
                     }
                     *serial_number = *sn;
@@ -183,7 +183,7 @@ namespace Slic3r {
 
                 return true;
             } catch (const std::exception&) {
-                error_message = TR("Error parsing response");
+                error_message = _u8L("Error parsing response");
                 return false;
             }
         }
@@ -447,7 +447,7 @@ namespace Slic3r {
             if (std::regex_search(body, match, re)) {
                 res = true;
             } else {
-                msg = format_error(body, TR("ElegooLink not detected"), 0);
+                msg = format_error(body, _u8L("ElegooLink not detected"), 0);
                 res = false;
             }
         })
@@ -488,9 +488,9 @@ namespace Slic3r {
                 BOOST_LOG_TRIVIAL(error) << boost::format("%1%: Error getting CC2 device info: %2%, HTTP %3%, body: `%4%`") % name % error % status % body;
                 res = false;
                 if (status == 401 || status == 403)
-                    msg = format_error(body, TR("Invalid access code"), status);
+                    msg = format_error(body, _u8L("Invalid access code"), status);
                 else
-                    msg = format_error(body, error.empty() ? TR("CC2 device not detected") : error, status);
+                    msg = format_error(body, error.empty() ? _u8L("CC2 device not detected") : error, status);
             })
             .on_complete([&](std::string body, unsigned status) {
                 BOOST_LOG_TRIVIAL(debug) << boost::format("%1%: Got CC2 device info: %2%") % name % body;
@@ -498,7 +498,7 @@ namespace Slic3r {
                 std::string serial_number;
                 if (!parse_cc2_response(body, error_message, &serial_number)) {
                     res = false;
-                    msg = format_error(body, error_message.empty() ? TR("CC2 device not detected") : error_message, status);
+                    msg = format_error(body, error_message.empty() ? _u8L("CC2 device not detected") : error_message, status);
                     return;
                 }
                 persist_sn(Http::get_host_header_value(m_host), token, serial_number);
@@ -547,7 +547,7 @@ namespace Slic3r {
                 if (std::regex_search(body, match, re)) {
                     res = true;
                 } else {
-                    msg = format_error(body, TR("ElegooLink not detected"), 0);
+                    msg = format_error(body, _u8L("ElegooLink not detected"), 0);
                     res = false;
                 }
             })
@@ -586,16 +586,16 @@ namespace Slic3r {
                                                 error % status % body;
                 res = false;
                 if (status == 401 || status == 403)
-                    msg = format_error(body, TR("Invalid access code"), status);
+                    msg = format_error(body, _u8L("Invalid access code"), status);
                 else
-                    msg = format_error(body, error.empty() ? TR("CC2 device not detected") : error, status);
+                    msg = format_error(body, error.empty() ? _u8L("CC2 device not detected") : error, status);
             })
             .on_complete([&](std::string body, unsigned status) {
                 std::string error_message;
                 std::string serial_number;
                 if (!parse_cc2_response(body, error_message, &serial_number)) {
                     res = false;
-                    msg = format_error(body, error_message.empty() ? TR("CC2 device not detected") : error_message, status);
+                    msg = format_error(body, error_message.empty() ? _u8L("CC2 device not detected") : error_message, status);
                     return;
                 }
                 res = true;
@@ -615,7 +615,7 @@ namespace Slic3r {
 
     wxString ElegooLink::get_test_failed_msg(wxString& msg) const
     {
-        return GUI::format_wxstr("%s: %s", _L("Could not connect to ElegooLink"), msg);
+        return GUI::format_wxs_u8L("%s: %s", _L("Could not connect to ElegooLink"), msg);
     }
 
     #ifdef WIN32
@@ -751,7 +751,7 @@ namespace Slic3r {
                         } else {
                             // get error messages
                             pt::ptree   messages      = root.get_child("messages");
-                            std::string error_message = (boost::format(TR("Error code: %1%")) % code).str() + "\n";
+                            std::string error_message = (boost::format(_u8L("Error code: %1%")) % code).str() + "\n";
                             for (pt::ptree::value_type& message : messages) {
                                 std::string field = message.second.get<std::string>("field");
                                 std::string msg   = message.second.get<std::string>("message");
@@ -764,7 +764,7 @@ namespace Slic3r {
                         error_fn(_L("Error parsing response"));
                     }
                 } else {
-                    error_fn(format_error(body, TR("Upload failed"), status));
+                    error_fn(format_error(body, _u8L("Upload failed"), status));
                 }
             })
             .on_error([&](std::string body, std::string error, unsigned status) {
@@ -937,7 +937,7 @@ namespace Slic3r {
                 BOOST_LOG_TRIVIAL(debug) << boost::format("%1%: CC2 chunk uploaded: HTTP %2%: %3%") % name % status % body;
                 std::string error_message;
                 if (!parse_cc2_response(body, error_message)) {
-                    error_fn(format_error(body, error_message.empty() ? TR("CC2 upload failed") : error_message, status));
+                    error_fn(format_error(body, error_message.empty() ? _u8L("CC2 upload failed") : error_message, status));
                     return;
                 }
                 result = true;
@@ -945,9 +945,9 @@ namespace Slic3r {
             .on_error([&](std::string body, std::string error, unsigned status) {
                 BOOST_LOG_TRIVIAL(error) << boost::format("%1%: Error uploading CC2 chunk: %2%, HTTP %3%, body: `%4%`") % name % error % status % body;
                 if (status == 401 || status == 403)
-                    error_fn(format_error(body, TR("Invalid access code"), status));
+                    error_fn(format_error(body, _u8L("Invalid access code"), status));
                 else
-                    error_fn(format_error(body, error.empty() ? TR("CC2 upload failed") : error, status));
+                    error_fn(format_error(body, error.empty() ? _u8L("CC2 upload failed") : error, status));
             })
             .on_progress([&](Http::Progress progress, bool& cancel) {
                 if (progress.ultotal == progress.ulnow)
@@ -1068,11 +1068,11 @@ namespace Slic3r {
             // try sending to both. (Then if both fail, show both error msg after second try)
             wxString error_message;
             if (!upload_inner_with_resolved_ip(std::move(upload_data), prorgess_fn
-                , [&msg = error_message, resolved_addr](wxString error) { msg = GUI::format_wxstr("%1%: %2%", resolved_addr.front(), error); }
+                , [&msg = error_message, resolved_addr](wxString error) { msg = GUI::format_wxs_u8L("%1%: %2%", resolved_addr.front(), error); }
                 , info_fn, resolved_addr.front())
                 &&
                 !upload_inner_with_resolved_ip(std::move(upload_data), prorgess_fn
-                , [&msg = error_message, resolved_addr](wxString error) { msg += GUI::format_wxstr("\n%1%: %2%", resolved_addr.back(), error); }
+                , [&msg = error_message, resolved_addr](wxString error) { msg += GUI::format_wxs_u8L("\n%1%: %2%", resolved_addr.back(), error); }
                 , info_fn, resolved_addr.back())
                 ) {
 

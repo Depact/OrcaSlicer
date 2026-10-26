@@ -1840,7 +1840,7 @@ void SyncAmsInfoDialog::show_status(PrintDialogStatus status, std::vector<wxStri
             // source print
             MachineObject *obj_ = dev->get_selected_machine();
             if (obj_ == nullptr) return;
-            auto sourcet_print_name = obj_->get_printer_type_display_str();
+            auto sourcet_print_name = obj_->get_printer_type_display_s_u8L();
             sourcet_print_name.Replace(wxT("Bambu Lab "), wxEmptyString);
 
             // target print
@@ -2023,7 +2023,7 @@ void SyncAmsInfoDialog::update_user_machine_list()
     NetworkAgent *m_agent = wxGetApp().getAgent();
     const std::string provider = wxGetApp().get_printer_cloud_provider();
     if (m_agent && m_agent->is_user_login(provider)) {
-        boost::thread get_print_info_thread = Slic3r::create_thread([this, token = std::weak_ptr(m_token), provider] {
+        boost::thread get_print_info_thread = Slic3r::create_thread([this, token = std::weak_p_u8L(m_token), provider] {
             NetworkAgent *agent = wxGetApp().getAgent();
             unsigned int  http_code;
             std::string   body;
@@ -2447,7 +2447,7 @@ void SyncAmsInfoDialog::update_timelapse_enable_status()
     } else {
         m_checkbox_list["timelapse"]->setValue("off");
         m_checkbox_list["timelapse"]->Enable(false);
-        if (config) { config->set_str("print", "timelapse", "0"); }
+        if (config) { config->set_s_u8L("print", "timelapse", "0"); }
     }
 }
 
@@ -2481,7 +2481,7 @@ void SyncAmsInfoDialog::reset_one_ams_material(const std::string &index_str, boo
         int       id      = iter->first;
         Material *item    = iter->second;
         auto m    = dynamic_cast<MaterialSyncItem*> (item->item);
-        if (m && m->get_material_index_str() == index_str) {
+        if (m && m->get_material_index_s_u8L() == index_str) {
             if (reset_to_first) {
                 m->reset_valid_info();
             } else {
@@ -2705,7 +2705,7 @@ void SyncAmsInfoDialog::reset_and_sync_ams_list()
             m_sizer_ams_mapping->Add(item, 0, wxALL, FromDIP(5));
         }
         auto item_index_str = std::to_string(item_index);
-        item->set_material_index_str(item_index_str);
+        item->set_material_index_s_u8L(item_index_str);
         item_index++;
 
         contronal_index++;
@@ -2750,7 +2750,7 @@ void SyncAmsInfoDialog::reset_and_sync_ams_list()
                 if (obj_ && m_checkbox_list["use_ams"]->getValue() == "on") {
                     m_mapping_popup.set_parent_item(item);
                     m_mapping_popup.set_current_filament_id(extruder);
-                    m_mapping_popup.set_material_index_str(item_index_str);
+                    m_mapping_popup.set_material_index_s_u8L(item_index_str);
                     m_mapping_popup.show_reset_button();
                     auto reset_call_back = [this](const std::string &item_index_str) {
                         reset_one_ams_material(item_index_str);
@@ -2928,7 +2928,7 @@ void SyncAmsInfoDialog::generate_override_fix_ams_list()
             item = new MaterialSyncItem(m_fix_filament_panel, colour_rgb, _L(display_materials[extruder]));
             m_fix_sizer_ams_mapping->Add(item, 0, wxALL, FromDIP(5));
         }
-        item->set_material_index_str(std::to_string(item_index));
+        item->set_material_index_s_u8L(std::to_string(item_index));
         item_index++;
         contronal_index++;
         item->allow_paint_dropdown(false);

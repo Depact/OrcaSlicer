@@ -4389,7 +4389,7 @@ void Sidebar::update_mixed_filament_list()
         if (has_mixed && !broken_set.empty()) {
             notify->push_notification(NotificationType::BBLMixedFilamentBroken,
                 NotificationManager::NotificationLevel::ErrorNotificationLevel,
-                TR("Mixed filament has invalid or mismatched components. Please re-edit affected entries."));
+                _u8L("Mixed filament has invalid or mismatched components. Please re-edit affected entries."));
         } else {
             notify->close_notification_of_type(NotificationType::BBLMixedFilamentBroken);
         }
@@ -5340,7 +5340,7 @@ void Sidebar::remove_all_mixed_filaments()
 
     // Worth a confirmation: this drops filament slots the model may be painted with, and anything
     // painted in one falls back to a plain filament.
-    MessageDialog dlg(this, format_wxstr(_L_PLURAL("Remove %1% mixed filament?", "Remove all %1% mixed filaments?", count), count), _L("Mixed Filament"),
+    MessageDialog dlg(this, format_wxs_u8L(_L_PLURAL("Remove %1% mixed filament?", "Remove all %1% mixed filaments?", count), count), _L("Mixed Filament"),
                       wxYES_NO | wxNO_DEFAULT | wxICON_QUESTION);
     if (dlg.ShowModal() != wxID_YES)
         return;
@@ -7323,7 +7323,7 @@ struct Plater::priv
                     fs::path output_file = get_export_file_path(FT_3MF);
                     suggested_project_name = output_file.empty() ? _L("Untitled") : from_u8(output_file.stem().string());
                 }
-                res = MessageDialog(mainframe, reason + "\n" + format_wxstr(_L("Do you want to save changes to \"%1%\"?"), suggested_project_name),
+                res = MessageDialog(mainframe, reason + "\n" + format_wxs_u8L(_L("Do you want to save changes to \"%1%\"?"), suggested_project_name),
                                     wxString(SLIC3R_APP_FULL_NAME), wxYES_NO | wxCANCEL).ShowModal();
                 if (res == wxID_YES)
                     if (!mainframe->save_project_as(project_name))
@@ -8619,7 +8619,7 @@ void Plater::priv::collapse_sidebar(bool collapse)
     sidebar_layout.is_collapsed = collapse;
 
     // Now update the tooltip in the toolbar.
-    const std::string new_tooltip = wxGetApp().shortcuts().with_key(collapse ? TR("Expand sidebar") : TR("Collapse sidebar"), Shortcut::CollapseSidebar);
+    const std::string new_tooltip = wxGetApp().shortcuts().with_key(collapse ? _u8L("Expand sidebar") : _u8L("Collapse sidebar"), Shortcut::CollapseSidebar);
     int id = collapse_toolbar.get_item_id("collapse_sidebar");
     collapse_toolbar.set_tooltip(id, new_tooltip);
 
@@ -9470,12 +9470,12 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                                 BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << ":" << __LINE__ << " " << boost::format("%1%: %2%")%it->first %it->second;
                             //
                             NotificationManager *notify_manager = q->get_notification_manager();
-                            std::string error_message = TR("Invalid values found in the 3MF:");
+                            std::string error_message = _u8L("Invalid values found in the 3MF:");
                             error_message += "\n";
                             for (std::map<std::string, std::string>::iterator it=validity.begin(); it!=validity.end(); ++it)
                                 error_message += "-" + it->first + ": " + it->second + "\n";
                             error_message += "\n";
-                            error_message += TR("Please correct them in the Param tabs");
+                            error_message += _u8L("Please correct them in the Param tabs");
                             notify_manager->bbl_show_3mf_warn_notification(error_message);
                         }
                     }
@@ -9634,7 +9634,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             // BBS: notify the user about published settings that could not be applied.
                             if (!published_config.skipped_keys.empty()) {
                                 NotificationManager* notify_manager = q->get_notification_manager();
-                                std::string message                 = TR("Some published settings could not be applied:");
+                                std::string message                 = _u8L("Some published settings could not be applied:");
                                 for (const std::string& key : published_config.skipped_keys)
                                     message += "\n-" + key;
                                 // Informational: the load succeeded, these keys were skipped.
@@ -9647,7 +9647,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             // loading a published project (type mismatch / no same-type match).
                             if (!published_config.material_replacements.empty()) {
                                 NotificationManager* notify_manager = q->get_notification_manager();
-                                std::string message                 = TR("Some filament slots were changed:");
+                                std::string message                 = _u8L("Some filament slots were changed:");
                                 for (const std::string& replacement : published_config.material_replacements)
                                     message += "\n-" + replacement;
                                 // Informational: the load succeeded, the slots were adapted.
@@ -9914,7 +9914,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                 else if (model.looks_like_saved_in_meters()) {
                     // BBS do not handle look like in meters
                     MessageDialog dlg(q,
-                                      format_wxstr(_L("The object from file %s is too small, and may be in meters or inches.\nDo you want to scale to millimeters\?"),
+                                      format_wxs_u8L(_L("The object from file %s is too small, and may be in meters or inches.\nDo you want to scale to millimeters\?"),
                                                    from_path(filename)),
                                       _L("Object too small"), wxICON_QUESTION | wxYES_NO);
                     int           answer = dlg.ShowModal();
@@ -9922,7 +9922,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                 } else if (model.looks_like_imperial_units()) {
                     // BBS do not handle look like in meters
                     MessageDialog dlg(q,
-                                      format_wxstr(_L("The object from file %s is too small, and may be in meters or inches.\nDo you want to scale to millimeters\?"),
+                                      format_wxs_u8L(_L("The object from file %s is too small, and may be in meters or inches.\nDo you want to scale to millimeters\?"),
                                                    from_path(filename)),
                                       _L("Object too small"), wxICON_QUESTION | wxYES_NO);
                     int           answer = dlg.ShowModal();
@@ -9936,7 +9936,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                 //        convert_from_imperial_units(model, true);
                 //};
                 // if (answer_convert_from_imperial_units == wxOK_DEFAULT) {
-                //    RichMessageDialog dlg(q, format_wxstr(_L_PLURAL(
+                //    RichMessageDialog dlg(q, format_wxs_u8L(_L_PLURAL(
                 //        "The dimensions of the object from file %s seem to be defined in inches.\n"
                 //        "The internal unit of PrusaSlicer is a millimeter. Do you want to recalculate the dimensions of the object?",
                 //        "The dimensions of some objects from file %s seem to be defined in inches.\n"
@@ -10145,7 +10145,7 @@ std::vector<size_t> Plater::priv::load_files(const std::vector<fs::path>& input_
                             std::string printer_model = machine_preset->config.option<ConfigOptionString>("printer_model")->value;
                             bool sync_printer_info = false;
                             if (!wxGetApp().app_config->has("sync_after_load_file_show_flag")) {
-                                wxString tips = from_u8((boost::format(TR("Connected printer is %s. It must match the project preset for printing.\n")) % printer_model).str());
+                                wxString tips = from_u8((boost::format(_u8L("Connected printer is %s. It must match the project preset for printing.\n")) % printer_model).str());
 
                                 tips += _L("Do you want to sync the printer information and automatically switch the preset?");
                                 TipsDialog dlg(wxGetApp().mainframe, _L("Tips"), tips, "sync_after_load_file_show_flag", wxYES_NO);
@@ -10759,7 +10759,7 @@ bool Plater::priv::delete_object_from_model(size_t obj_idx, bool refresh_immedia
             return false;
     }
 
-    std::string snapshot_label = TR("Delete Object");
+    std::string snapshot_label = _u8L("Delete Object");
     if (!obj->name.empty())
         snapshot_label += ": " + obj->name;
     Plater::TakeSnapshot snapshot(q, snapshot_label);
@@ -10790,7 +10790,7 @@ bool Plater::priv::delete_object_from_model(size_t obj_idx, bool refresh_immedia
 
 void Plater::priv::delete_all_objects_from_model()
 {
-    Plater::TakeSnapshot snapshot(q, TR("Delete All Objects"));
+    Plater::TakeSnapshot snapshot(q, _u8L("Delete All Objects"));
 
     if (view3D->is_layers_editing_enabled())
         view3D->enable_layers_editing(false);
@@ -10826,7 +10826,7 @@ void Plater::priv::reset(bool apply_presets_change, bool reload_presets)
     // is_dirty() back and forth several times before it settles; coalesce those into one event.
     ProjectDirtyStateManager::NotificationSuppressor dirty_notify_suppressor(dirty_state);
 
-    Plater::TakeSnapshot snapshot(q, TR("Reset Project"), UndoRedo::SnapshotType::ProjectSeparator);
+    Plater::TakeSnapshot snapshot(q, _u8L("Reset Project"), UndoRedo::SnapshotType::ProjectSeparator);
 
     clear_warnings();
 
@@ -10995,9 +10995,9 @@ void Plater::priv::split_object(int obj_idx, bool auto_drop /* = true */)
         //if (current_model_object->volumes.size() > 1 && current_model_object->volumes.size() != new_objects.size())
         //    notification_manager->push_notification(NotificationType::CustomNotification,
         //        NotificationManager::NotificationLevel::PrintInfoNotificationLevel,
-        //        TR("All non-solid parts (modifiers) were deleted"));
+        //        _u8L("All non-solid parts (modifiers) were deleted"));
 
-        Plater::TakeSnapshot snapshot(q, TR("Split to Objects"));
+        Plater::TakeSnapshot snapshot(q, _u8L("Split to Objects"));
 
         auto is_atleast_one_floating = [new_objects]() {
             for (ModelObject* new_object : new_objects) {
@@ -11242,16 +11242,16 @@ void Plater::priv::process_validation_warning(StringObjectException const &warni
 		    }
 		    return false;
 	    } : std::function<bool(wxEvtHandler *)>();
-        auto hypertext = (mo || mi || !warning.opt_key.empty()) ? TR("Jump to") : "";
+        auto hypertext = (mo || mi || !warning.opt_key.empty()) ? _u8L("Jump to") : "";
         if (mo) hypertext += std::string(" [") + mo->name + "]";
         if (mi) hypertext += std::string(" [") + mi->get_object()->name + "]";
         if (!warning.opt_key.empty()) hypertext += std::string(" (") + warning.opt_key + ")";
 
         // BBS disable support enforcer
         //if (text == "_SUPPORTS_OFF") {
-        //    text = TR("An object has custom support enforcers which will not be used "
+        //    text = _u8L("An object has custom support enforcers which will not be used "
         //                "because supports are disabled.")+"\n";
-        //    hypertext = TR("Enable supports for enforcers only");
+        //    hypertext = _u8L("Enable supports for enforcers only");
 
         //    action_fn = [](wxEvtHandler*) {
         //        Tab* print_tab = wxGetApp().get_tab(Preset::TYPE_PRINT);
@@ -11268,7 +11268,7 @@ void Plater::priv::process_validation_warning(StringObjectException const &warni
         notification_manager->push_notification(
             NotificationType::ValidateWarning,
             NotificationManager::NotificationLevel::WarningNotificationLevel,
-            TR("WARNING:") + "\n" + text, hypertext, action_fn
+            _u8L("WARNING:") + "\n" + text, hypertext, action_fn
         );
     }
 }
@@ -11316,10 +11316,10 @@ std::string imex_placement_error(PartPlate* plate)
         return {};
     switch (plate->imex_placement_violation()) {
     case PartPlate::ImexPlacementViolation::Object:
-        return TR("Cannot slice: an object overlaps an area reserved for IDEX/IQEX parallel printing "
+        return _u8L("Cannot slice: an object overlaps an area reserved for IDEX/IQEX parallel printing "
                     "(a secondary zone, or a carriage clearance strip inside the primary zone).");
     case PartPlate::ImexPlacementViolation::PrimeTower:
-        return TR("Cannot slice: the prime tower overlaps an area reserved for IDEX/IQEX parallel printing "
+        return _u8L("Cannot slice: the prime tower overlaps an area reserved for IDEX/IQEX parallel printing "
                     "(a secondary zone, or a carriage clearance strip inside the primary zone).");
     case PartPlate::ImexPlacementViolation::None:
         break;
@@ -11864,7 +11864,7 @@ void Plater::priv::replace_with_stl()
         return;
     }
 
-    if (!replace_volume_with_stl(object_idx, volume_idx, out_path, TR("Replace with 3D file")))
+    if (!replace_volume_with_stl(object_idx, volume_idx, out_path, _u8L("Replace with 3D file")))
         return;
 
     // update 3D scene
@@ -11981,7 +11981,7 @@ void Plater::priv::replace_all_with_stl()
 
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " replacing volume : " << input_path << " with " << new_path;
 
-        if (!replace_volume_with_stl(object_idx, volume_idx, new_path, TR("Replace with 3D file"))) {
+        if (!replace_volume_with_stl(object_idx, volume_idx, new_path, _u8L("Replace with 3D file"))) {
             status += wxString::Format(_L("✖ Skipped %s: failed to replace.\n"), from_u8(volume_name));
             BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " cannot replace volume : failed to replace with " << new_path;
             continue;
@@ -12041,7 +12041,7 @@ void Plater::priv::reload_from_disk()
         return (v1.first == v2.first) && (v1.second == v2.second);
         }), selected_volumes.end());
 #else
-    Plater::TakeSnapshot snapshot(q, TR("Reload from disk"));
+    Plater::TakeSnapshot snapshot(q, _u8L("Reload from disk"));
 
     const Selection& selection = get_selection();
 
@@ -12190,7 +12190,7 @@ void Plater::priv::reload_from_disk()
     replace_paths.erase(std::unique(replace_paths.begin(), replace_paths.end()), replace_paths.end());
 
 #if ENABLE_RELOAD_FROM_DISK_REWORK
-    Plater::TakeSnapshot snapshot(q, TR("Reload from disk"));
+    Plater::TakeSnapshot snapshot(q, _u8L("Reload from disk"));
 #endif // ENABLE_RELOAD_FROM_DISK_REWORK
 
     std::vector<wxString> fail_list;
@@ -12475,7 +12475,7 @@ void Plater::priv::reload_all_from_disk()
     if (model.objects.empty())
         return;
 
-    Plater::TakeSnapshot snapshot(q, TR("Reload all"));
+    Plater::TakeSnapshot snapshot(q, _u8L("Reload all"));
     Plater::SuppressSnapshots suppress(q);
 
     Selection& selection = get_selection();
@@ -13191,7 +13191,7 @@ void Plater::priv::on_export_finished(wxCommandEvent& evt)
 {
 #if 0
     //BBS: also export 3mf to the same directory for debugging
-    std::string gcode_path_str(evt.GetString().ToUTF8().data());
+    std::string gcode_path_s_u8L(evt.GetString().ToUTF8().data());
     fs::path gcode_path(gcode_path_str);
 
     if (q) {
@@ -13256,7 +13256,7 @@ bool Plater::priv::warnings_dialog()
 {
     if (current_warnings.empty())
         return true;
-    std::string text = TR("There are warnings after slicing models:") + "\n";
+    std::string text = _u8L("There are warnings after slicing models:") + "\n";
     for (auto const& it : current_warnings) {
         size_t next_n = it.first.message.find_first_of('\n', 0);
         text += "\n";
@@ -13347,7 +13347,7 @@ void Plater::priv::on_process_completed(SlicingProcessCompletedEvent &evt)
     }
     if (evt.cancelled()) {
         BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << boost::format(", cancel event, status: %1%") % evt.status();
-        this->notification_manager->set_slicing_progress_canceled(TR("Slicing Canceled"));
+        this->notification_manager->set_slicing_progress_canceled(_u8L("Slicing Canceled"));
         is_finished = true;
     }
 
@@ -14320,7 +14320,7 @@ wxString Plater::priv::get_project_filename(const wxString& extension) const
     if (m_project_name.empty())
         return "";
     else {
-        auto full_filename = m_project_folder / std::string((m_project_name + extension).mb_str(wxConvUTF8));
+        auto full_filename = m_project_folder / std::string((m_project_name + extension).mb_s_u8L(wxConvUTF8));
         return m_project_folder.empty() ? "" : from_path(full_filename);
     }
 }
@@ -14337,10 +14337,10 @@ wxString Plater::priv::get_export_gcode_filename(const wxString& extension, bool
     if (!m_project_folder.empty()) {
         if (!only_filename) {
             if (export_all) {
-                auto full_filename = m_project_folder / std::string((m_project_name + extension).mb_str(wxConvUTF8));
+                auto full_filename = m_project_folder / std::string((m_project_name + extension).mb_s_u8L(wxConvUTF8));
                 return from_path(full_filename);
             } else {
-                auto full_filename = m_project_folder / std::string((m_project_name + from_u8(plate_index_str) + extension).mb_str(wxConvUTF8));
+                auto full_filename = m_project_folder / std::string((m_project_name + from_u8(plate_index_str) + extension).mb_s_u8L(wxConvUTF8));
                 return from_path(full_filename);
             }
         } else {
@@ -14430,9 +14430,9 @@ void Plater::priv::set_project_filename(const wxString& filename)
     set_project_name(project_name);
     // record filename for hint when open exported file/.gcode
     if (q->m_only_gcode)
-        q->m_preview_only_filename = std::string((project_name + ".gcode").mb_str());
+        q->m_preview_only_filename = std::string((project_name + ".gcode").mb_s_u8L());
     if (q->m_exported_file)
-        q->m_preview_only_filename = std::string((project_name + ".3mf").mb_str());
+        q->m_preview_only_filename = std::string((project_name + ".3mf").mb_s_u8L());
 
     wxGetApp().mainframe->update_title();
 
@@ -14476,7 +14476,7 @@ void Plater::orient()
 {
     auto &w = get_ui_job_worker();
     if (w.is_idle()) {
-        p->take_snapshot(TR("Orient"));
+        p->take_snapshot(_u8L("Orient"));
         replace_job(w, std::make_unique<OrientJob>());
     }
 }
@@ -14615,7 +14615,7 @@ bool Plater::priv::check_ams_status_impl(bool is_slice_all)
             std::vector<std::vector<NozzleGroupInfo>> preset_nozzle_infos(nozzle_diameter_values.size());
             for (size_t extruder_id = 0; extruder_id < nozzle_diameter_values.size(); ++extruder_id) {
                 NozzleVolumeType preset_volume_type = NozzleVolumeType(nozzle_volumes_values[extruder_id]);
-                std::string      preset_diameter    = format_diameter_to_str(nozzle_diameter_values[extruder_id]);
+                std::string      preset_diameter    = format_diameter_to_s_u8L(nozzle_diameter_values[extruder_id]);
 
                 if (preset_volume_type == nvtHybrid) {
                     // Hybrid: expand into separate groups for each nozzle type from stats
@@ -15278,7 +15278,7 @@ bool Plater::priv::undo_redo_blocked_by_job()
         return false;
     notification_manager->push_notification(NotificationType::CustomNotification,
                                             NotificationManager::NotificationLevel::RegularNotificationLevel,
-                                            TR("Cannot undo or redo while an operation is running. Stop the operation, or wait "
+                                            _u8L("Cannot undo or redo while an operation is running. Stop the operation, or wait "
                                                  "for it to finish and then retry."));
     return true;
 }
@@ -16282,7 +16282,7 @@ int Plater::save_project(bool saveAs)
         json j;
         boost::uintmax_t size = boost::filesystem::file_size(into_path(filename));
         j["file_size"] = size;
-        j["file_name"] = std::string(filename.mb_str());
+        j["file_name"] = std::string(filename.mb_s_u8L());
 
         NetworkAgent* agent = wxGetApp().getAgent();
     }
@@ -16311,7 +16311,7 @@ void Plater::import_model_id(wxString download_info)
 
         }
         else {
-            fs::path download_path = fs::path(download_origin_url.wx_str());
+            fs::path download_path = fs::path(download_origin_url.wx_s_u8L());
             download_url = download_origin_url;
             filename = download_path.filename().string();
         }
@@ -16371,7 +16371,7 @@ void Plater::import_model_id(wxString download_info)
         target_path = fs::path(wxGetApp().app_config->get("download_path"));
 
         //check file suffix
-        wxString extension = fs::path(filename.wx_str()).extension().c_str();
+        wxString extension = fs::path(filename.wx_s_u8L()).extension().c_str();
         if (!extension.Contains(".3mf")) {
             msg = _L("Download failed; unknown file format.");
             return;
@@ -16402,7 +16402,7 @@ void Plater::import_model_id(wxString download_info)
         std::string unique = to_string(uuid).substr(0, 6);
 
         //target_path /= (boost::format("%1%_%2%.3mf") % filename % unique).str();
-        target_path /= fs::path(filename.wc_str());
+        target_path /= fs::path(filename.wc_s_u8L());
 
         fs::path tmp_path = target_path;
         tmp_path += format(".%1%", ".download");
@@ -16839,7 +16839,7 @@ void Plater::_calib_pa_pattern(const Calib_Params& params)
     if (accels.empty()) {
         accels.assign({accel});
         const auto msg{_L("INFO:") + "\n" +
-                       format_wxstr(_L("No accelerations provided for calibration. Use default acceleration value %1%mm/s²"), long(accel))};
+                       format_wxs_u8L(_L("No accelerations provided for calibration. Use default acceleration value %1%mm/s²"), long(accel))};
         get_notification_manager()->push_notification(msg.utf8_string());
     } else {
         // set max acceleration in case of batch mode to get correct test pattern size
@@ -16904,7 +16904,7 @@ void Plater::_calib_pa_pattern(const Calib_Params& params)
 
         speeds.assign({speed});
         const auto msg{_L("INFO:") + "\n" +
-                       format_wxstr(_L("No speeds provided for calibration. Use default optimal speed %1%mm/s"), long(speed))};
+                       format_wxs_u8L(_L("No speeds provided for calibration. Use default optimal speed %1%mm/s"), long(speed))};
         get_notification_manager()->push_notification(msg.utf8_string());
     } else if (speeds.size() == 1) {
         // If we have single value provided, set speed using global configuration.
@@ -17328,7 +17328,7 @@ void Plater::calib_temp(const Calib_Params& params) {
         if (printer_config.has("belt_printer") && printer_config.opt_bool("belt_printer") &&
             ! boost::filesystem::exists(belt_temp_tower_asset(params))) {
             MessageDialog dlg(static_cast<wxWindow *>(wxGetApp().mainframe),
-                              format_wxstr(_L("No belt temperature tower is available for the range %1% to %2%℃. "
+                              format_wxs_u8L(_L("No belt temperature tower is available for the range %1% to %2%℃. "
                                               "Use a range the tower models cover, for example 230 to 190."),
                                            (int) lround(params.start), (int) lround(params.end)),
                               _L("Temperature tower"), wxICON_ERROR | wxOK);
@@ -18057,7 +18057,7 @@ void Plater::import_sl1_archive()
 {
     auto &w = get_ui_job_worker();
     if (w.is_idle() && p->m_sla_import_dlg->ShowModal() == wxID_OK) {
-        p->take_snapshot(TR("Import SLA archive"));
+        p->take_snapshot(_u8L("Import SLA archive"));
         replace_job(w, std::make_unique<SLAImportJob>(p->m_sla_import_dlg));
     }
 }
@@ -18242,7 +18242,7 @@ void Plater::load_gcode(const wxString& filename)
 
     if (p->preview->get_canvas3d()->get_gcode_layers_zs().empty()) {
         unload_file_settings();
-        MessageDialog(this, format_wxstr(_L("The selected file:\n%1%\ndoes not contain valid G-code."), filename),
+        MessageDialog(this, format_wxs_u8L(_L("The selected file:\n%1%\ndoes not contain valid G-code."), filename),
             wxString(GCODEVIEWER_APP_NAME) + " - " + _L("An Error has occurred while loading the G-code file."), wxCLOSE | wxICON_WARNING | wxCENTRE).ShowModal();
         set_project_filename(_L(DEFAULT_PROJECT_NAME));
     } else {
@@ -18360,7 +18360,7 @@ bool Plater::preview_zip_archive(const boost::filesystem::path& archive_path)
 
         if (!open_zip_reader(&archive, archive_path.string())) {
             // TRN %1% is archive path
-            std::string err_msg = GUI::format(TR("Loading of a ZIP archive on path %1% has failed."), archive_path.string());
+            std::string err_msg = GUI::format(_u8L("Loading of a ZIP archive on path %1% has failed."), archive_path.string());
             throw Slic3r::FileIOError(err_msg);
         }
         mz_uint num_entries = mz_zip_reader_get_num_files(&archive);
@@ -18412,7 +18412,7 @@ bool Plater::preview_zip_archive(const boost::filesystem::path& archive_path)
                             mz_bool res = mz_zip_reader_extract_to_mem(&archive, stat.m_file_index, (void*)buffer.data(), (size_t)stat.m_uncomp_size, 0);
                             if (res == 0) {
                                 // TRN: First argument = path to file, second argument = error description
-                                wxString error_log = GUI::format_wxstr(_L("Failed to unzip file to %1%: %2%"), final_path.string(), mz_zip_get_error_string(mz_zip_get_last_error(&archive)));
+                                wxString error_log = GUI::format_wxs_u8L(_L("Failed to unzip file to %1%: %2%"), final_path.string(), mz_zip_get_error_string(mz_zip_get_last_error(&archive)));
                                 BOOST_LOG_TRIVIAL(error) << error_log;
                                 show_error(nullptr, error_log);
                                 break;
@@ -18422,7 +18422,7 @@ bool Plater::preview_zip_archive(const boost::filesystem::path& archive_path)
                             file.write(buffer.c_str(), buffer.size());
                             file.close();
                             if (!fs::exists(final_path)) {
-                                wxString error_log = GUI::format_wxstr(_L("Failed to find unzipped file at %1%. Unzipping of file has failed."), final_path.string());
+                                wxString error_log = GUI::format_wxs_u8L(_L("Failed to find unzipped file at %1%. Unzipping of file has failed."), final_path.string());
                                 BOOST_LOG_TRIVIAL(error) << error_log;
                                 show_error(nullptr, error_log);
                                 break;
@@ -19328,7 +19328,7 @@ void Plater::fill_bed_with_copies()
 {
     auto &w = get_ui_job_worker();
     if (w.is_idle()) {
-        p->take_snapshot(TR("Arrange"));
+        p->take_snapshot(_u8L("Arrange"));
         replace_job(w, std::make_unique<FillBedJob>());
     }
 }
@@ -19337,7 +19337,7 @@ void Plater::fill_bed_with_instances()
 {
     auto &w = get_ui_job_worker();
     if (w.is_idle()) {
-        p->take_snapshot(TR("Arrange"));
+        p->take_snapshot(_u8L("Arrange"));
         replace_job(w, std::make_unique<FillBedJob>(true));
     }
 }
@@ -19914,16 +19914,16 @@ TriangleMesh Plater::combine_mesh_fff(const ModelObject& mo, int instance_id, st
     bool has_splitable_volume = csg::model_to_csgmesh(mo, Transform3d::Identity(), std::back_inserter(csgmesh),
         csg::mpartsPositive | csg::mpartsNegative);
         
-    std::string fail_msg = TR("Unable to perform boolean operation on model meshes. "
+    std::string fail_msg = _u8L("Unable to perform boolean operation on model meshes. "
         "Only positive parts will be kept. You may fix the meshes and try again.");
     if (auto fail_reason_name = csg::check_csgmesh_booleans(Range{ std::begin(csgmesh), std::end(csgmesh) }); std::get<0>(fail_reason_name) != csg::BooleanFailReason::OK) {
         std::string name = std::get<1>(fail_reason_name);
         std::map<csg::BooleanFailReason, std::string> fail_reasons = {
             {csg::BooleanFailReason::OK, "OK"},
-            {csg::BooleanFailReason::MeshEmpty, Slic3r::format( TR("Reason: part \"%1%\" is empty."), name)},
-            {csg::BooleanFailReason::NotBoundAVolume, Slic3r::format(TR("Reason: part \"%1%\" does not bound a volume."), name)},
-            {csg::BooleanFailReason::SelfIntersect, Slic3r::format(TR("Reason: part \"%1%\" has self intersection."), name)},
-            {csg::BooleanFailReason::NoIntersection, Slic3r::format(TR("Reason: \"%1%\" and another part have no intersection."), name)} };
+            {csg::BooleanFailReason::MeshEmpty, Slic3r::format( _u8L("Reason: part \"%1%\" is empty."), name)},
+            {csg::BooleanFailReason::NotBoundAVolume, Slic3r::format(_u8L("Reason: part \"%1%\" does not bound a volume."), name)},
+            {csg::BooleanFailReason::SelfIntersect, Slic3r::format(_u8L("Reason: part \"%1%\" has self intersection."), name)},
+            {csg::BooleanFailReason::NoIntersection, Slic3r::format(_u8L("Reason: \"%1%\" and another part have no intersection."), name)} };
         fail_msg += " " + fail_reasons[std::get<0>(fail_reason_name)];
     }
     else {
@@ -20040,7 +20040,7 @@ void Plater::export_stl(bool extended, bool selection_only, bool multi_stls, Fil
 
         if (mesh.empty()) {
             get_notification_manager()->push_plater_error_notification(
-                TR("Unable to perform boolean operation on model meshes. "
+                _u8L("Unable to perform boolean operation on model meshes. "
                      "Only positive parts will be exported."));
 
             for (const ModelVolume* v : mo.volumes)
@@ -21421,7 +21421,7 @@ void Plater::config_change_notification(const DynamicPrintConfig &config, const 
         if (seq_print && view3d_canvas && view3d_canvas->is_initialized() && view3d_canvas->is_rendering_enabled()) {
             NotificationManager* notify_manager = get_notification_manager();
             if (seq_print->value == PrintSequence::ByObject) {
-                std::string info_text = TR("Print By Object: \nWe suggest using auto-arrange to avoid collisions when printing.");
+                std::string info_text = _u8L("Print By Object: \nWe suggest using auto-arrange to avoid collisions when printing.");
                 notify_manager->bbl_show_seqprintinfo_notification(info_text);
             }
             else
@@ -22030,7 +22030,7 @@ void Plater::arrange()
 {
     auto &w = get_ui_job_worker();
     if (w.is_idle()) {
-        p->take_snapshot(TR("Arrange"));
+        p->take_snapshot(_u8L("Arrange"));
         replace_job(w, std::make_unique<ArrangeJob>());
     }
 }
@@ -22110,7 +22110,7 @@ void Plater::notify_painting_removed()
     get_notification_manager()->push_notification(
                 NotificationType::CustomSupportsAndSeamRemovedAfterRepair,
                 NotificationManager::NotificationLevel::PrintInfoNotificationLevel,
-                TR("Custom supports and color painting were removed before repairing."));
+                _u8L("Custom supports and color painting were removed before repairing."));
 }
 
 void Plater::changed_mesh(int obj_idx)
@@ -22234,7 +22234,7 @@ void Plater::optimize_rotation()
 {
     auto &w = get_ui_job_worker();
     if (w.is_idle()) {
-        p->take_snapshot(TR("Optimize Rotation"));
+        p->take_snapshot(_u8L("Optimize Rotation"));
         replace_job(w, std::make_unique<OrientJob>());
     }
 }
@@ -22702,7 +22702,7 @@ void Plater::validate_current_plate(bool& model_fits, bool& validate_error)
     model_fits = model_fits && object_results.filaments.empty();
     validate_error = false;
     if (p->printer_technology == ptFFF) {
-        //std::string plater_text = TR("An object is laid over the boundary of plate or exceeds the height limit.\n"
+        //std::string plater_text = _u8L("An object is laid over the boundary of plate or exceeds the height limit.\n"
         //            "Please solve the problem by moving it totally on or off the plate, and confirming that the height is within the build volume.");;
         std::vector<StringObjectException> warnings;
         Polygons polygons;
@@ -22864,16 +22864,16 @@ bool Plater::refresh_missing_plugin_block(bool* block_toggled)
 
     update(NotificationType::OrcaCloudPluginMissingError, missing_cloud,
            &p->m_cloud_missing_shown_sig,
-           TR("OrcaCloud plugins required by the current preset are not installed:"),
-           TR("Install Plugins"),
+           _u8L("OrcaCloud plugins required by the current preset are not installed:"),
+           _u8L("Install Plugins"),
            [this, missing_cloud_refs](wxEvtHandler*) { install_missing_cloud_plugins(missing_cloud_refs); return false; });
     // "Find on OrcaCloud" is only a suggestion: it opens the browser but cannot resolve the missing
     // plugin in-session, so it never closes the notification or unblocks slicing. The user resolves a
     // local plugin by installing it or by changing the setting that needs it.
     update(NotificationType::OrcaLocalPluginMissingError, missing_local,
            &p->m_local_missing_shown_sig,
-           TR("Local plugins required by the current preset are missing:"),
-           TR("Find on OrcaCloud"),
+           _u8L("Local plugins required by the current preset are missing:"),
+           _u8L("Find on OrcaCloud"),
            [missing_local_refs](wxEvtHandler*) { open_missing_plugins_on_cloud(missing_local_refs); return false; });
 
     const std::vector<MissingPlugin> inactive      = get_inactive_plugins();
@@ -22883,13 +22883,13 @@ bool Plater::refresh_missing_plugin_block(bool* block_toggled)
 
     update(NotificationType::OrcaPluginInactiveError, inactive,
            &p->m_inactive_shown_sig,
-           TR("Plugins required by the current preset are not activated:"),
-           TR("Activate Now"),
+           _u8L("Plugins required by the current preset are not activated:"),
+           _u8L("Activate Now"),
            [this, inactive_refs](wxEvtHandler*) { enable_inactive_plugins(inactive_refs); return false; });
     update(NotificationType::OrcaPluginCapabilityUnavailableError, broken,
            &p->m_broken_shown_sig,
-           TR("The installed plugin does not provide the required capability — it may be outdated:"),
-           TR("Find on OrcaCloud"),
+           _u8L("The installed plugin does not provide the required capability — it may be outdated:"),
+           _u8L("Find on OrcaCloud"),
            [broken_refs](wxEvtHandler*) { open_missing_plugins_on_cloud(broken_refs); return false; });
 
     const bool blocked = has_missing_plugins() || has_inactive_plugins() || has_broken_plugins();
@@ -22924,7 +22924,7 @@ void Plater::install_missing_cloud_plugins(const std::vector<std::string>& cloud
         std::string       message;
     };
     auto state     = std::make_shared<InstallProgressState>();
-    state->message = TR("Preparing to install plugins...");
+    state->message = _u8L("Preparing to install plugins...");
 
     wxWindow* parent = wxGetApp().mainframe;
     auto*     dialog = new wxProgressDialog(_L("Installing plugins"), from_u8(state->message), 100,
@@ -22943,7 +22943,7 @@ void Plater::install_missing_cloud_plugins(const std::vector<std::string>& cloud
         }
         // Once cancellation is requested, the in-flight plugin still has to finish; reflect that.
         if (state->cancel)
-            msg = TR("Cancelling — finishing the current plugin...");
+            msg = _u8L("Cancelling — finishing the current plugin...");
 
         if (!dialog->Pulse(from_u8(msg)))
             state->cancel = true;
@@ -22962,7 +22962,7 @@ void Plater::install_missing_cloud_plugins(const std::vector<std::string>& cloud
     PluginInstallProgress progress;
     progress.on_plugin_begin = [state](const std::string& name, std::size_t /*index*/, std::size_t /*total*/) {
         std::lock_guard<std::mutex> lock(state->mtx);
-        state->message = (boost::format(TR("Installing %1%...")) % name).str();
+        state->message = (boost::format(_u8L("Installing %1%...")) % name).str();
     };
     progress.is_cancelled = [state]() { return state->cancel.load(); };
     progress.on_finished  = [state]() { state->finished = true; };
@@ -23956,7 +23956,7 @@ Plater::ImexGhostTooltip Plater::format_imex_ghost_tooltip(int physical_head) co
 
     const PartPlate* plate = p->partplate_list.get_curr_plate();
     if (!plate) {
-        t.label = Slic3r::format(TR("T%1% -> (no plate)"), physical_head);
+        t.label = Slic3r::format(_u8L("T%1% -> (no plate)"), physical_head);
         return t;
     }
 
@@ -23968,7 +23968,7 @@ Plater::ImexGhostTooltip Plater::format_imex_ghost_tooltip(int physical_head) co
         // extruder count is understated relative to the filament palette (user added a
         // filament without extending printer_extruder_id in the Machine tab).
         // TRN IDEX/IQEX ghost tooltip. %1% is the number of the physical print head.
-        t.label = Slic3r::format(TR("T%1% — no filament routed\nAdd an extruder in the Machine tab so this head has a filament slot."), physical_head);
+        t.label = Slic3r::format(_u8L("T%1% — no filament routed\nAdd an extruder in the Machine tab so this head has a filament slot."), physical_head);
         return t;
     }
     t.filament_slot_1based = logical + 1;
@@ -23977,7 +23977,7 @@ Plater::ImexGhostTooltip Plater::format_imex_ghost_tooltip(int physical_head) co
     t.swatch = plate->get_imex_head_filament_color(physical_head, pem, map);
     t.swatch.a(1.0f);  // tooltip swatch opaque
     // TRN IDEX/IQEX ghost tooltip. %1% is the number of the physical print head, %2% the filament it prints.
-    t.label  = Slic3r::format(TR("T%1% -> filament %2%"), physical_head, t.filament_slot_1based);
+    t.label  = Slic3r::format(_u8L("T%1% -> filament %2%"), physical_head, t.filament_slot_1based);
     return t;
 }
 

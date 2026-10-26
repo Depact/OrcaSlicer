@@ -37,7 +37,7 @@ enum TaskState
     TS_IDLE,
 };
 
-std::string get_task_state_enum_str(TaskState ts);
+std::string get_task_state_enum_s_u8L(TaskState ts);
 
 class TaskStateInfo
 {
@@ -53,7 +53,7 @@ public:
 
     TaskState state() { return m_state; }
     void set_state(TaskState ts) {
-        BOOST_LOG_TRIVIAL(trace) << "TaskStateInfo set state = " << get_task_state_enum_str(ts);
+        BOOST_LOG_TRIVIAL(trace) << "TaskStateInfo set state = " << get_task_state_enum_s_u8L(ts);
         m_state = ts;
         if (m_state_changed_fn) {
             m_state_changed_fn(m_state, m_sending_percent);

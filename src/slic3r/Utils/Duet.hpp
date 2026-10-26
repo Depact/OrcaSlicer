@@ -37,7 +37,7 @@ private:
 	std::string get_upload_url(const std::string &filename, ConnectionType connectionType) const;
 	std::string get_connect_url(const bool dsfUrl) const;
 	std::string get_base_url() const;
-	std::string timestamp_str() const;
+	std::string timestamp_s_u8L() const;
 	ConnectionType connect(wxString &msg) const;
 	void disconnect(ConnectionType connectionType) const;
 	bool start_print(wxString &msg, const std::string &filename, ConnectionType connectionType, bool simulationMode) const;

@@ -241,9 +241,9 @@ protected:
 
     wxString handle_snapshot_action_name(bool shift_down, Button button_down) const override;
 
-    std::string get_gizmo_entering_text() const override { return TR("Entering Texture displacement painting"); }
-    std::string get_gizmo_leaving_text() const override { return TR("Leaving Texture displacement painting"); }
-    std::string get_action_snapshot_name() const override { return TR("Texture displacement editing"); }
+    std::string get_gizmo_entering_text() const override { return _u8L("Entering Texture displacement painting"); }
+    std::string get_gizmo_leaving_text() const override { return _u8L("Leaving Texture displacement painting"); }
+    std::string get_action_snapshot_name() const override { return _u8L("Texture displacement editing"); }
 
     // The panel's Paint / Erase toggle swaps what the two buttons do, so the right button always does the
     // opposite of the left. Shift still erases in both modes (GLGizmoPainterBase::gizmo_event()).

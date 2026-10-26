@@ -87,11 +87,11 @@ std::string GLGizmoMeasure::surface_feature_type_as_string(Measure::SurfaceFeatu
     switch (type)
     {
     default:
-    case Measure::SurfaceFeatureType::Undef:  { return TR("No feature"); }
-    case Measure::SurfaceFeatureType::Point:  { return TR("Vertex"); }
-    case Measure::SurfaceFeatureType::Edge:   { return TR("Edge"); }
-    case Measure::SurfaceFeatureType::Circle: { return TR("Circle"); }
-    case Measure::SurfaceFeatureType::Plane:  { return TR("Plane"); }
+    case Measure::SurfaceFeatureType::Undef:  { return _u8L("No feature"); }
+    case Measure::SurfaceFeatureType::Point:  { return _u8L("Vertex"); }
+    case Measure::SurfaceFeatureType::Edge:   { return _u8L("Edge"); }
+    case Measure::SurfaceFeatureType::Circle: { return _u8L("Circle"); }
+    case Measure::SurfaceFeatureType::Plane:  { return _u8L("Plane"); }
     }
 }
 
@@ -99,10 +99,10 @@ std::string GLGizmoMeasure::point_on_feature_type_as_string(Measure::SurfaceFeat
 {
     std::string ret;
     switch (type) {
-    case Measure::SurfaceFeatureType::Point:  { ret = TR("Vertex"); break; }
-    case Measure::SurfaceFeatureType::Edge:   { ret = TR("Point on edge"); break; }
-    case Measure::SurfaceFeatureType::Circle: { ret = TR("Point on circle"); break; }
-    case Measure::SurfaceFeatureType::Plane:  { ret = TR("Point on plane"); break; }
+    case Measure::SurfaceFeatureType::Point:  { ret = _u8L("Vertex"); break; }
+    case Measure::SurfaceFeatureType::Edge:   { ret = _u8L("Point on edge"); break; }
+    case Measure::SurfaceFeatureType::Circle: { ret = _u8L("Point on circle"); break; }
+    case Measure::SurfaceFeatureType::Plane:  { ret = _u8L("Point on plane"); break; }
     default:                                  { assert(false); break; }
     }
     return ret;
@@ -112,8 +112,8 @@ std::string GLGizmoMeasure::center_on_feature_type_as_string(Measure::SurfaceFea
 {
     std::string ret;
     switch (type) {
-    case Measure::SurfaceFeatureType::Edge:   { ret = TR("Center of edge"); break; }
-    case Measure::SurfaceFeatureType::Circle: { ret = TR("Center of circle"); break; }
+    case Measure::SurfaceFeatureType::Edge:   { ret = _u8L("Center of edge"); break; }
+    case Measure::SurfaceFeatureType::Circle: { ret = _u8L("Center of circle"); break; }
     default: { assert(false); break; }
     }
     return ret;
@@ -534,13 +534,13 @@ std::string GLGizmoMeasure::on_get_name() const
 {
     if (!on_is_activable() && m_state == EState::Off) {
         if (wxGetApp().plater()->canvas3D()->get_canvas_type() == GLCanvas3D::ECanvasType::CanvasAssembleView) {
-            return TR("Measure") + ":\n" + TR("Please confirm explosion ratio = 1, and please select at least one object.");
+            return _u8L("Measure") + ":\n" + _u8L("Please confirm explosion ratio = 1, and please select at least one object.");
         }
         else {
-            return TR("Measure") + ":\n" + TR("Please select at least one object.");
+            return _u8L("Measure") + ":\n" + _u8L("Please select at least one object.");
         }
     } else {
-        return TR("Measure");
+        return _u8L("Measure");
     }
 }
 
@@ -592,7 +592,7 @@ void GLGizmoMeasure::init_plane_glmodel(GripperType gripper_type, const Measure:
     auto volume = static_cast<GLVolume *>(feature.volume);
     const ModelObject* obj      = selection.get_model()->objects[volume->object_idx()];
     const ModelVolume* vol      = obj->volumes[volume->volume_idx()];
-    auto               mesh = vol->mesh_ptr();
+    auto               mesh = vol->mesh_p_u8L();
     const auto &[idx, normal, pt] = feature.get_plane();
     if (plane_gl_model.plane_idx != idx) {
         plane_gl_model.plane.reset();
@@ -1321,7 +1321,7 @@ void GLGizmoMeasure::render_dimensioning()
         const bool use_inches = wxGetApp().app_config->get_bool("use_inches");
         const double curr_value = use_inches ? GizmoObjectManipulation::mm_to_in * distance : distance;
         const std::string curr_value_str = format_double(curr_value);
-        const std::string units = use_inches ? TR_CONTEXT("in", "inches") : TR("mm");
+        const std::string units = use_inches ? TR_CONTEXT("in", "inches") : _u8L("mm");
         const float value_str_width = 20.0f + ImGui::CalcTextSize(curr_value_str.c_str()).x;
         static double edit_value = 0.0;
 
@@ -1887,7 +1887,7 @@ void GLGizmoMeasure::show_selection_ui()
     // Show selection
     {
         auto format_item_text = [this](const SelectedFeatures::Item &item) {
-            if (!item.feature.has_value()) return TR("None");
+            if (!item.feature.has_value()) return _u8L("None");
 
             std::string text = (item.source == item.feature) ? surface_feature_type_as_string(item.feature->get_type()) :
                                item.is_center                ? center_on_feature_type_as_string(item.source->get_type()) :
@@ -1898,13 +1898,13 @@ void GLGizmoMeasure::show_selection_ui()
                 radius                        = (on_circle - center).norm();
                 if (m_use_inches)
                     radius = GizmoObjectManipulation::mm_to_in * radius;
-                text += " (" + TR("Diameter") + ": " + format_double(2.0 * radius) + m_units + ")";
+                text += " (" + _u8L("Diameter") + ": " + format_double(2.0 * radius) + m_units + ")";
             } else if (item.feature.has_value() && item.feature->get_type() == Measure::SurfaceFeatureType::Edge) {
                 auto [start, end] = item.feature->get_edge();
                 double length     = (end - start).norm();
                 if (m_use_inches)
                     length = GizmoObjectManipulation::mm_to_in * length;
-                text += " (" + TR("Length") + ": " + format_double(length) + m_units + ")";
+                text += " (" + _u8L("Length") + ": " + format_double(length) + m_units + ")";
             }
             return text;
         };
@@ -1912,35 +1912,35 @@ void GLGizmoMeasure::show_selection_ui()
         float selection_cap_length = 0;
         if (m_measure_mode == EMeasureMode::ONLY_ASSEMBLY) {
             if (m_assembly_mode == AssemblyMode::FACE_FACE) {
-                selection_cap_length = std::max(ImGui::CalcTextSize(TR("Face 1 (Fixed)").c_str()).x, ImGui::CalcTextSize(TR("Face 2 (Moving)").c_str()).x) * 1.2;
+                selection_cap_length = std::max(ImGui::CalcTextSize(_u8L("Face 1 (Fixed)").c_str()).x, ImGui::CalcTextSize(_u8L("Face 2 (Moving)").c_str()).x) * 1.2;
             } else if (m_assembly_mode == AssemblyMode::POINT_POINT) {
-                selection_cap_length = std::max(ImGui::CalcTextSize(TR("Point 1 (Fixed)").c_str()).x, ImGui::CalcTextSize(TR("Point 2 (Moving)").c_str()).x) * 1.2;
+                selection_cap_length = std::max(ImGui::CalcTextSize(_u8L("Point 1 (Fixed)").c_str()).x, ImGui::CalcTextSize(_u8L("Point 2 (Moving)").c_str()).x) * 1.2;
             }
         }
         else {
-            selection_cap_length = ImGui::CalcTextSize(TR("Selection 1").c_str()).x * 1.2;
+            selection_cap_length = ImGui::CalcTextSize(_u8L("Selection 1").c_str()).x * 1.2;
         }
         auto        feature_first_text        = format_item_text(m_selected_features.first);
-        const float feature_first_text_length = ImGui::CalcTextSize((TR(feature_first_text)).c_str()).x;
+        const float feature_first_text_length = ImGui::CalcTextSize((_u8L(feature_first_text)).c_str()).x;
         ImGui::AlignTextToFramePadding();
         if (m_measure_mode == EMeasureMode::ONLY_ASSEMBLY) {
             m_only_select_plane = m_assembly_mode == AssemblyMode::FACE_FACE ? true : false;
             if (m_assembly_mode == AssemblyMode::FACE_FACE) {
-                m_imgui->text(TR("Select 2 faces on objects and \n make objects assemble together.")); // tip
+                m_imgui->text(_u8L("Select 2 faces on objects and \n make objects assemble together.")); // tip
             } else if (m_assembly_mode == AssemblyMode::POINT_POINT) {
-                m_imgui->text(TR("Select 2 points or circles on objects and \n specify distance between them.")); // tip
+                m_imgui->text(_u8L("Select 2 points or circles on objects and \n specify distance between them.")); // tip
             }
         }
         ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWrapper::to_ImVec4(SELECTED_1ST_COLOR));
         if (m_measure_mode == EMeasureMode::ONLY_ASSEMBLY) {
             if (m_assembly_mode == AssemblyMode::FACE_FACE) {
-                m_imgui->text(TR("Face 1 (Fixed)"));
+                m_imgui->text(_u8L("Face 1 (Fixed)"));
             } else if (m_assembly_mode == AssemblyMode::POINT_POINT) {
-                m_imgui->text(TR("Point 1 (Fixed)"));
+                m_imgui->text(_u8L("Point 1 (Fixed)"));
             }
         }
         else {
-            m_imgui->text(TR("Selection 1"));
+            m_imgui->text(_u8L("Selection 1"));
         }
         ImGui::SameLine(selection_cap_length + space_size);
         ImGui::PushItemWidth(feature_first_text_length);
@@ -1955,17 +1955,17 @@ void GLGizmoMeasure::show_selection_ui()
         ImGui::PopStyleColor();
 
         auto        feature_second_text        = format_item_text(m_selected_features.second);
-        const float feature_second_text_length = ImGui::CalcTextSize((TR(feature_second_text)).c_str()).x;
+        const float feature_second_text_length = ImGui::CalcTextSize((_u8L(feature_second_text)).c_str()).x;
         ImGui::AlignTextToFramePadding();
         ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWrapper::to_ImVec4(SELECTED_2ND_COLOR));
         if (m_measure_mode == EMeasureMode::ONLY_ASSEMBLY) {
             if (m_assembly_mode == AssemblyMode::FACE_FACE) {
-                m_imgui->text(TR("Face 2 (Moving)"));
+                m_imgui->text(_u8L("Face 2 (Moving)"));
             } else if (m_assembly_mode == AssemblyMode::POINT_POINT) {
-                m_imgui->text(TR("Point 2 (Moving)"));
+                m_imgui->text(_u8L("Point 2 (Moving)"));
             }
         } else {
-            m_imgui->text(TR("Selection 2"));
+            m_imgui->text(_u8L("Selection 2"));
         }
         ImGui::SameLine(selection_cap_length + space_size);
         ImGui::PushItemWidth(feature_second_text_length);
@@ -1996,7 +1996,7 @@ void GLGizmoMeasure::show_selection_ui()
 void GLGizmoMeasure::show_distance_xyz_ui()
 {
     if (m_measure_mode == EMeasureMode::ONLY_MEASURE) {
-        m_imgui->text(TR("Measure"));
+        m_imgui->text(_u8L("Measure"));
     }
     auto add_measure_row_to_table = [this](const std::string &col_1, const ImVec4 &col_1_color, const std::string &col_2, const ImVec4 &col_2_color) {
         ImGui::TableNextRow();
@@ -2067,7 +2067,7 @@ void GLGizmoMeasure::show_distance_xyz_ui()
             if (measure.angle.has_value() && m_measure_mode == EMeasureMode::ONLY_MEASURE)
                 {
                 ImGui::PushID("ClipboardAngle");
-                add_measure_row_to_table(TR("Angle"), ImGuiWrapper::COL_ORCA, format_double(Geometry::rad2deg(measure.angle->angle)) + "°",
+                add_measure_row_to_table(_u8L("Angle"), ImGuiWrapper::COL_ORCA, format_double(Geometry::rad2deg(measure.angle->angle)) + "°",
                                             ImGui::GetStyleColorVec4(ImGuiCol_Text));
                 ++measure_row_count;
                 ImGui::PopID();
@@ -2080,7 +2080,7 @@ void GLGizmoMeasure::show_distance_xyz_ui()
                 double distance = measure.distance_infinite->dist;
                 if (m_use_inches) distance = GizmoObjectManipulation::mm_to_in * distance;
                 ImGui::PushID("ClipboardDistanceInfinite");
-                add_measure_row_to_table(show_strict ? TR("Perpendicular distance") : TR("Distance"), ImGuiWrapper::COL_ORCA, format_double(distance) + m_units,
+                add_measure_row_to_table(show_strict ? _u8L("Perpendicular distance") : _u8L("Distance"), ImGuiWrapper::COL_ORCA, format_double(distance) + m_units,
                                             ImGui::GetStyleColorVec4(ImGuiCol_Text));
                 ++measure_row_count;
                 ImGui::PopID();
@@ -2093,7 +2093,7 @@ void GLGizmoMeasure::show_distance_xyz_ui()
                 if (m_use_inches)
                     distance = GizmoObjectManipulation::mm_to_in * distance;
                 ImGui::PushID("ClipboardDistanceStrict");
-                add_measure_row_to_table(TR("Direct distance"), ImGuiWrapper::COL_ORCA, format_double(distance) + m_units, ImGui::GetStyleColorVec4(ImGuiCol_Text));
+                add_measure_row_to_table(_u8L("Direct distance"), ImGuiWrapper::COL_ORCA, format_double(distance) + m_units, ImGui::GetStyleColorVec4(ImGuiCol_Text));
                 ++measure_row_count;
                 ImGui::PopID();
             }
@@ -2102,7 +2102,7 @@ void GLGizmoMeasure::show_distance_xyz_ui()
                 if (m_use_inches) distance = GizmoObjectManipulation::mm_to_in * distance;
                 if (measure.distance_xyz->norm() > EPSILON) {
                     ImGui::PushID("ClipboardDistanceXYZ");
-                    add_measure_row_to_table(TR("Distance XYZ"), ImGuiWrapper::COL_ORCA, format_vec3(distance), ImGui::GetStyleColorVec4(ImGuiCol_Text));
+                    add_measure_row_to_table(_u8L("Distance XYZ"), ImGuiWrapper::COL_ORCA, format_vec3(distance), ImGui::GetStyleColorVec4(ImGuiCol_Text));
                     ++measure_row_count;
                     ImGui::PopID();
                 }
@@ -2173,7 +2173,7 @@ void GLGizmoMeasure::show_face_face_assembly_senior()
         }
 
         if (action.has_parallel_distance) {
-            m_imgui->text(TR("Parallel distance:"));
+            m_imgui->text(_u8L("Parallel distance:"));
             ImGui::SameLine(parallel_distance_size + m_space_size);
             ImGui::PushItemWidth(m_input_size_max);
             ImGui::BBLInputDouble("##parallel_distance_z", &m_buffered_parallel_distance, 0.0f, 0.0f, "%.2f");
@@ -2182,7 +2182,7 @@ void GLGizmoMeasure::show_face_face_assembly_senior()
             }
         }
         if (action.can_around_center_of_faces) {
-            m_imgui->text(TR("Rotate around center:"));
+            m_imgui->text(_u8L("Rotate around center:"));
             ImGui::SameLine(rotate_around_center_size + m_space_size);
             ImGui::PushItemWidth(m_input_size_max);
             ImGui::BBLInputDouble("##rotate_around_center", &m_buffered_around_center, 0.0f, 0.0f, "%.2f");
@@ -2199,7 +2199,7 @@ void GLGizmoMeasure::show_face_face_assembly_senior()
 void GLGizmoMeasure::init_render_input_window()
 {
     m_use_inches        = wxGetApp().app_config->get_bool("use_inches");
-    m_units             = " " + (m_use_inches ? TR_CONTEXT("in", "inches") : TR("mm"));
+    m_units             = " " + (m_use_inches ? TR_CONTEXT("in", "inches") : _u8L("mm"));
     m_space_size        = ImGui::CalcTextSize("  ").x * 2;
     m_input_size_max    = ImGui::CalcTextSize("-100.00").x * 1.2;
     m_same_model_object = is_two_volume_in_same_model_object();
@@ -2351,7 +2351,7 @@ void GLGizmoMeasure::register_single_mesh_pick()
             } else {
                 const ModelObject*   obj  = selection.get_model()->objects[v->object_idx()];
                 const ModelVolume*   vol  = obj->volumes[v->volume_idx()];
-                auto                 mesh = vol->mesh_ptr();
+                auto                 mesh = vol->mesh_p_u8L();
                 m_mesh_raycaster_map[v] = std::make_shared<PickRaycaster>(-1, *v->mesh_raycaster, world_tran.get_matrix());
                 m_mesh_raycaster_map[v]->set_transform(world_tran.get_matrix());
                 m_mesh_measure_map[v] = std::make_shared<Measure::Measuring>(mesh->its);

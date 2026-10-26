@@ -118,7 +118,7 @@ std::string imex_multicolor_block_reason(const std::string& parallel_mode,
             if (filament < 0 || filament >= (int)pem.values.size()) continue;
             const int phys = pem.values[filament];  // bounds-checked above; get_at would clamp
             if (!seen_physicals.insert(phys).second) {
-                return TR("Multi-color prints in IDEX/IQEX parallel modes require each filament "
+                return _u8L("Multi-color prints in IDEX/IQEX parallel modes require each filament "
                          "to have its own dedicated physical extruder. Two or more of the active "
                          "filaments are routed to the same physical head via the printer's "
                          "physical extruder map (an MMU/AFC manifold), which the slaved gantry "
@@ -130,7 +130,7 @@ std::string imex_multicolor_block_reason(const std::string& parallel_mode,
     // Determine which physical head is the primary in this mode.
     const int primary_physical = imex_primary_tool_for_mode(active_tools_str);
     if (primary_physical < 0) {
-        return TR("The active IDEX/IQEX mode does not define a primary tool, so multi-color "
+        return _u8L("The active IDEX/IQEX mode does not define a primary tool, so multi-color "
                  "printing cannot be scheduled. Open the printer settings IDEX/IQEX Modes "
                  "editor and assign a Primary role to one tool.");
     }
@@ -158,7 +158,7 @@ std::string imex_multicolor_block_reason(const std::string& parallel_mode,
     // (use Primary mode for that), and the user's mode_gcode would still emit
     // parallel-print firmware setup that doesn't apply here.
     if (active_gantries.size() < 2) {
-        return TR("Multi-color in this mode isn't a parallel-print scenario — all of the "
+        return _u8L("Multi-color in this mode isn't a parallel-print scenario — all of the "
                  "active tools sit on a single gantry, so there's no second gantry being "
                  "copied or mirrored to. Switch the plate to Primary mode for multi-color "
                  "printing on a single gantry, or define an IDEX/IQEX mode that includes "
@@ -171,7 +171,7 @@ std::string imex_multicolor_block_reason(const std::string& parallel_mode,
     // copies (each gantry tool prints its own object) which is incompatible with
     // mid-print multicolor in a parallel mode.
     if (!span_on_primary_gantry) {
-        return TR("Multi-color prints in IDEX/IQEX parallel modes require a Span tool on the "
+        return _u8L("Multi-color prints in IDEX/IQEX parallel modes require a Span tool on the "
                  "primary's gantry — without one, the mode doesn't declare a within-gantry "
                  "multicolor partner. Either reduce the print to a single filament, switch to "
                  "Primary mode, or open the printer settings IDEX/IQEX Modes editor and mark a "
@@ -196,11 +196,11 @@ std::string imex_multicolor_block_reason(const std::string& parallel_mode,
         // decides which head a filament is on, so with MMU lanes the two numbers differ.
         if (phys < 0)
             // TRN %1% is a list of tools such as "T0/T1", %2% a filament number.
-            return (boost::format(TR("In this Span mode, colors are printed only by %1%, but filament %2% isn't routed to any "
+            return (boost::format(_u8L("In this Span mode, colors are printed only by %1%, but filament %2% isn't routed to any "
                                     "tool. Use filaments routed to %1%, or switch this plate to Primary mode.")) %
                     tools % (filament + 1)).str();
         // TRN %1% is a list of tools such as "T0/T1", %2% a filament number, %3% a tool number.
-        return (boost::format(TR("In this Span mode, colors are printed only by %1%, but filament %2% is routed to T%3%. Use "
+        return (boost::format(_u8L("In this Span mode, colors are printed only by %1%, but filament %2% is routed to T%3%. Use "
                                 "filaments routed to %1%, or switch this plate to Primary mode.")) %
                 tools % (filament + 1) % phys).str();
     }

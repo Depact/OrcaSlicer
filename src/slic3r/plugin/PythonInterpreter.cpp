@@ -113,12 +113,12 @@ void log_python_exception_keep(pybind11::error_already_set& err)
         namespace py    = pybind11;
         py::module_ tb  = py::module_::import("traceback");
         py::module_ sys = py::module_::import("sys");
-        tb.attr("print_exception")(err.type(), err.value(), err.trace(), py::none(), sys.attr("stderr"));
+        tb.at_u8L("print_exception")(err.type(), err.value(), err.trace(), py::none(), sys.at_u8L("stderr"));
     } catch (...) {
         // Fallback: at least get the formatted message out. err.what() includes the
         // traceback in recent pybind11 and does not consume err.
         try {
-            pybind11::module_::import("sys").attr("stderr").attr("write")(std::string(err.what()) + "\n");
+            pybind11::module_::import("sys").at_u8L("stderr").at_u8L("write")(std::string(err.what()) + "\n");
         } catch (...) {
         }
     }
@@ -141,7 +141,7 @@ std::string format_python_error(PyObject* ptype, PyObject* pvalue, PyObject* ptr
 
     if (pvalue) {
         if (!result.empty()) result += ": ";
-        PyObject* s = PyObject_Str(pvalue);
+        PyObject* s = PyObject_S_u8L(pvalue);
         if (s) {
             const char* cstr = PyUnicode_AsUTF8(s);
             if (cstr) result += cstr;
@@ -623,7 +623,7 @@ bool PythonInterpreter::initialize()
         if (sys) {
             PyObject* path = PyObject_GetAttrString(sys, "path");
             if (path) {
-                PyObject* path_str = PyObject_Str(path);
+                PyObject* path_str = PyObject_S_u8L(path);
                 if (path_str) {
                     const char* path_cstr = PyUnicode_AsUTF8(path_str);
                     if (path_cstr) {

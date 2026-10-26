@@ -168,7 +168,7 @@ public:
 
     // Search blinker
     const bool				blink()					const { return m_undo_ui.blink; }
-    bool*					get_blink_ptr()				  { return &m_undo_ui.blink; }
+    bool*					get_blink_p_u8L()				  { return &m_undo_ui.blink; }
 
     // Edit field button
     bool					has_edit_ui()			const { return !m_edit_ui.tooltip.IsEmpty(); }

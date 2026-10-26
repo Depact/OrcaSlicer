@@ -135,7 +135,7 @@ std::unique_ptr<CompressedImageBuffer> compress_thumbnail_qoi(const ThumbnailDat
     return out;
 }
 
-int ColPic_EncodeStr(unsigned short* fromcolor16, int picw, int pich, unsigned char* outputdata, int outputmaxtsize, int colorsmax);
+int ColPic_EncodeS_u8L(unsigned short* fromcolor16, int picw, int pich, unsigned char* outputdata, int outputmaxtsize, int colorsmax);
 
 std::unique_ptr<CompressedImageBuffer> compress_thumbnail_colpic(const ThumbnailData &data)
 {
@@ -184,7 +184,7 @@ std::unique_ptr<CompressedImageBuffer> compress_thumbnail_colpic(const Thumbnail
         }
     }
 
-    ColPic_EncodeStr(color16_buf.data(), width, height, output_buf.data(), output_buf.size(), 1024);
+    ColPic_EncodeS_u8L(color16_buf.data(), width, height, output_buf.data(), output_buf.size(), 1024);
 
     auto out  = std::make_unique<CompressedColPic>();
     out->size = output_buf.size();
@@ -488,7 +488,7 @@ static int ColPicEncode(unsigned short* fromcolor16, int picw, int pich, unsigne
     return sizeof(ColPicHead3) + Head0->ListDataSize + Head0->ColorDataSize;
 }
 
-int ColPic_EncodeStr(unsigned short* fromcolor16, int picw, int pich, unsigned char* outputdata, int outputmaxtsize, int colorsmax)
+int ColPic_EncodeS_u8L(unsigned short* fromcolor16, int picw, int pich, unsigned char* outputdata, int outputmaxtsize, int colorsmax)
 {
     int           qty      = 0;
     int           temp     = 0;
@@ -611,11 +611,11 @@ std::string get_error_string(const ThumbnailErrors& errors)
     std::string error_str;
 
     if (errors.has(ThumbnailError::InvalidVal))
-        error_str += "\n - " + Slic3r::format(TR("Invalid input format. Expected vector of dimensions in the following format: \"%1%\""), "XxY/EXT, XxY/EXT, ...");
+        error_str += "\n - " + Slic3r::format(_u8L("Invalid input format. Expected vector of dimensions in the following format: \"%1%\""), "XxY/EXT, XxY/EXT, ...");
     if (errors.has(ThumbnailError::OutOfRange))
-        error_str += "\n - " + TR("Input value is out of range");
+        error_str += "\n - " + _u8L("Input value is out of range");
     if (errors.has(ThumbnailError::InvalidExt))
-        error_str += "\n - " + TR("Some extension in the input is invalid");
+        error_str += "\n - " + _u8L("Some extension in the input is invalid");
 
     return error_str;
 }

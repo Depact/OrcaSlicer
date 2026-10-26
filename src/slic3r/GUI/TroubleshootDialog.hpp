@@ -58,7 +58,7 @@ protected:
     wxString GetTimestamp();
 
     wxString GetSysInfoAll();
-    //wxString GetConfigStr();
+    //wxString GetConfigS_u8L();
     wxString GetProfilesOverview();
     wxString GetOStype();
     wxString GetOSinfo();

@@ -337,11 +337,11 @@ bool parse_plugin_overrides(const std::string& raw, CapabilityConfigDocument& do
 
     const nlohmann::json parsed = nlohmann::json::parse(raw, nullptr, /* allow_exceptions */ false);
     if (parsed.is_discarded()) {
-        error = TR("The preset stores invalid plugin capability configuration JSON.");
+        error = _u8L("The preset stores invalid plugin capability configuration JSON.");
         return false;
     }
     if (!parsed.is_array()) {
-        error = TR("The preset's plugin capability configuration is not an array and cannot be edited.");
+        error = _u8L("The preset's plugin capability configuration is not an array and cannot be edited.");
         return false;
     }
 
@@ -521,16 +521,16 @@ bool capability_save_config(const PluginCapabilityInterface& capability, const n
 std::string PluginConfig::capability_type_label(PluginCapabilityType type)
 {
     switch (type) {
-    case PluginCapabilityType::PrinterConnection: return TR("Printer connection");
-    case PluginCapabilityType::Pages: return TR("Pages");
-    case PluginCapabilityType::Analysis: return TR("Analysis");
-    case PluginCapabilityType::Importer: return TR("Importer");
-    case PluginCapabilityType::Exporter: return TR("Exporter");
-    case PluginCapabilityType::Visualization: return TR("Visualization");
-    case PluginCapabilityType::Script: return TR("Script");
-    case PluginCapabilityType::SlicingPipeline: return TR("Slicing Pipeline");
-    case PluginCapabilityType::ResourceTexture: return TR("Resource Texture");
-    default: return TR("Unknown");
+    case PluginCapabilityType::PrinterConnection: return _u8L("Printer connection");
+    case PluginCapabilityType::Pages: return _u8L("Pages");
+    case PluginCapabilityType::Analysis: return _u8L("Analysis");
+    case PluginCapabilityType::Importer: return _u8L("Importer");
+    case PluginCapabilityType::Exporter: return _u8L("Exporter");
+    case PluginCapabilityType::Visualization: return _u8L("Visualization");
+    case PluginCapabilityType::Script: return _u8L("Script");
+    case PluginCapabilityType::SlicingPipeline: return _u8L("Slicing Pipeline");
+    case PluginCapabilityType::ResourceTexture: return _u8L("Resource Texture");
+    default: return _u8L("Unknown");
     }
 }
 
@@ -593,14 +593,14 @@ nlohmann::json PluginConfig::get_config_response(const PluginCapabilityId& id)
             } catch (const std::exception& ex) {
                 error = ex.what();
             } catch (...) {
-                error = TR("Unknown error");
+                error = _u8L("Unknown error");
             }
         }
 
         if (!error.empty()) {
             BOOST_LOG_TRIVIAL(error) << "Plugin capability get_config_ui() failed. plugin_key=" << id.plugin_key
                                      << " capability_name=" << id.name << " error=" << error;
-            response["error"] = GUI::into_u8(GUI::format_wxstr(_L("The plugin's configuration UI failed to load (%1%). Showing the default editor."),
+            response["error"] = GUI::into_u8(GUI::format_wxs_u8L(_L("The plugin's configuration UI failed to load (%1%). Showing the default editor."),
                                                      GUI::from_u8(error)));
         } else if (html.empty()) {
             BOOST_LOG_TRIVIAL(warning) << "Plugin capability reports a config UI but returned no HTML. plugin_key=" << id.plugin_key
@@ -689,7 +689,7 @@ nlohmann::json PluginConfig::restore_config_response(const PluginCapabilityId& i
         } catch (const std::exception& ex) {
             error = ex.what();
         } catch (...) {
-            error = TR("Unknown error");
+            error = _u8L("Unknown error");
         }
     }
 
@@ -698,7 +698,7 @@ nlohmann::json PluginConfig::restore_config_response(const PluginCapabilityId& i
     if (!error.empty()) {
         BOOST_LOG_TRIVIAL(error) << "Plugin capability get_default_config() failed. plugin_key=" << id.plugin_key
                                  << " capability_name=" << id.name << " error=" << error;
-        response["error"] = GUI::into_u8(GUI::format_wxstr(_L("The plugin could not supply a default configuration (%1%). "
+        response["error"] = GUI::into_u8(GUI::format_wxs_u8L(_L("The plugin could not supply a default configuration (%1%). "
                                                     "Nothing was changed."),
                                                  GUI::from_u8(error)));
         return response;

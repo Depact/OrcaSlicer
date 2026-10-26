@@ -568,7 +568,7 @@ bool GLGizmoTextureDisplacement::on_init()
 
 std::string GLGizmoTextureDisplacement::on_get_name() const
 {
-    return TR("Texture displacement");
+    return _u8L("Texture displacement");
 }
 
 bool GLGizmoTextureDisplacement::on_is_activable() const
@@ -975,7 +975,7 @@ void GLGizmoTextureDisplacement::toggle_seam_at(const Vec2d &mouse_pos)
     if (edge.first < 0)
         return;
 
-    Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Mark texture seam"), UndoRedo::SnapshotType::GizmoAction);
+    Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Mark texture seam"), UndoRedo::SnapshotType::GizmoAction);
     auto &seams = layer->lscm_seam_edges;
     if (const auto it = std::find(seams.begin(), seams.end(), edge); it != seams.end())
         seams.erase(it);
@@ -1064,7 +1064,7 @@ void GLGizmoTextureDisplacement::mark_seam_path(int v_from, int v_to)
     if (prev[size_t(v_to)] < 0)
         return; // unreachable (disconnected components)
 
-    Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Mark texture seam path"), UndoRedo::SnapshotType::GizmoAction);
+    Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Mark texture seam path"), UndoRedo::SnapshotType::GizmoAction);
     auto &seams = layer->lscm_seam_edges;
     for (int v = v_to; v != v_from && v >= 0; v = prev[size_t(v)]) {
         const int p = prev[size_t(v)];
@@ -1849,7 +1849,7 @@ void GLGizmoTextureDisplacement::rebuild_painted_colors(bool whole_stack)
     // The sub-triangles, keyed on what they were read from: the volume, its mesh and the paint.
     std::string key;
     if (shown)
-        key = std::to_string(mv->id().id) + ":" + std::to_string(reinterpret_cast<uintptr_t>(mv->mesh_ptr().get())) + ":" +
+        key = std::to_string(mv->id().id) + ":" + std::to_string(reinterpret_cast<uintptr_t>(mv->mesh_p_u8L().get())) + ":" +
               std::to_string(mv->mmu_segmentation_facets.timestamp());
     if (key != m_painted_colors_key) {
         m_painted_colors_key = std::move(key);
@@ -2805,7 +2805,7 @@ void GLGizmoTextureDisplacement::push_uv_pane_state()
     const TextureDisplacementLayer *layer = active_layer();
     if (mv != nullptr && layer != nullptr && layer->projection_method == TextureProjectionMethod::LSCM) {
         st.has_layer       = true;
-        st.layer_name      = from_u8(layer->name.empty() ? Slic3r::format(TR("Layer %1%"), layer->slot + 1) : layer->name);
+        st.layer_name      = from_u8(layer->name.empty() ? Slic3r::format(_u8L("Layer %1%"), layer->slot + 1) : layer->name);
         st.tile_mm         = layer->tiling_scale;
         st.seam_angle_deg  = layer->lscm_seam_angle_deg;
         st.connect_islands = layer->auto_connect_islands;
@@ -2902,24 +2902,24 @@ void GLGizmoTextureDisplacement::run_uv_command(int cmd, float value)
         return;
 
     if (cmd == int(UVEditorCanvas::Command::AverageScale)) {
-        Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Average island scale"), UndoRedo::SnapshotType::GizmoAction);
+        Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Average island scale"), UndoRedo::SnapshotType::GizmoAction);
         average_island_scales(layer->islands);
         rebuild_preview();
     } else if (cmd == int(UVEditorCanvas::Command::CutSelectedIsland)) {
         UVEditorCanvas *canvas = wxGetApp().plater()->get_uv_editor_canvas();
         const int       chart  = canvas != nullptr ? canvas->selected_island() : -1;
         if (chart < 0) {
-            show_error(nullptr, TR("Select an island in the UV editor first."));
+            show_error(nullptr, _u8L("Select an island in the UV editor first."));
             return;
         }
-        Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Cut texture island"), UndoRedo::SnapshotType::GizmoAction);
+        Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Cut texture island"), UndoRedo::SnapshotType::GizmoAction);
         cut_island(*layer, chart);
         rebuild_preview();
     } else if (cmd == int(UVEditorCanvas::Command::JoinSelected)) {
         UVEditorCanvas *canvas = wxGetApp().plater()->get_uv_editor_canvas();
         const int       chart  = canvas != nullptr ? canvas->selected_island() : -1;
         if (chart < 0) {
-            show_error(nullptr, TR("Select an island in the UV editor first."));
+            show_error(nullptr, _u8L("Select an island in the UV editor first."));
             return;
         }
         // Join to whichever neighbouring island (one it shares an edge with) is currently placed
@@ -2940,10 +2940,10 @@ void GLGizmoTextureDisplacement::run_uv_command(int cmd, float value)
             if (d2 < best_d2) { best_d2 = d2; best_parent = p; best_place = cand; }
         }
         if (best_parent < 0) {
-            show_error(nullptr, TR("This island has no neighbour it shares an edge with."));
+            show_error(nullptr, _u8L("This island has no neighbour it shares an edge with."));
             return;
         }
-        Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Join texture island"), UndoRedo::SnapshotType::GizmoAction);
+        Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Join texture island"), UndoRedo::SnapshotType::GizmoAction);
         if (layer->islands.size() <= size_t(chart))
             layer->islands.resize(size_t(chart) + 1);
         layer->islands[size_t(chart)] = best_place;
@@ -2955,10 +2955,10 @@ void GLGizmoTextureDisplacement::run_uv_command(int cmd, float value)
         UVEditorCanvas *canvas = wxGetApp().plater()->get_uv_editor_canvas();
         const int       chart  = canvas != nullptr ? canvas->selected_island() : -1;
         if (chart < 0 || size_t(chart) >= layer->islands.size()) {
-            show_error(nullptr, TR("Select an island in the UV editor first."));
+            show_error(nullptr, _u8L("Select an island in the UV editor first."));
             return;
         }
-        Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Unjoin texture island"), UndoRedo::SnapshotType::GizmoAction);
+        Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Unjoin texture island"), UndoRedo::SnapshotType::GizmoAction);
         layer->islands[size_t(chart)] = TextureIsland{}; // back to its own packed position
         // Break its join link too, so it stops moving with the others (the rest stay grouped).
         if (size_t(chart) < layer->island_groups.size())
@@ -3022,13 +3022,13 @@ void GLGizmoTextureDisplacement::run_uv_command(int cmd, float value)
         push_uv_pane_state();
     } else if (cmd == int(Command::ClearSeams)) {
         if (!layer->lscm_seam_edges.empty()) {
-            Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Clear texture seams"), UndoRedo::SnapshotType::GizmoAction);
+            Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Clear texture seams"), UndoRedo::SnapshotType::GizmoAction);
             layer->lscm_seam_edges.clear();
             rebuild_preview();
         }
     } else if (cmd == int(Command::ClearUVEdits)) {
         if (!layer->lscm_uv_overrides.empty()) {
-            Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Clear texture UV edits"), UndoRedo::SnapshotType::GizmoAction);
+            Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Clear texture UV edits"), UndoRedo::SnapshotType::GizmoAction);
             layer->lscm_uv_overrides.clear();
             m_uv_unwrap_pending = true; // re-solve so the pane drops the edited coords
             update_uv_editor();
@@ -3175,7 +3175,7 @@ int GLGizmoTextureDisplacement::apply_projection_frame()
         m[size_t(8 + i)] = float(row_w[i]);
     }
 
-    Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Apply texture projection frame"),
+    Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Apply texture projection frame"),
                                   UndoRedo::SnapshotType::GizmoAction);
 
     layer->projection_method       = TextureProjectionMethod::ViewProjected;
@@ -3300,7 +3300,7 @@ void GLGizmoTextureDisplacement::on_island_edited(int island, const Vec2f &offse
     if (!m_island_drag_active) {
         // Taken before the first delta lands, so one undo reverts the whole drag rather than just
         // its final mouse-move.
-        Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Move texture island"), UndoRedo::SnapshotType::GizmoAction);
+        Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Move texture island"), UndoRedo::SnapshotType::GizmoAction);
         m_island_drag_active = true;
         // Decide the moved set once, at drag start: the whole selection + join groups for a move, or
         // just the primary for a rotate/scale.
@@ -3368,7 +3368,7 @@ void GLGizmoTextureDisplacement::on_uv_vertex_edited(const std::vector<std::pair
     if (layer == nullptr || edits.empty() || m_uv_editor_unwrap.empty())
         return;
 
-    Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Edit texture UV"), UndoRedo::SnapshotType::GizmoAction);
+    Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Edit texture UV"), UndoRedo::SnapshotType::GizmoAction);
 
     for (const auto &[unwrapped, raw_uv] : edits) {
         if (unwrapped < 0 || size_t(unwrapped) >= m_uv_editor_unwrap.source_vertex.size())
@@ -4077,11 +4077,11 @@ void GLGizmoTextureDisplacement::add_texture_layer()
     for (size_t i = 0; i < used.size(); ++i)
         if (!used[i]) { free_slot = int(i); break; }
     if (free_slot < 0) {
-        show_error(nullptr, TR("Maximum number of texture displacement layers reached."));
+        show_error(nullptr, _u8L("Maximum number of texture displacement layers reached."));
         return;
     }
 
-    Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Add texture displacement layer"), UndoRedo::SnapshotType::GizmoAction);
+    Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Add texture displacement layer"), UndoRedo::SnapshotType::GizmoAction);
 
     TextureDisplacementLayer layer;
     layer.slot = free_slot;
@@ -4139,11 +4139,11 @@ void GLGizmoTextureDisplacement::set_layer_texture(TextureDisplacementLayer &lay
 {
     const LibraryTexture *tex = get_library_texture(entry.path);
     if (tex == nullptr) {
-        show_error(nullptr, TR("Could not load the selected texture."));
+        show_error(nullptr, _u8L("Could not load the selected texture."));
         return;
     }
 
-    Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Change texture displacement texture"), UndoRedo::SnapshotType::GizmoAction);
+    Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Change texture displacement texture"), UndoRedo::SnapshotType::GizmoAction);
     layer.name = entry.name;
     layer.path = entry.path;
     // Handing over the library's own buffer (rather than a copy) is what lets decode_height_texture()
@@ -4299,7 +4299,7 @@ void GLGizmoTextureDisplacement::render_texture_library_popup(const ImVec2 &pane
         ImDrawList  *hdl = ImGui::GetWindowDrawList();
         const ImVec2 row = ImGui::GetCursorScreenPos();
         ImGui::SetCursorScreenPos(ImVec2(row.x, row.y + 0.5f * (frame_h - ImGui::GetTextLineHeight())));
-        m_imgui->bold_text(TR("Choose a texture"));
+        m_imgui->bold_text(_u8L("Choose a texture"));
         const ImVec2 btn(ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x - frame_h, row.y);
         ImGui::SetCursorScreenPos(btn);
         close_clicked       = ImGui::InvisibleButton("##close", ImVec2(frame_h, frame_h));
@@ -4424,7 +4424,7 @@ void GLGizmoTextureDisplacement::render_texture_library_popup(const ImVec2 &pane
                 dl->AddLine(ImVec2(c.x - k, c.y - k), ImVec2(c.x + k, c.y + k), IM_COL32_WHITE, 1.5f);
                 dl->AddLine(ImVec2(c.x - k, c.y + k), ImVec2(c.x + k, c.y - k), IM_COL32_WHITE, 1.5f);
                 if (hot)
-                    panel_tooltip(TR("Remove from My textures"));
+                    panel_tooltip(_u8L("Remove from My textures"));
                 if (remove_clicked)
                     to_remove = *entry;
             }
@@ -4524,7 +4524,7 @@ void GLGizmoTextureDisplacement::render_texture_library_popup(const ImVec2 &pane
     };
     std::vector<Section>          sections;
     std::map<std::string, size_t> pack_section; // pack_name -> index in `sections`
-    sections.push_back({ "builtin:", TR("Built-in"), {} });
+    sections.push_back({ "builtin:", _u8L("Built-in"), {} });
     for (const TextureLibraryEntry &entry : library) {
         if (entry.source == TextureSource::Shipped) {
             sections.front().entries.push_back(&entry); // the section exists even when the library is empty
@@ -4539,7 +4539,7 @@ void GLGizmoTextureDisplacement::render_texture_library_popup(const ImVec2 &pane
             sections.push_back({ "pack:" + entry.pack_name, entry.pack_name, {} });
         sections[it->second].entries.push_back(&entry);
     }
-    sections.push_back({ "user:", TR("My textures"), {} });
+    sections.push_back({ "user:", _u8L("My textures"), {} });
     for (const TextureLibraryEntry &entry : library)
         if (entry.source == TextureSource::User)
             sections.back().entries.push_back(&entry);
@@ -4551,14 +4551,14 @@ void GLGizmoTextureDisplacement::render_texture_library_popup(const ImVec2 &pane
         const int    count  = grid(origin, built_in.entries, false);
         end_grid(origin, count);
         if (count == 0)
-            ImGui::TextDisabled("%s", TR("No textures found.").c_str());
+            ImGui::TextDisabled("%s", _u8L("No textures found.").c_str());
     }
 
     size_t subscribed_count = 0;
     for (size_t i = 1; i + 1 < sections.size(); ++i)
         subscribed_count += sections[i].entries.size();
 
-    const std::string subscribed_title = TR("Texture libraries");
+    const std::string subscribed_title = _u8L("Texture libraries");
     if (section_header("subscribed:", subscribed_title, subscribed_count, 0.f, {}, subscribed_title)) {
         for (size_t i = 1; i + 1 < sections.size(); ++i) {
             const Section &pack = sections[i];
@@ -4571,11 +4571,11 @@ void GLGizmoTextureDisplacement::render_texture_library_popup(const ImVec2 &pane
         }
 
         ImGui::Dummy(ImVec2(0.f, spacing));
-        const std::string download_label = TR("Explore more texture libraries");
+        const std::string download_label = _u8L("Explore more texture libraries");
         if (ImGui::Button(download_label.c_str(), ImVec2(grid_w, frame_h)))
             download_clicked = true;
         if (ImGui::IsItemHovered())
-            panel_tooltip(TR("Opens OrcaCloud in the Home page to browse for plugins."));
+            panel_tooltip(_u8L("Opens OrcaCloud in the Home page to browse for plugins."));
     }
 
     const Section &user = sections.back();
@@ -4586,14 +4586,14 @@ void GLGizmoTextureDisplacement::render_texture_library_popup(const ImVec2 &pane
         if (ImGui::Button("+##import_texture", ImVec2(tile, tile)))
             import_clicked = true;
         if (ImGui::IsItemHovered())
-            panel_tooltip(TR("Import your own image as a height map. It is converted to the format the slicer "
+            panel_tooltip(_u8L("Import your own image as a height map. It is converted to the format the slicer "
                                "bakes from and saved to your personal texture folder, kept separate from the "
                                "textures shipped with OrcaSlicer."));
         end_grid(origin, count + 1);
         // Belongs to this section: it describes the import tile and the remove-on-hover tiles, both of
         // which live here, so it is hidden with them rather than left describing controls off-screen.
         ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + grid_w);
-        ImGui::TextDisabled("%s", TR("PNG, JPG or BMP - converted to a height map on import. Hover one of yours to remove it.").c_str());
+        ImGui::TextDisabled("%s", _u8L("PNG, JPG or BMP - converted to a height map on import. Hover one of yours to remove it.").c_str());
         ImGui::PopTextWrapPos();
     }
     if (loads_deferred)
@@ -4860,7 +4860,7 @@ void GLGizmoTextureDisplacement::render_image_adjust_window(const ImVec2 &panel_
                                    panel_min.y + m_imgui->scaled(4.f)), ImGuiCond_Appearing);
 
     bool keep_open = true;
-    if (!ImGui::Begin((TR("Adjust image") + "##texture_adjust").c_str(), &keep_open,
+    if (!ImGui::Begin((_u8L("Adjust image") + "##texture_adjust").c_str(), &keep_open,
                       ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse)) {
         ImGui::End();
         if (!keep_open)
@@ -4911,10 +4911,10 @@ void GLGizmoTextureDisplacement::render_image_adjust_window(const ImVec2 &panel_
     row("##adj_brightness", _L("Brightness"), &m_adjust.brightness, -1.f, 1.f, "%.2f", true, {});
     row("##adj_contrast", _L("Contrast"), &m_adjust.contrast, -1.f, 1.f, "%.2f", true, {});
     row("##adj_sharpness", _L("Sharpness"), &m_adjust.sharpness, 0.f, 1.f, "%.2f", true,
-        TR("Brings out the finest detail in the image. Applied after Blur, so the two can be used "
+        _u8L("Brings out the finest detail in the image. Applied after Blur, so the two can be used "
              "together: blur away the speckle, then sharpen the edges that remain."));
     row("##adj_blur", _L("Blur"), &m_adjust.blur, 0.f, 1.f, "%.2f", true,
-        TR("Blurs the image itself. The layer's own Smoothing slider softens the relief without altering "
+        _u8L("Blurs the image itself. The layer's own Smoothing slider softens the relief without altering "
              "the image, and is the one to reach for first."));
     // Grey has no hue to turn, and the shipped library is grayscale - so on most textures this is a
     // slider that would visibly do nothing. Disabled with the reason given, rather than hidden.
@@ -4922,7 +4922,7 @@ void GLGizmoTextureDisplacement::render_image_adjust_window(const ImVec2 &panel_
     row("##adj_hue", _L("Hue"), &m_adjust.hue_deg, -180.f, 180.f, "%.0f°", has_color, {});
     if (!has_color) {
         ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + img_w);
-        ImGui::TextDisabled("%s", TR("This texture is grayscale, so it has no hue to shift.").c_str());
+        ImGui::TextDisabled("%s", _u8L("This texture is grayscale, so it has no hue to shift.").c_str());
         ImGui::PopTextWrapPos();
     }
 
@@ -4951,7 +4951,7 @@ void GLGizmoTextureDisplacement::render_image_adjust_window(const ImVec2 &panel_
     }
 
     ImGui::Separator();
-    m_imgui->text_wrapped(TR("The model updates when you release a slider. Save as copy writes the "
+    m_imgui->text_wrapped(_u8L("The model updates when you release a slider. Save as copy writes the "
                                "adjusted image to your texture library and points this layer at it."), img_w);
 
     const bool cancel = m_imgui->button(_L("Cancel"));
@@ -4975,7 +4975,7 @@ void GLGizmoTextureDisplacement::remove_texture_layer(int slot)
     if (!mv)
         return;
 
-    Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Remove texture displacement layer"), UndoRedo::SnapshotType::GizmoAction);
+    Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Remove texture displacement layer"), UndoRedo::SnapshotType::GizmoAction);
 
     auto &layers = mv->texture_displacement_layers;
     layers.erase(std::remove_if(layers.begin(), layers.end(),
@@ -5057,7 +5057,7 @@ void GLGizmoTextureDisplacement::move_texture_layer(int slot, int to_index)
         return;
 
     update_model_object(); // flush the active layer's strokes into its slot before slots are exchanged
-    Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Reorder texture displacement layers"),
+    Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Reorder texture displacement layers"),
                                   UndoRedo::SnapshotType::GizmoAction);
     // Walked one neighbour at a time, so every layer in between shifts by one and keeps its order.
     const int step = to > from ? 1 : -1;
@@ -5148,7 +5148,7 @@ int GLGizmoTextureDisplacement::select_visible_faces(const std::array<float, 12>
     if (unobscured.empty())
         return 0;
 
-    Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Select visible faces for texture displacement"),
+    Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Select visible faces for texture displacement"),
                                   UndoRedo::SnapshotType::GizmoAction);
 
     // Replaces the layer's paint rather than adding to it: the checkbox means "project onto what I
@@ -5172,7 +5172,7 @@ void GLGizmoTextureDisplacement::select_whole_model()
     if (!mo)
         return;
 
-    Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Select whole model for texture displacement"), UndoRedo::SnapshotType::GizmoAction);
+    Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Select whole model for texture displacement"), UndoRedo::SnapshotType::GizmoAction);
 
     int idx = -1;
     for (const ModelVolume *v : mo->volumes) {
@@ -5196,7 +5196,7 @@ void GLGizmoTextureDisplacement::subdivide_model()
         return; // 0 passes means "no subdivision" - don't take a snapshot for a no-op
 
     Plater *plater = wxGetApp().plater();
-    Plater::TakeSnapshot snapshot(plater, TR("Subdivide model for texture displacement"), UndoRedo::SnapshotType::GizmoAction);
+    Plater::TakeSnapshot snapshot(plater, _u8L("Subdivide model for texture displacement"), UndoRedo::SnapshotType::GizmoAction);
 
     // Same save/replace/restore-painting dance GLGizmoSimplify uses when it re-tessellates a
     // volume's mesh: supported/seam/mmu/fuzzy-skin masks get remapped onto the new triangles,
@@ -6048,7 +6048,7 @@ void GLGizmoTextureDisplacement::subdivide_model_adaptive()
     update_model_object(); // flush any in-progress stroke into the committed masks first
 
     if (!mv->is_texture_displacement_painted()) {
-        show_error(nullptr, TR("Paint the area you want to subdivide first - adaptive subdivision only "
+        show_error(nullptr, _u8L("Paint the area you want to subdivide first - adaptive subdivision only "
                                  "refines where you have painted."));
         return;
     }
@@ -6061,8 +6061,8 @@ void GLGizmoTextureDisplacement::subdivide_model_adaptive()
     params.subdiv_color_edge_mm   = m_subdivide_color_mm;
     params.subdiv_feature         = m_subdivide_feature;
     params.subdiv_added_triangles = m_subdivide_budget_k * 1000;
-    queue_prepare(params, TR("Adaptive subdivide for texture displacement"), /* then_bake */ false,
-                  TR("Nothing to subdivide - the painted area already meets the target edge length and "
+    queue_prepare(params, _u8L("Adaptive subdivide for texture displacement"), /* then_bake */ false,
+                  _u8L("Nothing to subdivide - the painted area already meets the target edge length and "
                        "detail tolerance, or the triangle budget is already used up."));
 }
 
@@ -6093,7 +6093,7 @@ void GLGizmoTextureDisplacement::smooth_model()
                 any                                  = true;
             }
     if (!any) {
-        show_error(nullptr, TR("Paint the area you want to smooth first - smoothing only touches the "
+        show_error(nullptr, _u8L("Paint the area you want to smooth first - smoothing only touches the "
                                  "painted part of the model."));
         return;
     }
@@ -6109,7 +6109,7 @@ void GLGizmoTextureDisplacement::smooth_model()
                     movable[size_t(its.indices[i][k])] = 0; // also used by unpainted geometry -> the rim
     if (std::none_of(movable.begin(), movable.end(), [](uint8_t m) { return m != 0; })) {
         // Every painted vertex is on the patch's rim, so "Ignore outer ring" leaves nothing to move.
-        show_error(nullptr, TR("Nothing to smooth - the painted area is only one triangle deep, so with "
+        show_error(nullptr, _u8L("Nothing to smooth - the painted area is only one triangle deep, so with "
                                  "\"Ignore outer ring\" on there are no interior vertices to relax."));
         return;
     }
@@ -6121,7 +6121,7 @@ void GLGizmoTextureDisplacement::smooth_model()
     }
 
     Plater *plater = wxGetApp().plater();
-    Plater::TakeSnapshot snapshot(plater, TR("Smooth texture displacement"), UndoRedo::SnapshotType::GizmoAction);
+    Plater::TakeSnapshot snapshot(plater, _u8L("Smooth texture displacement"), UndoRedo::SnapshotType::GizmoAction);
 
     // No save/restore-painting dance here, unlike subdivide and remesh: smoothing only moves vertices,
     // it does not touch the triangle list, so every paint channel still refers to exactly the triangles
@@ -6207,8 +6207,8 @@ void GLGizmoTextureDisplacement::remesh_model()
     TextureDisplacementPrepareParams params;
     params.remesh_edge_mm   = m_remesh_target_edge_mm;
     params.remesh_sharp_deg = m_remesh_keep_sharp_edges ? m_remesh_sharp_angle_deg : 0.f;
-    queue_prepare(params, TR("Remesh model for texture displacement"), /* then_bake */ false,
-                  TR("Remeshing did not change the model. It may be non-manifold (open edges or edges "
+    queue_prepare(params, _u8L("Remesh model for texture displacement"), /* then_bake */ false,
+                  _u8L("Remeshing did not change the model. It may be non-manifold (open edges or edges "
                        "shared by more than two triangles), or the target edge length may already be met."));
 }
 
@@ -6369,7 +6369,7 @@ void GLGizmoTextureDisplacement::bake(bool own_snapshot)
     update_model_object();
 
     if (!mv->is_texture_displacement_painted()) {
-        show_error(nullptr, TR("Nothing is painted, there is nothing to bake."));
+        show_error(nullptr, _u8L("Nothing is painted, there is nothing to bake."));
         return;
     }
 
@@ -6449,7 +6449,7 @@ void GLGizmoTextureDisplacement::bake_standard()
 
     update_model_object(); // flush the active layer's in-progress strokes before anything reads them
     if (!mv->is_texture_displacement_painted()) {
-        show_error(nullptr, TR("Nothing is painted, there is nothing to bake."));
+        show_error(nullptr, _u8L("Nothing is painted, there is nothing to bake."));
         return;
     }
     apply_standard_mode_presets(mv); // belt and braces: never bake with values the panel is not showing
@@ -6475,7 +6475,7 @@ void GLGizmoTextureDisplacement::bake_standard()
     params.subdiv_feature         = true;
     params.subdiv_added_triangles = m_subdivide_budget_k * 1000;
     params.cut_steps              = true;
-    queue_prepare(params, TR("Bake texture displacement"), /* then_bake */ true, {});
+    queue_prepare(params, _u8L("Bake texture displacement"), /* then_bake */ true, {});
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -6490,7 +6490,7 @@ void GLGizmoTextureDisplacement::run_stage_debug()
 
     update_model_object(); // flush the active layer's in-progress strokes, as a real bake would
     if (!mv->is_texture_displacement_painted()) {
-        show_error(nullptr, TR("Nothing is painted, so there are no bake stages to capture."));
+        show_error(nullptr, _u8L("Nothing is painted, so there are no bake stages to capture."));
         return;
     }
 
@@ -6577,7 +6577,7 @@ void GLGizmoTextureDisplacement::render_debug_stage_panel(ModelVolume *mv)
         return;
 
     ImGui::Separator();
-    if (!ImGui::CollapsingHeader(TR("Bake stages (debug)").c_str()))
+    if (!ImGui::CollapsingHeader(_u8L("Bake stages (debug)").c_str()))
         return;
 
     m_imgui->disabled_begin(m_debug_in_progress || m_bake_in_progress || m_prepare_in_progress ||
@@ -6586,14 +6586,14 @@ void GLGizmoTextureDisplacement::render_debug_stage_panel(ModelVolume *mv)
         run_stage_debug();
     m_imgui->disabled_end();
     if (ImGui::IsItemHovered())
-        panel_tooltip(TR("Run the same bake the Bake button runs, keeping the mesh after every "
+        panel_tooltip(_u8L("Run the same bake the Bake button runs, keeping the mesh after every "
                            "stage, and step through them here. Nothing is committed to the model - "
                            "this is for finding which stage a bad result came from."));
 
     ImGui::SameLine();
     m_imgui->bbl_checkbox(_L("Check topology"), m_debug_check_topology);
     if (ImGui::IsItemHovered())
-        panel_tooltip(TR("Count open and non-manifold edges after each stage, which is how a stage "
+        panel_tooltip(_u8L("Count open and non-manifold edges after each stage, which is how a stage "
                            "that tore the mesh is spotted. It scans every edge, so it adds noticeably "
                            "to the capture on a fine bake."));
 
@@ -6631,14 +6631,14 @@ void GLGizmoTextureDisplacement::render_debug_stage_panel(ModelVolume *mv)
     if (m_debug_stage >= 0 && size_t(m_debug_stage) < m_debug_stages.size()) {
         const BakeStageSnapshot &st = m_debug_stages[size_t(m_debug_stage)];
         m_imgui->text(from_u8(st.name) + ": " + std::to_string(st.triangles) + " " +
-                      TR("triangles") + ", " + std::to_string(st.vertices) + " " + TR("vertices"));
+                      _u8L("triangles") + ", " + std::to_string(st.vertices) + " " + _u8L("vertices"));
         if (!st.detail.empty())
             m_imgui->text(from_u8(st.detail));
         if (st.topology_checked) {
             // Zero on both counts is the claim every stage's header makes; anything else is the bug.
-            const std::string topo = TR("Open edges") + ": " + std::to_string(st.open_edges) + "   " +
-                                     TR("Non-manifold") + ": " + std::to_string(st.non_manifold_edges) +
-                                     "   " + TR("Degenerate") + ": " + std::to_string(st.degenerate);
+            const std::string topo = _u8L("Open edges") + ": " + std::to_string(st.open_edges) + "   " +
+                                     _u8L("Non-manifold") + ": " + std::to_string(st.non_manifold_edges) +
+                                     "   " + _u8L("Degenerate") + ": " + std::to_string(st.degenerate);
             if (st.open_edges > 0 || st.non_manifold_edges > 0)
                 m_imgui->warning_text(from_u8(topo));
             else
@@ -6650,7 +6650,7 @@ void GLGizmoTextureDisplacement::render_debug_stage_panel(ModelVolume *mv)
     for (const BakeStageSnapshot &st : m_debug_stages)
         total_ms += st.ms;
     char total[128];
-    std::snprintf(total, sizeof(total), "%s: %.1f ms", TR("Total").c_str(), total_ms);
+    std::snprintf(total, sizeof(total), "%s: %.1f ms", _u8L("Total").c_str(), total_ms);
     m_imgui->text(total);
 
     if (m_imgui->button(_L("Write stage meshes"))) {
@@ -6658,12 +6658,12 @@ void GLGizmoTextureDisplacement::render_debug_stage_panel(ModelVolume *mv)
             (boost::filesystem::temp_directory_path() / "orca-bake-stages").string();
         const size_t written = dump_bake_stages(m_debug_stages, dir);
         if (written > 0)
-            show_info(nullptr, from_u8(TR("Wrote the stage meshes as OBJ files to:") + "\n" + dir));
+            show_info(nullptr, from_u8(_u8L("Wrote the stage meshes as OBJ files to:") + "\n" + dir));
         else
-            show_error(nullptr, TR("Could not write the stage meshes."));
+            show_error(nullptr, _u8L("Could not write the stage meshes."));
     }
     if (ImGui::IsItemHovered())
-        panel_tooltip(TR("Write every captured stage out as an OBJ file, so they can be opened "
+        panel_tooltip(_u8L("Write every captured stage out as an OBJ file, so they can be opened "
                            "side by side in a mesh viewer."));
 }
 
@@ -6703,7 +6703,7 @@ void GLGizmoTextureDisplacement::queue_prepare(const TextureDisplacementPrepareP
         case TextureDisplacementPrepareOutcome::Failed:
             return; // cancelled, or the volume went away while the job ran - say nothing, do nothing
         case TextureDisplacementPrepareOutcome::PaintLost:
-            show_error(nullptr, TR("The painted area could not be carried onto the remeshed model, so "
+            show_error(nullptr, _u8L("The painted area could not be carried onto the remeshed model, so "
                                      "nothing was changed. Switch to Pro mode and remesh before painting."));
             return;
         case TextureDisplacementPrepareOutcome::Unchanged:
@@ -6956,10 +6956,10 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
         return out;
     };
     const auto range_text = [](const std::string &lo, const std::string &hi) {
-        return Slic3r::format(TR("Range: %1% to %2%"), lo, hi);
+        return Slic3r::format(_u8L("Range: %1% to %2%"), lo, hi);
     };
     const auto edit_icon_tip = [&](const std::string &range) {
-        return TR("Type a value instead of dragging. Ctrl+click on the slider does the same.") + "\n\n" + range;
+        return _u8L("Type a value instead of dragging. Ctrl+click on the slider does the same.") + "\n\n" + range;
     };
 
     // Draws `slider` at `item_w` (SetNextItemWidth's convention: negative measures back from the right
@@ -7025,7 +7025,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
         return typed_slider_int(id, -(std::max(right_inset, 1.f) + edit_icon_room), v, v_min, v_max, format, false, tip, media);
     };
     const auto layer_name = [](const TextureDisplacementLayer &l) {
-        return l.name.empty() ? Slic3r::format(TR("Layer %1%"), l.slot + 1) : l.name;
+        return l.name.empty() ? Slic3r::format(_u8L("Layer %1%"), l.slot + 1) : l.name;
     };
     // Painted on any model part. The selectors flush into the model at the end of every stroke.
     const auto slot_painted = [mo](int slot) {
@@ -7041,7 +7041,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
         ImGui::AlignTextToFramePadding();
         heading(_L("Texture displacement"));
 
-        const std::string labels[2] = { TR_CONTEXT("Standard", "Mode"), TR("Pro") };
+        const std::string labels[2] = { TR_CONTEXT("Standard", "Mode"), _u8L("Pro") };
         const float       seg_pad   = m_imgui->scaled(0.5f);
         const float seg_w[2] = { ImGui::CalcTextSize(labels[0].c_str()).x + 2.f * seg_pad, ImGui::CalcTextSize(labels[1].c_str()).x + 2.f * seg_pad };
         ImGui::SameLine();
@@ -7063,9 +7063,9 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
             ImGui::PushStyleColor(ImGuiCol_Text, on ? ImVec4(1.f, 1.f, 1.f, 1.f) : style.Colors[ImGuiCol_TextDisabled]);
             const bool clicked = ImGui::Button((labels[m] + "##panel_mode").c_str(), ImVec2(seg_w[m], frame_h));
             ImGui::PopStyleColor(4);
-            hover_tip(m == 0 ? TR("Standard - pick a texture, paint where it goes, press Bake. Everything the "
+            hover_tip(m == 0 ? _u8L("Standard - pick a texture, paint where it goes, press Bake. Everything the "
                                    "mesh needs is done for you in that one step.") :
-                               TR("Pro - the mesh preparation is yours to run: Remesh, Subdivide and Bake as "
+                               _u8L("Pro - the mesh preparation is yours to run: Remesh, Subdivide and Bake as "
                                    "separate steps, with every setting on show. For when Standard's result is "
                                    "not what you wanted and you know why."));
             if (clicked && !on) {
@@ -7125,8 +7125,8 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
     {
         ImGui::AlignTextToFramePadding();
         heading(_L("Paint"));
-        const std::string into      = active != nullptr ? Slic3r::format(TR("into %1%"), layer_name(*active)) :
-                                                          TR("add a layer to paint");
+        const std::string into      = active != nullptr ? Slic3r::format(_u8L("into %1%"), layer_name(*active)) :
+                                                          _u8L("add a layer to paint");
         const float       toggles_x = ImGui::GetWindowContentRegionMax().x - (2.f * icon_sm + gap_s);
         const float       text_end  = toggles_x - (2.f * gap_s + 1.f);
         ImGui::SameLine();
@@ -7193,7 +7193,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
         if (icon_toggle(807, "texture_displacement_erase_all.svg", false, icon_md, _L("Erase whole model"),
                         _L("Erase whole model - clear the active layer's paint from every face"),
                         { { "erase_all.png" } }, erase_na)) {
-            Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Reset texture displacement selection"),
+            Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Reset texture displacement selection"),
                                           UndoRedo::SnapshotType::GizmoAction);
             int idx = -1;
             for (ModelVolume *v : mo->volumes)
@@ -7236,7 +7236,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
         } else {
             centre_on_row(frame_h);
             ImGui::AlignTextToFramePadding();
-            ImGui::TextDisabled("%s", ellipsize(TR("Click a triangle to paint it"),
+            ImGui::TextDisabled("%s", ellipsize(_u8L("Click a triangle to paint it"),
                                                 std::max(0.f, row_end - ImGui::GetCursorPosX())).c_str());
         }
     }
@@ -7264,7 +7264,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
 
         const float x0 = ImGui::GetCursorPosX();
         ImGui::AlignTextToFramePadding();
-        ImGui::TextDisabled("%s", TR("View").c_str());
+        ImGui::TextDisabled("%s", _u8L("View").c_str());
         ImGui::SameLine();
         ImGui::SetCursorPosX(std::max(ImGui::GetCursorPosX(), x0 + m_imgui->scaled(2.6f)));
         if (icon_toggle(701, "texture_displacement_real_preview.svg", cur_mode == 0, icon_md, _L("Normal"),
@@ -7300,13 +7300,13 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                         { { "view_wireframe.png" } }))
             wf_toggle = true;
 
-        const std::string auto_label = TR("Auto");
+        const std::string auto_label = _u8L("Auto");
         const float       auto_w     = frame_h * 0.78f /*ratio from BBLCheckbox*/ + style.ItemInnerSpacing.x + ImGui::CalcTextSize(auto_label.c_str()).x;
         ImGui::SameLine();
         ImGui::SetCursorPosX(std::max(ImGui::GetCursorPosX(), ImGui::GetWindowContentRegionMax().x - auto_w));
         if (m_imgui->bbl_checkbox(wxString::FromUTF8(auto_label) + "##auto_update", m_auto_update) && m_auto_update)
             rebuild_preview(); // catch up anything that changed while it was off
-        hover_tip(TR("Rebuilds the preview as soon as anything changes. Turn it off on a heavy model if painting "
+        hover_tip(_u8L("Rebuilds the preview as soon as anything changes. Turn it off on a heavy model if painting "
                         "or dragging a slider starts to stutter - the preview then waits until you let go."));
 
         // Both are views of the unwrap, so picking one brings the UV editor up with it - including when that
@@ -7383,7 +7383,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
         ImGui::InvisibleButton("##grip", ImVec2(grip_w, h));
         const bool hot = ImGui::IsItemHovered() || ImGui::IsItemActive();
         draw_drag_icon(dl, p.x, p.y, grip_w, h, drag_tint(hot ? 255 : 150));
-        hover_tip(TR("Drag onto another layer to reorder. The first layer sits on the bare surface; each one after "
+        hover_tip(_u8L("Drag onto another layer to reorder. The first layer sits on the bare surface; each one after "
                         "it adds its relief on top of the ones before."));
         // ImGui's own preview is a tooltip holding whatever is submitted here. The panel draws a copy of the whole
         // layer row under the cursor instead (after the layer list), so that one is switched off.
@@ -7459,7 +7459,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                 } else if (ImGui::Button("?##thumb", ImVec2(frame_h, frame_h))) {
                     open_picker(layer.slot);
                 }
-                hover_tip(TR("Pick a different image for this layer. The paint, depth and tiling stay as they are."));
+                hover_tip(_u8L("Pick a different image for this layer. The paint, depth and tiling stay as they are."));
                 {
                     // The teal outline on the thumbnail is what marks this card as the layer being painted.
                     const ImVec2 a = ImGui::GetItemRectMin(), b = ImGui::GetItemRectMax();
@@ -7467,7 +7467,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                 }
                 ImGui::SameLine();
 
-                const std::string not_painted = TR("not painted");
+                const std::string not_painted = _u8L("not painted");
                 const float right_w = (painted ? 0.f : ImGui::CalcTextSize(not_painted.c_str()).x + gap_s) + 4.f * frame_h + 3.f * gap_s;
                 const float name_w  = std::max(frame_h, ImGui::GetWindowContentRegionMax().x - card_pad - ImGui::GetCursorPosX() - gap_s - right_w);
                 ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(orca.x, orca.y, orca.z, 0.2f));
@@ -7477,7 +7477,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                 if (ImGui::Selectable((shown + "##name").c_str(), false, 0, ImVec2(name_w, frame_h)))
                     open_picker(layer.slot);
                 ImGui::PopStyleColor(2);
-                hover_tip(TR("Pick a different image for this layer. The paint, depth and tiling stay as they are."));
+                hover_tip(_u8L("Pick a different image for this layer. The paint, depth and tiling stay as they are."));
                 if (!painted) {
                     ImGui::SameLine();
                     ImGui::TextDisabled("%s", not_painted.c_str());
@@ -7487,7 +7487,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                 ImGui::SameLine();
                 m_imgui->disabled_begin(busy || layer.empty());
                 if (icon_button(613 + layer.slot, "cog.svg", frame_h, _L("Adjust image"),
-                                TR("Brightness, contrast, sharpness, blur and hue, shown on the image and on the "
+                                _u8L("Brightness, contrast, sharpness, blur and hue, shown on the image and on the "
                                      "model as you set them. Save as copy writes the result to your texture library "
                                      "and points this layer at it.")))
                     open_image_adjust(layer);
@@ -7576,7 +7576,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
 
                 // Edge fade: the relief flattens toward the boundary of the painted area.
                 m_preview_params_dirty |= m_imgui->bbl_checkbox(_L("Edge fade") + "##edge_smoothing", layer.edge_smoothing);
-                hover_tip(TR("Flattens the relief as it approaches the edge of the painted area, so it "
+                hover_tip(_u8L("Flattens the relief as it approaches the edge of the painted area, so it "
                                "blends into the bare surface instead of stopping at a step."),
                           { { "edge_fade_off.png", _L("Off") }, { "edge_fade_on.png", _L("On") } });
                 ImGui::SameLine();
@@ -7591,7 +7591,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                 {
                     const float x0 = ImGui::GetCursorPosX();
                     m_preview_params_dirty |= m_imgui->bbl_checkbox(_L("Invert"), layer.invert);
-                    hover_tip(TR("Turns the relief inside out: what stood out is cut in, and the other way "
+                    hover_tip(_u8L("Turns the relief inside out: what stood out is cut in, and the other way "
                                    "round. The same as using a negative of the image."),
                               { { "invert_off.png", _L("Off") }, { "invert_on.png", _L("On") } });
                     ImGui::SameLine();
@@ -7610,10 +7610,10 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                     m_imgui->disabled_end();
                     if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                         panel_tooltip(has_color ?
-                                          TR("Prints the painted area in the texture's colors as well as its "
+                                          _u8L("Prints the painted area in the texture's colors as well as its "
                                                "relief. Each color is matched to the nearest of your loaded "
                                                "filaments; anything you did not paint keeps the object's own.") :
-                                          TR("This texture is a grayscale height map, so it has no colors to "
+                                          _u8L("This texture is a grayscale height map, so it has no colors to "
                                                "apply. Import a color image to use this."));
 
                     // The rest of colour belongs to the whole stack, not to this layer, so it only appears once -
@@ -7622,7 +7622,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                         TextureDisplacementOptions &opts = mv->texture_displacement_options;
                         if (m_imgui->bbl_checkbox(_L("Mix filaments"), opts.color_mix_enabled))
                             m_preview_params_dirty = true;
-                        hover_tip(TR("Interleaves two filaments to fake the colors in between, so a handful "
+                        hover_tip(_u8L("Interleaves two filaments to fake the colors in between, so a handful "
                                        "of filaments can cover a photo or a gradient. An image of flat colors "
                                        "prints the same either way. Off uses one filament per area."),
                                   { { "mix_off.png", _L("Off") }, { "mix_on.png", _L("On") } });
@@ -7730,16 +7730,16 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                 if (layer.projection_method == TextureProjectionMethod::LSCM) {
                     // Unwrap and everything that edits it live in the UV editor pane, next to the islands they change.
                     // Picking this mapping opens the pane; this brings it back after it has been closed.
-                    if (m_imgui->button(TR("Open UV editor"))) {
+                    if (m_imgui->button(_u8L("Open UV editor"))) {
                         m_show_uv_editor = true;
                         update_uv_editor();
                     }
-                    hover_tip(TR("Opens the UV editor, where you can see how the texture is laid out over the "
+                    hover_tip(_u8L("Opens the UV editor, where you can see how the texture is laid out over the "
                                     "painted area, cut seams and move the pieces around."));
                     ImGui::SameLine();
                     ImGui::AlignTextToFramePadding();
                     if (m_uv_editor_unwrap.empty())
-                        ImGui::TextDisabled("%s", TR("Not unwrapped yet").c_str());
+                        ImGui::TextDisabled("%s", _u8L("Not unwrapped yet").c_str());
                     else
                         ImGui::TextDisabled("%s", Slic3r::format(into_u8(_L_PLURAL("%1% island", "%1% islands", m_uv_editor_unwrap.chart_count)),
                                                                  m_uv_editor_unwrap.chart_count).c_str());
@@ -7748,34 +7748,34 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                 if (layer.projection_method == TextureProjectionMethod::ViewProjected) {
                     // Re-capture the projector from wherever the camera is now: orbit the model, press this, and
                     // the texture is re-laid from the new angle.
-                    if (m_imgui->button(TR("Capture current view"))) {
+                    if (m_imgui->button(_u8L("Capture current view"))) {
                         capture_view_projection(layer);
                         // Selecting the visible faces *after* capturing means the projector axes are already the
                         // ones the selection was made against - the two describe the same viewpoint.
                         if (m_project_only_visible && select_visible_faces() == 0)
-                            show_error(nullptr, TR("Nothing is visible from this angle - turn the model to face the "
+                            show_error(nullptr, _u8L("Nothing is visible from this angle - turn the model to face the "
                                                      "part you want to project onto."));
                         m_preview_params_dirty = true;
                         update_projector();
                     }
-                    hover_tip(TR("Projects the texture onto the painted area from where you are looking now, like "
+                    hover_tip(_u8L("Projects the texture onto the painted area from where you are looking now, like "
                                     "a slide projector. Faces turned away from you stretch, so line the view up with "
                                     "the surface you care about first."));
 
                     if (m_imgui->bbl_checkbox(_L("Project only on visible"), m_project_only_visible)) {
                         if (m_project_only_visible && select_visible_faces() == 0)
-                            show_error(nullptr, TR("Nothing is visible from this angle - turn the model to face the "
+                            show_error(nullptr, _u8L("Nothing is visible from this angle - turn the model to face the "
                                                      "part you want to project onto."));
                         m_preview_params_dirty = true;
                         update_projector();
                     }
-                    hover_tip(TR("Paints only the faces you can actually see right now - facing you and not hidden "
+                    hover_tip(_u8L("Paints only the faces you can actually see right now - facing you and not hidden "
                                     "behind anything - and projects onto those. Replaces what the layer had painted."));
 
                     bool projector_open = m_projector_frame != nullptr && m_projector_frame->IsShown();
                     if (m_imgui->bbl_checkbox(_L("Projection frame"), projector_open))
                         show_projector(projector_open);
-                    hover_tip(TR("Opens a window you drag over the model. Whatever you can see through it is what "
+                    hover_tip(_u8L("Opens a window you drag over the model. Whatever you can see through it is what "
                                     "gets the texture, and its border becomes the edge of the projection."));
 
                     if (projector_open) {
@@ -7784,24 +7784,24 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                                        "model through it; it does not affect the result.")))
                             m_projector_frame->set_opacity(m_projector_opacity);
 
-                        if (m_imgui->button(TR("Apply projection frame"))) {
+                        if (m_imgui->button(_u8L("Apply projection frame"))) {
                             const int painted_count = apply_projection_frame();
                             if (painted_count == 0)
-                                show_error(nullptr, TR("Nothing of the model is inside the frame - move it over the "
+                                show_error(nullptr, _u8L("Nothing of the model is inside the frame - move it over the "
                                                          "part you want to project onto."));
                             else if (painted_count < 0)
-                                show_error(nullptr, TR("The frame could not be applied. Make sure it overlaps the 3D view."));
+                                show_error(nullptr, _u8L("The frame could not be applied. Make sure it overlaps the 3D view."));
                         }
-                        hover_tip(TR("Projects the texture through the frame from where you are looking now and "
+                        hover_tip(_u8L("Projects the texture through the frame from where you are looking now and "
                                         "paints the faces inside it. Replaces what the layer had painted; the result "
                                         "sticks to the model, so you can orbit afterwards."));
                     }
 
                     if (layer.view_project_projective) {
                         ImGui::AlignTextToFramePadding();
-                        ImGui::TextDisabled("%s", TR("Placed by projection frame.").c_str());
+                        ImGui::TextDisabled("%s", _u8L("Placed by projection frame.").c_str());
                         ImGui::SameLine();
-                        if (m_imgui->button(TR("Clear"))) {
+                        if (m_imgui->button(_u8L("Clear"))) {
                             // Back to the plain axis projection, where tiling/rotation/offset mean something again -
                             // the matrix path deliberately ignores them.
                             layer.view_project_projective = false;
@@ -7815,7 +7815,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                 {
                     const float x0 = ImGui::GetCursorPosX();
                     m_preview_params_dirty |= m_imgui->bbl_checkbox(_L("Tile") + "##tile_enabled", layer.tile_enabled);
-                    hover_tip(TR("Repeats the texture across the painted area. Off places one copy, like a decal, "
+                    hover_tip(_u8L("Repeats the texture across the painted area. Off places one copy, like a decal, "
                                     "at the size set by Tile size."),
                               { { "tile_off.png", _L("Off") }, { "tile_on.png", _L("On") } });
                     ImGui::SameLine();
@@ -7839,14 +7839,14 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                 {
                     const float x0 = ImGui::GetCursorPosX();
                     ImGui::AlignTextToFramePadding();
-                    ImGui::TextDisabled("%s", TR("Blend").c_str());
+                    ImGui::TextDisabled("%s", _u8L("Blend").c_str());
                     ImGui::SameLine();
                     ImGui::SetCursorPosX(std::max(ImGui::GetCursorPosX(), x0 + label_w));
                     const std::string blend_add      = TR_CONTEXT("Add", "Texture Displacement");
                     const std::string blend_override  = TR_CONTEXT("Override", "Texture Displacement");
                     const std::string blend_subtract = TR_CONTEXT("Subtract", "Texture Displacement");
                     const std::string blend_multiply = TR_CONTEXT("Multiply", "Texture Displacement");
-                    const std::string blend_divide   = TR("Divide");
+                    const std::string blend_divide   = _u8L("Divide");
                     const char *blend_items[] = { blend_add.c_str(), blend_override.c_str(), blend_subtract.c_str(),
                                                   blend_multiply.c_str(), blend_divide.c_str() };
                     // The combo's order is the panel's, not the enum's - Override reads as the sibling of Add and
@@ -7875,8 +7875,8 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                     m_imgui->disabled_end();
                     if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
                         panel_tooltip(base_layer ?
-                                          TR("The base layer has nothing beneath it to combine with, so it always adds.") :
-                                          TR("What this layer does where it overlaps the ones below. Add and "
+                                          _u8L("The base layer has nothing beneath it to combine with, so it always adds.") :
+                                          _u8L("What this layer does where it overlaps the ones below. Add and "
                                                "Subtract pile relief on or carve it away. Override replaces them, "
                                                "so only this layer's relief is left where it is painted. Multiply "
                                                "and Divide scale what is underneath, which turns this layer into a "
@@ -7894,7 +7894,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                             if (update_adjust_anchor())
                                 m_adjust_texture_mode = true;
                             else
-                                show_error(nullptr, TR("Paint something with this layer first."));
+                                show_error(nullptr, _u8L("Paint something with this layer first."));
                         } else {
                             m_adjust_texture_mode = false;
                             m_adjust_drag_handle  = AdjustHandle::None;
@@ -7906,7 +7906,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
             // "More settings" / "Fewer settings", drawn as a link.
             {
                 const bool        expanded = m_layer_expanded[size_t(layer.slot)];
-                const std::string text     = expanded ? TR("Fewer settings") : TR("More settings");
+                const std::string text     = expanded ? _u8L("Fewer settings") : _u8L("More settings");
                 const float       arrow    = std::round(ImGui::GetFontSize() * 0.55f);
                 const ImVec2      ts       = ImGui::CalcTextSize(text.c_str());
                 const ImVec2      p        = ImGui::GetCursorScreenPos();
@@ -7977,12 +7977,12 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
             } else if (ImGui::Button("?##thumb", ImVec2(th, th))) {
                 open_picker(layer.slot);
             }
-            hover_tip(TR("Pick a different image for this layer. The paint, depth and tiling stay as they are."));
+            hover_tip(_u8L("Pick a different image for this layer. The paint, depth and tiling stay as they are."));
             ImGui::SameLine();
 
             char depth_text[32];
             std::snprintf(depth_text, sizeof(depth_text), "%.3f mm", layer.depth_mm);
-            const std::string summary    = painted ? std::string(depth_text) : TR("not painted");
+            const std::string summary    = painted ? std::string(depth_text) : _u8L("not painted");
             const float       sum_w      = ImGui::CalcTextSize(summary.c_str()).x;
             const float       right_edge = ImGui::GetWindowContentRegionMax().x - inner;
             const float       name_w     = std::max(0.f, right_edge - ImGui::GetCursorPosX() - 2.f * gap_s - sum_w - frame_h);
@@ -8036,7 +8036,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
 
             char depth_text[32];
             std::snprintf(depth_text, sizeof(depth_text), "%.3f mm", l.depth_mm);
-            const std::string summary = slot_painted(l.slot) ? std::string(depth_text) : TR("not painted");
+            const std::string summary = slot_painted(l.slot) ? std::string(depth_text) : _u8L("not painted");
             const float       sum_w   = ImGui::CalcTextSize(summary.c_str()).x;
             const float       text_y  = mn.y + 0.5f * (row_h - ImGui::GetFontSize());
             fg->AddText(ImVec2(mx.x - inner - sum_w, text_y), ImGui::GetColorU32(ImGuiCol_TextDisabled), summary.c_str());
@@ -8048,7 +8048,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
     if (mv != nullptr) {
         const bool        full  = mv->texture_displacement_layers.size() >= TEXTURE_DISPLACEMENT_MAX_LAYERS;
         const std::string label = full ? Slic3r::format(into_u8(_L_PLURAL("All %1% layer used", "All %1% layers used", unsigned(TEXTURE_DISPLACEMENT_MAX_LAYERS))), TEXTURE_DISPLACEMENT_MAX_LAYERS) :
-                                         "+  " + TR("Add layer");
+                                         "+  " + _u8L("Add layer");
         m_imgui->disabled_begin(busy || full);
         if (ImGui::Button((label + "##add_layer").c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 0.f)))
             add_texture_layer();
@@ -8065,7 +8065,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                 rebuild_subdivide_preview(); // switch the wireframe between the uniform and adaptive result
             m_parent.set_as_dirty();
         }
-        hover_tip(TR("Adds triangles only where you painted, instead of everywhere. On a large part with a small "
+        hover_tip(_u8L("Adds triangles only where you painted, instead of everywhere. On a large part with a small "
                         "decal that is the difference between thousands of triangles and millions, and your paint "
                         "survives the refinement."),
                   { { "painted_only_off.png", _L("Off") }, { "painted_only_on.png", _L("On") } });
@@ -8094,7 +8094,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
 
             if (m_imgui->bbl_checkbox(_L("Follow texture detail"), m_subdivide_feature))
                 preview_live();
-            hover_tip(TR("Spends the triangles where the texture actually bends - packed along ridges and edges, "
+            hover_tip(_u8L("Spends the triangles where the texture actually bends - packed along ridges and edges, "
                             "sparse over flat ground - instead of spreading them evenly. The same detail for fewer "
                             "triangles on most textures."),
                       { { "adaptive_off.png", _L("Off") }, { "adaptive_on.png", _L("On") } });
@@ -8143,7 +8143,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                     preview_live();
             }
 
-            ImGui::TextDisabled("%s", TR("Triangle budget: set with Triangles, below.").c_str());
+            ImGui::TextDisabled("%s", _u8L("Triangle budget: set with Triangles, below.").c_str());
             if (m_subdivide_editing && m_subdivide_preview_tris > 0)
                 m_imgui->text(Slic3r::format(into_u8(_L_PLURAL("Preview: %1% triangle", "Preview: %1% triangles", m_subdivide_preview_tris)), m_subdivide_preview_tris));
         } else {
@@ -8164,7 +8164,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
             const bool  subdivide_ready = m_subdivide_adaptive ? (m_subdivide_target_mm > 0.f) : (m_subdivide_count >= 1);
             const float half            = std::floor((ImGui::GetContentRegionAvail().x - style.ItemSpacing.x) * 0.5f);
             m_imgui->disabled_begin(busy);
-            if (ImGui::Button((m_subdivide_editing ? TR("Hide preview") : TR("Preview subdivision")).c_str(), ImVec2(half, 0.f))) {
+            if (ImGui::Button((m_subdivide_editing ? _u8L("Hide preview") : _u8L("Preview subdivision")).c_str(), ImVec2(half, 0.f))) {
                 if (m_subdivide_editing) {
                     m_subdivide_editing      = false;
                     m_subdivide_preview_tris = -1;
@@ -8176,10 +8176,10 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                 m_parent.set_as_dirty();
             }
             m_imgui->disabled_end();
-            hover_tip(TR("Shows what the refinement would produce as a wireframe, without touching the model."));
+            hover_tip(_u8L("Shows what the refinement would produce as a wireframe, without touching the model."));
             ImGui::SameLine();
             m_imgui->disabled_begin(!subdivide_ready || busy);
-            if (ImGui::Button(TR("Subdivide").c_str(), ImVec2(half, 0.f))) {
+            if (ImGui::Button(_u8L("Subdivide").c_str(), ImVec2(half, 0.f))) {
                 if (m_subdivide_adaptive) {
                     subdivide_model_adaptive(); // refines only the painted area, carrying the paint forward
                 } else {
@@ -8195,9 +8195,9 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
             }
             m_imgui->disabled_end();
             hover_tip(m_subdivide_adaptive ?
-                          TR("Refines the painted area to the target edge length and carries your paint onto "
+                          _u8L("Refines the painted area to the target edge length and carries your paint onto "
                                "the finer mesh. The rest of the model is left as it is.") :
-                          TR("Replaces the model's geometry with the subdivided mesh and clears any not-yet-baked "
+                          _u8L("Replaces the model's geometry with the subdivided mesh and clears any not-yet-baked "
                                "paint on it (already-baked relief is unaffected)."));
         }
 
@@ -8223,7 +8223,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                   { { "remesh_before.png", _L("Before") }, { "remesh_after.png", _L("After") } });
 
         m_imgui->bbl_checkbox(_L("Keep sharp edges") + "##remesh_sharp", m_remesh_keep_sharp_edges);
-        hover_tip(TR("Holds hard edges and open borders in place while the rest is remeshed. Without it "
+        hover_tip(_u8L("Holds hard edges and open borders in place while the rest is remeshed. Without it "
                        "the remesher slides vertices along the surface and rounds every crisp edge off - "
                        "a cube comes back with wobbly edges."),
                   { { "preserve_edges_off.png", _L("Off") }, { "preserve_edges_on.png", _L("On") } });
@@ -8235,10 +8235,10 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
         m_imgui->disabled_end();
 
         m_imgui->disabled_begin(mv == nullptr || busy);
-        if (ImGui::Button(TR("Remesh").c_str()))
+        if (ImGui::Button(_u8L("Remesh").c_str()))
             remesh_model();
         m_imgui->disabled_end();
-        hover_tip(TR("Rebuilds the whole model with triangles close to this edge length - splitting the big "
+        hover_tip(_u8L("Rebuilds the whole model with triangles close to this edge length - splitting the big "
                        "ones and merging the small ones - so displacement has an even density to work with. "
                        "Replaces the geometry; your paint is carried onto the new triangles spatially, so it "
                        "survives (already-baked relief is kept too)."),
@@ -8251,12 +8251,12 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
             heading(_L("Result"));
 
             m_preview_params_dirty |= m_imgui->bbl_checkbox(_L("Displace up to the border"), opts.displace_border);
-            hover_tip(TR("Lets the relief run right to the edge of the painted area. Turn it off to hold that "
+            hover_tip(_u8L("Lets the relief run right to the edge of the painted area. Turn it off to hold that "
                             "outer ring flat, which keeps the displacement strictly inside your paint but flattens "
                             "the pattern at the border."));
 
             m_preview_params_dirty |= m_imgui->bbl_checkbox(_L("Smooth result"), opts.smooth_enabled);
-            hover_tip(TR("Smooths the geometry after the texture has been applied, to take the hard steps out of a "
+            hover_tip(_u8L("Smooths the geometry after the texture has been applied, to take the hard steps out of a "
                             "low-resolution image. Only what the displacement moved is touched. The Smoothing slider "
                             "on a layer is a different thing: it blurs the image before it is used."),
                       { { "geometry_smoothing.gif" } });
@@ -8274,15 +8274,15 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                     m_preview_params_dirty = true;
 
                 m_preview_params_dirty |= m_imgui->bbl_checkbox(_L("Ignore outer ring"), opts.smooth_skip_border);
-                hover_tip(TR("Keeps the outer ring of the painted area out of the smoothing. Its neighbours "
+                hover_tip(_u8L("Keeps the outer ring of the painted area out of the smoothing. Its neighbours "
                                 "outside the paint never move, so smoothing it drags the relief down and leaves the "
                                 "pattern half-melted at the border."));
 
                 // The settings above ride along with Preview/Bake. This button is for geometry that has *already*
                 // been baked, where there is no displacement left to fold the smoothing into.
-                if (m_imgui->button(TR("Smooth baked mesh now")))
+                if (m_imgui->button(_u8L("Smooth baked mesh now")))
                     smooth_model();
-                hover_tip(TR("Applies the smoothing above to the model itself, right now, within the painted area. "
+                hover_tip(_u8L("Applies the smoothing above to the model itself, right now, within the painted area. "
                                 "For relief that is already baked in - anything not yet baked is smoothed by Bake."));
             }
         }
@@ -8302,7 +8302,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                 opts.pipeline_v2       = !classic;
                 m_preview_params_dirty = true;
             }
-            hover_tip(TR("Bake by moving the vertices the mesh already has, after preparing it (remesh, "
+            hover_tip(_u8L("Bake by moving the vertices the mesh already has, after preparing it (remesh, "
                            "adaptive subdivision, and a cut along sharp steps in the texture). Keeps the "
                            "topology, which is what colors need. The default pipeline instead refines, "
                            "cleans up sliver triangles, displaces and simplifies in one run; nothing needs "
@@ -8314,7 +8314,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
             int        shown_k     = auto_budget ? v2_recommendation(*mv).budget_k : opts.v2_max_triangles_k;
             m_imgui->disabled_begin(auto_budget);
             // TRN Slider value: %d is the triangle budget in thousands
-            if (int_row("##v2budget", _L("Budget"), &shown_k, 0, 4000, auto_budget ? TR("%d k (auto)").c_str() : "%d k", 0.f,
+            if (int_row("##v2budget", _L("Budget"), &shown_k, 0, 4000, auto_budget ? _u8L("%d k (auto)").c_str() : "%d k", 0.f,
                         _L("How many thousand triangles this bake may spend on the area you painted. "
                            "Relief already baked into the rest of the model is kept on top of it, so a "
                            "second bake somewhere else gets the same budget as the first. Raise it if the "
@@ -8330,13 +8330,13 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
             // Keeping the relief above the plate is not a checkbox: it is unconditional, in both pipelines
             // (see build_texture_displacement()).
             m_preview_params_dirty |= m_imgui->bbl_checkbox(_L("Align mesh to texture edges"), opts.v2_relocate);
-            hover_tip(TR("Slide vertices sideways onto the edges in the texture before displacing them. "
+            hover_tip(_u8L("Slide vertices sideways onto the edges in the texture before displacing them. "
                            "Displacement can only move vertices up and down, so without this a sharp step "
                            "in the image lands wherever the triangles happen to be and comes out as a "
                            "staircase. Moving the vertices onto the step first gives a straight wall at the "
                            "same triangle count."));
             m_preview_params_dirty |= m_imgui->bbl_checkbox(_L("Clean up slivers"), opts.v2_regularize);
-            hover_tip(TR("Collapse the thin triangles refinement inherits from the model's own "
+            hover_tip(_u8L("Collapse the thin triangles refinement inherits from the model's own "
                            "tessellation, before displacement samples them. A sliver's three corners "
                            "land on three unrelated parts of the texture, which is what makes the "
                            "relief look jagged."),
@@ -8432,18 +8432,18 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                 m_parent.set_as_dirty();
             }
             m_imgui->disabled_end();
-            hover_tip(TR("On: the resolution follows the size of the model and the budget is left at its "
+            hover_tip(_u8L("On: the resolution follows the size of the model and the budget is left at its "
                            "default. Untick to set both yourself - worth doing for a texture much finer or "
                            "much coarser than the part it sits on."));
             ImGui::SameLine();
             float shown = auto_res ? rec.edge_mm : opts.v2_refine_mm;
             // Held in a local: the format outlives the call that reads it, and the slider and the
             // range in its tooltip are then formatted the same way.
-            const std::string v2edge_format = auto_res ? TR("%.2f mm (auto)") : std::string("%.2f mm");
+            const std::string v2edge_format = auto_res ? _u8L("%.2f mm (auto)") : std::string("%.2f mm");
             const bool        v2edge_chosen = auto_res && rec.edge_mm > 0.f;
             const wxString    v2edge_tip =
                 v2edge_chosen ?
-                    from_u8(Slic3r::format(TR("Chosen from the size of the model: %1$.2f mm triangles, "
+                    from_u8(Slic3r::format(_u8L("Chosen from the size of the model: %1$.2f mm triangles, "
                                                 "budget %2% k. Untick Auto to set them yourself."),
                                            rec.edge_mm, rec.budget_k)) :
                     _L("How fine the mesh is made under the paint, in millimetres. It has to be "
@@ -8482,7 +8482,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                 // Wrapped to the panel, like the note under the buttons: unwrapped text runs past the
                 // panel's edge and takes the window's width with it.
                 ImGui::PushTextWrapPos(x0 + panel_w);
-                m_imgui->warning_text(Slic3r::format(TR("Needs about %1% triangles, budget %2% - the bake "
+                m_imgui->warning_text(Slic3r::format(_u8L("Needs about %1% triangles, budget %2% - the bake "
                                                           "will simplify back down and lose detail."),
                                                      count(needed), count(budget)));
                 ImGui::PopTextWrapPos();
@@ -8507,10 +8507,10 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
 
         const float button_h = std::round(frame_h * 1.25f);
         const float button_w = std::max({
-            ImGui::CalcTextSize(TR("Close").c_str()).x,
-            ImGui::CalcTextSize(TR("Stop").c_str()).x,
-            ImGui::CalcTextSize(TR("Preparing...").c_str()).x,
-            ImGui::CalcTextSize(TR("Baking...").c_str()).x,
+            ImGui::CalcTextSize(_u8L("Close").c_str()).x,
+            ImGui::CalcTextSize(_u8L("Stop").c_str()).x,
+            ImGui::CalcTextSize(_u8L("Preparing...").c_str()).x,
+            ImGui::CalcTextSize(_u8L("Baking...").c_str()).x,
         }) + m_imgui->scaled(0.5f);
         const float row_y  = ImGui::GetCursorPosY();
         const float icon_h = 21.f * scale;
@@ -8535,8 +8535,8 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
         ImGui::SameLine(x0 + panel_w - button_w * 2 - style.ItemSpacing.x);
 
         const bool        can_bake   = !busy && mv != nullptr && mv->is_texture_displacement_painted();
-        const std::string bake_label = m_prepare_in_progress ? TR("Preparing...") :
-                                       m_bake_in_progress    ? TR("Baking...") :
+        const std::string bake_label = m_prepare_in_progress ? _u8L("Preparing...") :
+                                       m_bake_in_progress    ? _u8L("Baking...") :
                                                                into_u8(m_desc.at("bake"));
         GLGizmoUtils::push_orca_button_style();
         m_imgui->push_bold_font();
@@ -8555,31 +8555,31 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
         GLGizmoUtils::pop_orca_button_style();
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
             panel_tooltip(mv != nullptr && !mv->is_texture_displacement_painted() ?
-                              (m_seam_edit_mode ? TR("Nothing is painted yet. The UV editor's seam tool is on, so "
+                              (m_seam_edit_mode ? _u8L("Nothing is painted yet. The UV editor's seam tool is on, so "
                                                        "strokes on the model mark seams instead of painting - turn "
                                                        "it off in the pane to paint.") :
-                                                  TR("Nothing is painted yet.")) :
+                                                  _u8L("Nothing is painted yet.")) :
                           pro_mode() ?
-                              TR("Turn the painted height maps into real geometry, by moving the vertices that are "
+                              _u8L("Turn the painted height maps into real geometry, by moving the vertices that are "
                                    "already there. Use Subdivide first if the mesh is too coarse to show the detail.") :
-                              TR("Turn the painted height maps into real geometry. The mesh is remeshed to an even "
+                              _u8L("Turn the painted height maps into real geometry. The mesh is remeshed to an even "
                                    "density and refined where the texture bends first, so the detail has vertices to "
                                    "land on - all in one step."));
 
         ImGui::SameLine();
         if (busy) {
-            if (ImGui::Button((TR("Stop") + "##stop").c_str(), ImVec2(button_w, button_h)))
+            if (ImGui::Button((_u8L("Stop") + "##stop").c_str(), ImVec2(button_w, button_h)))
                 wxGetApp().plater()->get_ui_job_worker().cancel_all();
-            hover_tip(TR("Stops the bake. Whatever it had already finished stays on the model, and can be undone."));
+            hover_tip(_u8L("Stops the bake. Whatever it had already finished stays on the model, and can be undone."));
         } else {
-            if (ImGui::Button((TR("Close") + "##close").c_str(), ImVec2(button_w, button_h)))
+            if (ImGui::Button((_u8L("Close") + "##close").c_str(), ImVec2(button_w, button_h)))
                 m_parent.reset_all_gizmos();
-            hover_tip(TR("Closes the tool without baking. Your paint, layers and settings stay with the model."));
+            hover_tip(_u8L("Closes the tool without baking. Your paint, layers and settings stay with the model."));
         }
 
         // What Bake will produce, and which layers it will skip.
         if (mv != nullptr) {
-            const std::string base_count = base_k > 0 ? Slic3r::format(TR("%1% k"), base_k) :
+            const std::string base_count = base_k > 0 ? Slic3r::format(_u8L("%1% k"), base_k) :
                                                         std::to_string(mv->mesh().facets_count());
             const unsigned    base_n     = base_k > 0 ? unsigned(base_k) * 1000 : unsigned(mv->mesh().facets_count());
             const unsigned    result_n   = unsigned(base_k + m_subdivide_budget_k) * 1000;

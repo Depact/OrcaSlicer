@@ -512,7 +512,7 @@ const asio::ip::address_v4 BonjourRequest::MCAST_IP4{ 0xe00000fb };
 const asio::ip::address_v6 BonjourRequest::MCAST_IP6 = asio::ip::make_address_v6("ff02::fb");
 const uint16_t BonjourRequest::MCAST_PORT = 5353;
 
-optional<BonjourRequest> BonjourRequest::make_PTR(const std::string &service, const std::string &protocol)
+optional<BonjourRequest> BonjourRequest::make_P_u8L(const std::string &service, const std::string &protocol)
 {
 	if (service.size() > 15 || protocol.size() > 15) {
 		return boost::none;

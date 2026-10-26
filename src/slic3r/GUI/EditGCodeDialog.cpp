@@ -56,7 +56,7 @@ namespace GUI {
 //------------------------------------------
 
 EditGCodeDialog::EditGCodeDialog(wxWindow* parent, const std::string& key, const std::string& value) :
-    DPIDialog(parent, wxID_ANY, format_wxstr(_L("Edit Custom G-code (%1%)"), key), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+    DPIDialog(parent, wxID_ANY, format_wxs_u8L(_L("Edit Custom G-code (%1%)"), key), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
     SetFont(wxGetApp().normal_font());
     SetBackgroundColour(*wxWHITE);
@@ -250,7 +250,7 @@ void EditGCodeDialog::init_params_list(const std::string& custom_gcode_name)
     // Add specific placeholders
 
     if (!specific_params.empty()) {
-        wxDataViewItem group = m_params_list->AppendGroup(format_wxstr(_L("Specific for %1%"), custom_gcode_name), "custom-gcode_gcode");
+        wxDataViewItem group = m_params_list->AppendGroup(format_wxs_u8L(_L("Specific for %1%"), custom_gcode_name), "custom-gcode_gcode");
         for (const auto& opt_key : specific_params)
             if (auto def = custom_gcode_specific_config_def.get(opt_key); def && def->type != coNone) {
                 m_params_list->AppendParam(group, get_type(opt_key, *def), opt_key);
@@ -313,13 +313,13 @@ wxDataViewItem EditGCodeDialog::add_presets_placeholders()
                     opt_keys.emplace(opt.first);
 
             for (const auto& opt_key : opt_keys)
-                if (const ConfigOption* optptr = full_config.optptr(opt_key)) {
+                if (const ConfigOption* optptr = full_config.optp_u8L(opt_key)) {
                     extra_keys.erase(opt_key);
                     m_params_list->AppendParam(subgroup, optptr->is_scalar() ? ParamType::Scalar : ParamType::Vector, opt_key);
                 }
         }
         for (auto opt_key : extra_keys)
-            if (const ConfigOption* optptr = full_config.optptr(opt_key))
+            if (const ConfigOption* optptr = full_config.optp_u8L(opt_key))
                 m_params_list->AppendParam(parent, optptr->is_scalar() ? ParamType::Scalar : ParamType::Vector, opt_key);
     };
 
@@ -407,10 +407,10 @@ void EditGCodeDialog::selection_changed(wxDataViewEvent& evt)
                 if (!def->is_scalar())
                     type_str += "[]";
 
-                label = (!def || (def->full_label.empty() && def->label.empty()) ) ? format_wxstr("%1%\n(%2%)", opt_key, type_str) :
+                label = (!def || (def->full_label.empty() && def->label.empty()) ) ? format_wxs_u8L("%1%\n(%2%)", opt_key, type_str) :
                         (!def->full_label.empty() && !def->label.empty() ) ?
-                                                                                    format_wxstr("%1% > %2%\n(%3%)", _(def->full_label), _(def->label), type_str) :
-                                                                                    format_wxstr("%1%\n(%2%)", def->label.empty() ? _(def->full_label) : _(def->label), type_str);
+                                                                                    format_wxs_u8L("%1% > %2%\n(%3%)", _(def->full_label), _(def->label), type_str) :
+                                                                                    format_wxs_u8L("%1%\n(%2%)", def->label.empty() ? _(def->full_label) : _(def->label), type_str);
 
                 if (def)
                     description = get_wraped_wxString(_(def->tooltip), 120);
@@ -463,14 +463,14 @@ const std::map<ParamType, std::string> ParamsInfo {
 static void make_bold(wxString& str)
 {
 #if defined(SUPPORTS_MARKUP) && !defined(__APPLE__)
-    str = format_wxstr("<b>%1%</b>", str);
+    str = format_wxs_u8L("<b>%1%</b>", str);
 #endif
 }
 
 static void highlight(wxString& str)
 {
 #if defined(SUPPORTS_MARKUP) && !defined(__APPLE__)
-    str = format_wxstr("<span bgcolor=\"#009688\">%1%</span>", str);
+    str = format_wxs_u8L("<span bgcolor=\"#009688\">%1%</span>", str);
 #endif
 }
 

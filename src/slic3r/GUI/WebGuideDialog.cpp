@@ -92,65 +92,65 @@ namespace Slic3r { namespace GUI {
 static json guide_strings()
 {
     return {
-        {"loading", TR("Loading…")},
+        {"loading", _u8L("Loading…")},
         // TRN Sidebar entry of the printer selection page for the group of custom (user-defined) printers.
         {"custom_vendor", TR_CONTEXT("Custom", "Printer vendor")},
-        {"welcome", TR("Welcome to Orca Slicer")},
-        {"setup_intro", TR("Orca Slicer will be set up in several steps. Let's start!")},
-        {"get_started", TR("Get Started")},
-        {"login_region", TR("Please select your login region")},
-        {"asia_pacific", TR("Asia-Pacific")},
-        {"china", TR("China")},
-        {"europe", TR("Europe")},
-        {"north_america", TR("North America")},
+        {"welcome", _u8L("Welcome to Orca Slicer")},
+        {"setup_intro", _u8L("Orca Slicer will be set up in several steps. Let's start!")},
+        {"get_started", _u8L("Get Started")},
+        {"login_region", _u8L("Please select your login region")},
+        {"asia_pacific", _u8L("Asia-Pacific")},
+        {"china", _u8L("China")},
+        {"europe", _u8L("Europe")},
+        {"north_america", _u8L("North America")},
         {"others", TR_CONTEXT("Others", "Region")},
         {"back", TR_CONTEXT("Back", "Navigation")},
-        {"next", TR("Next")},
-        {"finish", TR("Finish")},
-        {"confirm", TR("Confirm")},
-        {"cancel", TR("Cancel")},
-        {"ok", TR("OK")},
-        {"yes", TR("Yes")},
-        {"no", TR("No")},
-        {"error", TR("Error")},
-        {"information", TR("Information")},
-        {"printer_selection", TR("Printer Selection")},
-        {"vendors", TR("Vendors")},
-        {"search", TR("Search")},
-        {"custom_printer", TR("Custom Printer")},
-        {"nozzle", TR("Nozzle")},
-        {"create", TR("Create")},
-        {"check_new_printers", TR("Check for new printers")},
-        {"printer_required", TR("At least one printer must be selected.")},
-        {"new_printers_found", TR("New printers found")},
-        {"new_vendors_installed", TR("New printer vendors installed: %s")},
-        {"vendors_declined", TR("New printer vendors were found, but installation was cancelled.")},
-        {"no_new_printers", TR("No new printers found.")},
-        {"filament_selection", TR("Filament Selection")},
-        {"system_filaments", TR("System Filaments")},
-        {"custom_filaments", TR("Custom Filaments")},
-        {"create_new", TR("Create New")},
-        {"printer", TR("Printer")},
-        {"filament_type", TR("Filament type")},
-        {"vendor", TR("Vendor")},
-        {"all", TR("All")},
-        {"no_items", TR("No items")},
-        {"filter_items", TR("Filter items")},
-        {"checked", TR("Checked")},
-        {"unchecked", TR("Unchecked")},
-        {"select_filtered", TR("Select filtered")},
-        {"select_visible", TR("Select visible")},
-        {"clear_all", TR("Clear all")},
-        {"filament_required", TR("At least one filament must be selected.")},
-        {"use_default_filament", TR("Do you want to use the default filament?")},
-        {"stealth_mode", TR("Stealth Mode")},
-        {"stealth_mode_desc", TR("This disables all cloud features, including Orca Cloud profile syncing. Users who prefer to work entirely offline can enable this option.")},
-        {"stealth_mode_note", TR("Note: When Stealth Mode is enabled, your user profiles will not be backed up to Orca Cloud.")},
-        {"enable_stealth_mode", TR("Enable Stealth Mode.")},
-        {"proprietary_plugins", TR("Proprietary Plugins")},
-        {"proprietary_plugins_desc", TR("Some printer vendors require proprietary plugins for communication with their printers. Please select the corresponding plugin if you use such printers.")},
-        {"proprietary_plugins_risk", TR("Please be aware that these plugins are not developed or maintained by OrcaSlicer. They should be used at your own discretion and risk.")},
-        {"install_bambu_plugin", TR("Install Bambu Network plug-in")},
+        {"next", _u8L("Next")},
+        {"finish", _u8L("Finish")},
+        {"confirm", _u8L("Confirm")},
+        {"cancel", _u8L("Cancel")},
+        {"ok", _u8L("OK")},
+        {"yes", _u8L("Yes")},
+        {"no", _u8L("No")},
+        {"error", _u8L("Error")},
+        {"information", _u8L("Information")},
+        {"printer_selection", _u8L("Printer Selection")},
+        {"vendors", _u8L("Vendors")},
+        {"search", _u8L("Search")},
+        {"custom_printer", _u8L("Custom Printer")},
+        {"nozzle", _u8L("Nozzle")},
+        {"create", _u8L("Create")},
+        {"check_new_printers", _u8L("Check for new printers")},
+        {"printer_required", _u8L("At least one printer must be selected.")},
+        {"new_printers_found", _u8L("New printers found")},
+        {"new_vendors_installed", _u8L("New printer vendors installed: %s")},
+        {"vendors_declined", _u8L("New printer vendors were found, but installation was cancelled.")},
+        {"no_new_printers", _u8L("No new printers found.")},
+        {"filament_selection", _u8L("Filament Selection")},
+        {"system_filaments", _u8L("System Filaments")},
+        {"custom_filaments", _u8L("Custom Filaments")},
+        {"create_new", _u8L("Create New")},
+        {"printer", _u8L("Printer")},
+        {"filament_type", _u8L("Filament type")},
+        {"vendor", _u8L("Vendor")},
+        {"all", _u8L("All")},
+        {"no_items", _u8L("No items")},
+        {"filter_items", _u8L("Filter items")},
+        {"checked", _u8L("Checked")},
+        {"unchecked", _u8L("Unchecked")},
+        {"select_filtered", _u8L("Select filtered")},
+        {"select_visible", _u8L("Select visible")},
+        {"clear_all", _u8L("Clear all")},
+        {"filament_required", _u8L("At least one filament must be selected.")},
+        {"use_default_filament", _u8L("Do you want to use the default filament?")},
+        {"stealth_mode", _u8L("Stealth Mode")},
+        {"stealth_mode_desc", _u8L("This disables all cloud features, including Orca Cloud profile syncing. Users who prefer to work entirely offline can enable this option.")},
+        {"stealth_mode_note", _u8L("Note: When Stealth Mode is enabled, your user profiles will not be backed up to Orca Cloud.")},
+        {"enable_stealth_mode", _u8L("Enable Stealth Mode.")},
+        {"proprietary_plugins", _u8L("Proprietary Plugins")},
+        {"proprietary_plugins_desc", _u8L("Some printer vendors require proprietary plugins for communication with their printers. Please select the corresponding plugin if you use such printers.")},
+        {"proprietary_plugins_risk", _u8L("Please be aware that these plugins are not developed or maintained by OrcaSlicer. They should be used at your own discretion and risk.")},
+        {"install_bambu_plugin", _u8L("Install Bambu Network plug-in")},
     };
 }
 
@@ -328,7 +328,7 @@ wxString GuideFrame::SetStartPage(GuidePage startpage, bool load)
     //wxLogMessage("GUIDE: webpage_1  %s", (boost::filesystem::path(resources_dir()) / "web\\guide\\1\\index.html").make_preferred().string().c_str() );
     const wxString guide_url = file_url_from_path(boost::filesystem::path(resources_dir()) / "web/guide/0/index.html");
     wxString TargetUrl = guide_url + "?target=1";
-    //wxLogMessage("GUIDE: webpage_2  %s", TargetUrl.mb_str());
+    //wxLogMessage("GUIDE: webpage_2  %s", TargetUrl.mb_s_u8L());
 
     if (startpage == BBL_WELCOME){
         SetTitle(_L("Setup Wizard"));
@@ -697,7 +697,7 @@ void GuideFrame::OnScriptMessage(wxWebViewEvent &evt)
                 response["sequence_id"] = "";
 
             if (!m_MainPtr->preset_updater) {
-                response["error"] = TR("Printer update service is unavailable.");
+                response["error"] = _u8L("Printer update service is unavailable.");
                 wxString strJS = wxString::Format("HandleStudio(%s)", response.dump(-1, ' ', true));
                 wxGetApp().CallAfter([this, strJS] { RunScript(strJS); });
             } else {
@@ -751,7 +751,7 @@ void GuideFrame::OnScriptMessage(wxWebViewEvent &evt)
                         });
                 } catch (const std::exception &e) {
                     BOOST_LOG_TRIVIAL(warning) << "Failed to check for new printers: " << e.what();
-                    response["error"] = TR("Failed to check for new printers.");
+                    response["error"] = _u8L("Failed to check for new printers.");
                     wxString strJS = wxString::Format("HandleStudio(%s)", response.dump(-1, ' ', true));
                     wxGetApp().CallAfter([this, strJS] { RunScript(strJS); });
                 }
@@ -897,7 +897,7 @@ void GuideFrame::OnScriptResponseMessage(wxCommandEvent &WXUNUSED(evt))
 bool GuideFrame::IsFirstUse()
 {
     wxString    strUse;
-    std::string strVal = wxGetApp().app_config->get(std::string(m_SectionName.mb_str()), "finish");
+    std::string strVal = wxGetApp().app_config->get(std::string(m_SectionName.mb_s_u8L()), "finish");
     if (strVal == "1")
         return false;
 
@@ -912,15 +912,15 @@ int GuideFrame::SaveProfile()
     // SoftFever: don't collect info
     //privacy
     // if (PrivacyUse == true) {
-    //     m_MainPtr->app_config->set(std::string(m_SectionName.mb_str()), "privacyuse", "1");
+    //     m_MainPtr->app_config->set(std::string(m_SectionName.mb_s_u8L()), "privacyuse", "1");
     // } else
-    //     m_MainPtr->app_config->set(std::string(m_SectionName.mb_str()), "privacyuse", "0");
+    //     m_MainPtr->app_config->set(std::string(m_SectionName.mb_s_u8L()), "privacyuse", "0");
 
     m_MainPtr->app_config->set("region", m_Region);
     m_MainPtr->app_config->set_bool("stealth_mode", StealthMode);
 
     //finish
-    m_MainPtr->app_config->set(std::string(m_SectionName.mb_str()), "finish", true);
+    m_MainPtr->app_config->set(std::string(m_SectionName.mb_s_u8L()), "finish", true);
 
     m_MainPtr->app_config->save();
 
@@ -1826,7 +1826,7 @@ int GuideFrame::LoadProfileFamily(std::string strVendor, std::string strFilePath
             OneModel["nozzle_diameter"] = NozzleOpt;
             OneModel["materials"]       = pm["default_materials"];
 
-            // wxString strCoverPath = wxString::Format("%s\\%s\\%s_cover.png", strFolder, strVendor, std::string(s1.mb_str()));
+            // wxString strCoverPath = wxString::Format("%s\\%s\\%s_cover.png", strFolder, strVendor, std::string(s1.mb_s_u8L()));
             std::string cover_file = s1 + "_cover.png";
             boost::filesystem::path cover_path = boost::filesystem::absolute(vendor_dir / cover_file).make_preferred();
             BOOST_LOG_TRIVIAL(info) << "[WebGuideDialog] " << cover_path;
@@ -2000,7 +2000,7 @@ void GuideFrame::StrReplace(std::string &strBase, std::string strSrc, std::strin
 
 std::string GuideFrame::w2s(wxString sSrc)
 {
-    return std::string(sSrc.mb_str());
+    return std::string(sSrc.mb_s_u8L());
 }
 
 void GuideFrame::GetStardardFilePath(std::string &FilePath) {

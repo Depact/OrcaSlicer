@@ -323,7 +323,7 @@ std::string AdaptivePAProcessor::validate_adaptive_pa_model(const std::string& m
         // Only numbers, commas and dots are allowed (no letters or other characters)
         for (char c : line) {
             if (!std::isdigit(static_cast<unsigned char>(c)) && c != ',' && c != '.') {
-                return Slic3r::format(TR("Line %1%: only numbers, commas and dots are allowed"), line_number);
+                return Slic3r::format(_u8L("Line %1%: only numbers, commas and dots are allowed"), line_number);
             }
         }
 
@@ -334,7 +334,7 @@ std::string AdaptivePAProcessor::validate_adaptive_pa_model(const std::string& m
         }
         
         if (comma_count != 2) {
-            return Slic3r::format(TR("Line %1%: must contain exactly 3 comma-separated values (PA, flow, acceleration)"), line_number);
+            return Slic3r::format(_u8L("Line %1%: must contain exactly 3 comma-separated values (PA, flow, acceleration)"), line_number);
         }
         
         // Parse and validate the values
@@ -344,31 +344,31 @@ std::string AdaptivePAProcessor::validate_adaptive_pa_model(const std::string& m
             
             // Parse PA
             if (!std::getline(line_stream, value, ','))
-                return Slic3r::format(TR("Line %1%: missing PA value"), line_number);
+                return Slic3r::format(_u8L("Line %1%: missing PA value"), line_number);
             double pa = std::stod(value);
             
             // Parse flow
             if (!std::getline(line_stream, value, ','))
-                return Slic3r::format(TR("Line %1%: missing flow value"), line_number);
+                return Slic3r::format(_u8L("Line %1%: missing flow value"), line_number);
             double flow = std::stod(value);
             
             // Parse acceleration
             if (!std::getline(line_stream, value, ','))
-                return Slic3r::format(TR("Line %1%: missing acceleration value"), line_number);
+                return Slic3r::format(_u8L("Line %1%: missing acceleration value"), line_number);
             double accel = std::stod(value);
             
             // Validate constraints
             if (pa >= 2.0) {
-                return Slic3r::format(TR("Line %1%: PA value must be less than 2"), line_number);
+                return Slic3r::format(_u8L("Line %1%: PA value must be less than 2"), line_number);
             }
             if (flow <= pa) {
-                return Slic3r::format(TR("Line %1%: flow value must be greater than PA value"), line_number);
+                return Slic3r::format(_u8L("Line %1%: flow value must be greater than PA value"), line_number);
             }
             if (accel <= flow) {
-                return Slic3r::format(TR("Line %1%: acceleration value must be greater than flow value"), line_number);
+                return Slic3r::format(_u8L("Line %1%: acceleration value must be greater than flow value"), line_number);
             }
         } catch (const std::exception&) {
-            return Slic3r::format(TR("Line %1%: invalid numeric value"), line_number);
+            return Slic3r::format(_u8L("Line %1%: invalid numeric value"), line_number);
         }
     }
     

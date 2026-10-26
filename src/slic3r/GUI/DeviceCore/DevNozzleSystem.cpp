@@ -63,7 +63,7 @@ NozzleVolumeType DevNozzle::ToNozzleVolumeType(const NozzleFlowType& type)
     }
 }
 
-wxString DevNozzle::GetNozzleFlowTypeStr(NozzleFlowType type)
+wxString DevNozzle::GetNozzleFlowTypeS_u8L(NozzleFlowType type)
 {
     switch (type) {
     case NozzleFlowType::H_FLOW: return _L("High Flow");
@@ -102,7 +102,7 @@ std::string DevNozzle::ToNozzleFlowString(const NozzleFlowType& type)
     }
 }
 
-wxString DevNozzle::GetNozzleTypeStr(NozzleType type)
+wxString DevNozzle::GetNozzleTypeS_u8L(NozzleType type)
 {
     switch (type) {
     case Slic3r::ntHardenedSteel:   return _L("Hardened Steel");
@@ -308,7 +308,7 @@ std::vector<MultiNozzleUtils::NozzleGroupInfo> DevNozzleSystem::GetNozzleGroups(
         auto& nozzle = elem.second;
         MultiNozzleUtils::NozzleGroupInfo info;
         info.extruder_id = nozzle.GetLogicExtruderId();
-        info.diameter = format_diameter_to_str(nozzle.m_diameter);
+        info.diameter = format_diameter_to_s_u8L(nozzle.m_diameter);
         info.volume_type = DevNozzle::ToNozzleVolumeType(nozzle.m_nozzle_flow);
         info.nozzle_count = 1;
         nozzle_groups.emplace_back(std::move(info));
@@ -324,7 +324,7 @@ std::vector<MultiNozzleUtils::NozzleGroupInfo> DevNozzleSystem::GetNozzleGroups(
         if (nozzle.IsUnknown() || nozzle.IsAbnormal())
             continue;
         int extruder_id = nozzle.GetLogicExtruderId();
-        std::string diameter = format_diameter_to_str(nozzle.m_diameter);
+        std::string diameter = format_diameter_to_s_u8L(nozzle.m_diameter);
         NozzleVolumeType volume_type = DevNozzle::ToNozzleVolumeType(nozzle.m_nozzle_flow);
 
         bool found = false;

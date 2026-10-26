@@ -447,8 +447,8 @@ void OtherInstanceMessageHandler::init_windows_properties(MainFrame* main_frame,
 	size_t       minor_hash = instance_hash & 0xFFFFFFFF;
 	size_t       major_hash = (instance_hash & 0xFFFFFFFF00000000) >> 32;
 	HWND         hwnd = main_frame->GetHandle();
-	HANDLE       handle_minor = UIntToPtr(minor_hash);
-	HANDLE       handle_major = UIntToPtr(major_hash);
+	HANDLE       handle_minor = UIntToP_u8L(minor_hash);
+	HANDLE       handle_major = UIntToP_u8L(major_hash);
 	SetProp(hwnd, L"Instance_Hash_Minor", handle_minor);
 	SetProp(hwnd, L"Instance_Hash_Major", handle_major);
 	//BOOST_LOG_TRIVIAL(debug) << "window properties initialized " << instance_hash << " (" << minor_hash << " & "<< major_hash;

@@ -232,79 +232,79 @@ MZ_Archive::MZ_Archive()
     mz_zip_zero_struct(&arch);
 }
 
-std::string MZ_Archive::get_errorstr(mz_zip_error mz_err)
+std::string MZ_Archive::get_errors_u8L(mz_zip_error mz_err)
 {
     switch (mz_err)
     {
     case MZ_ZIP_NO_ERROR:
         return "no error";
     case MZ_ZIP_UNDEFINED_ERROR:
-        return TR("undefined error");
+        return _u8L("undefined error");
     case MZ_ZIP_TOO_MANY_FILES:
-        return TR("too many files");
+        return _u8L("too many files");
     case MZ_ZIP_FILE_TOO_LARGE:
-        return TR("File too large");
+        return _u8L("File too large");
     case MZ_ZIP_UNSUPPORTED_METHOD:
-        return TR("unsupported method");
+        return _u8L("unsupported method");
     case MZ_ZIP_UNSUPPORTED_ENCRYPTION:
-        return TR("unsupported encryption");
+        return _u8L("unsupported encryption");
     case MZ_ZIP_UNSUPPORTED_FEATURE:
-        return TR("unsupported feature");
+        return _u8L("unsupported feature");
     case MZ_ZIP_FAILED_FINDING_CENTRAL_DIR:
-        return TR("failed finding central directory");
+        return _u8L("failed finding central directory");
     case MZ_ZIP_NOT_AN_ARCHIVE:
-        return TR("not a ZIP archive");
+        return _u8L("not a ZIP archive");
     case MZ_ZIP_INVALID_HEADER_OR_CORRUPTED:
-        return TR("invalid header or corrupted");
+        return _u8L("invalid header or corrupted");
     case MZ_ZIP_UNSUPPORTED_MULTIDISK:
-        return TR("Saving to RAID is not supported.");
+        return _u8L("Saving to RAID is not supported.");
     case MZ_ZIP_DECOMPRESSION_FAILED:
-        return TR("decompression failed");
+        return _u8L("decompression failed");
     case MZ_ZIP_COMPRESSION_FAILED:
-        return TR("compression failed");
+        return _u8L("compression failed");
     case MZ_ZIP_UNEXPECTED_DECOMPRESSED_SIZE:
-        return TR("unexpected decompressed size");
+        return _u8L("unexpected decompressed size");
     case MZ_ZIP_CRC_CHECK_FAILED:
-        return TR("CRC check failed");
+        return _u8L("CRC check failed");
     case MZ_ZIP_UNSUPPORTED_CDIR_SIZE:
-        return TR("unsupported central directory size");
+        return _u8L("unsupported central directory size");
     case MZ_ZIP_ALLOC_FAILED:
-        return TR("allocation failed");
+        return _u8L("allocation failed");
     case MZ_ZIP_FILE_OPEN_FAILED:
-        return TR("file open failed");
+        return _u8L("file open failed");
     case MZ_ZIP_FILE_CREATE_FAILED:
-        return TR("file create failed");
+        return _u8L("file create failed");
     case MZ_ZIP_FILE_WRITE_FAILED:
-        return TR("file write failed");
+        return _u8L("file write failed");
     case MZ_ZIP_FILE_READ_FAILED:
-        return TR("file read failed");
+        return _u8L("file read failed");
     case MZ_ZIP_FILE_CLOSE_FAILED:
-        return TR("file close failed");
+        return _u8L("file close failed");
     case MZ_ZIP_FILE_SEEK_FAILED:
-        return TR("file seek failed");
+        return _u8L("file seek failed");
     case MZ_ZIP_FILE_STAT_FAILED:
-        return TR("file stat failed");
+        return _u8L("file stat failed");
     case MZ_ZIP_INVALID_PARAMETER:
-        return TR("invalid parameter");
+        return _u8L("invalid parameter");
     case MZ_ZIP_INVALID_FILENAME:
-        return TR("invalid filename");
+        return _u8L("invalid filename");
     case MZ_ZIP_BUF_TOO_SMALL:
-        return TR("Buffer too small");
+        return _u8L("Buffer too small");
     case MZ_ZIP_INTERNAL_ERROR:
-        return TR("internal error");
+        return _u8L("internal error");
     case MZ_ZIP_FILE_NOT_FOUND:
-        return TR("file not found");
+        return _u8L("file not found");
     case MZ_ZIP_ARCHIVE_TOO_LARGE:
-        return TR("Archive too large");
+        return _u8L("Archive too large");
     case MZ_ZIP_VALIDATION_FAILED:
-        return TR("validation failed");
+        return _u8L("validation failed");
     case MZ_ZIP_WRITE_CALLBACK_FAILED:
-        return TR("write callback failed");
+        return _u8L("write callback failed");
     default:
         break;
     }
 
-    return TR("unknown error");
+    return _u8L("unknown error");
 }
 
 } // namespace Slic3r

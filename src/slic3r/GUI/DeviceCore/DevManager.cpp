@@ -417,7 +417,7 @@ namespace Slic3r
                 obj->set_online_state(true);
                 obj->set_dev_name(dev_name);
                 /* if (!obj->dev_ip.empty()) {
-                Slic3r::GUI::wxGetApp().app_config->set_str("ip_address", obj->dev_id, obj->dev_ip);
+                Slic3r::GUI::wxGetApp().app_config->set_s_u8L("ip_address", obj->dev_id, obj->dev_ip);
                 Slic3r::GUI::wxGetApp().app_config->save();
                 }*/
             }
@@ -445,7 +445,7 @@ namespace Slic3r
                 localMachineList.insert(std::make_pair(dev_id, obj));
 
                 /* if (!obj->dev_ip.empty()) {
-                Slic3r::GUI::wxGetApp().app_config->set_str("ip_address", obj->dev_id, obj->dev_ip);
+                Slic3r::GUI::wxGetApp().app_config->set_s_u8L("ip_address", obj->dev_id, obj->dev_ip);
                 Slic3r::GUI::wxGetApp().app_config->save();
                 }*/
                 BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " New Machine, dev_id= " << dev_id

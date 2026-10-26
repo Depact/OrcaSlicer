@@ -67,14 +67,14 @@ void ExportPresetBundleDialog::Init()
 nlohmann::json ExportPresetBundleDialog::localized_strings() const
 {
     return {
-        {"printer", TR("Printer")},
-        {"filament", TR("Filament")},
-        {"process", TR("Process")},
-        {"all", TR("All")},
-        {"no_items", TR("No items")},
-        {"export_cloud", TR("Export to OrcaCloud")},
-        {"export_folder", TR("Export to folder")},
-        {"close", TR("Close")},
+        {"printer", _u8L("Printer")},
+        {"filament", _u8L("Filament")},
+        {"process", _u8L("Process")},
+        {"all", _u8L("All")},
+        {"no_items", _u8L("No items")},
+        {"export_cloud", _u8L("Export to OrcaCloud")},
+        {"export_folder", _u8L("Export to folder")},
+        {"close", _u8L("Close")},
     };
 }
 

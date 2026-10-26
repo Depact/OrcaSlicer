@@ -594,9 +594,9 @@ bool GLGizmoRotate3D::on_init()
 std::string GLGizmoRotate3D::on_get_name() const
 {
     if (!on_is_activable() && m_state == EState::Off) {
-        return TR("Rotate") + ":\n" + TR("Please select at least one object.");
+        return _u8L("Rotate") + ":\n" + _u8L("Please select at least one object.");
     } else {
-        return TR("Rotate");
+        return _u8L("Rotate");
     }
 }
 

@@ -59,7 +59,7 @@ private:
 	std::string get_status_url() const;
 	std::string get_connect_url() const;
 	std::string get_base_url() const;
-	std::string timestamp_str() const;
+	std::string timestamp_s_u8L() const;
 	ConnectionType connect(wxString &msg) const;
 	void set_auth(Http& http) const;
 	void disconnect(ConnectionType connectionType) const;

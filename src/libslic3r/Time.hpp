@@ -15,16 +15,16 @@ enum class TimeFormat { gcode, iso8601Z };
 
 // time_t to string functions...
 
-std::string time2str(const time_t &t, TimeZone zone, TimeFormat fmt);
+std::string time2s_u8L(const time_t &t, TimeZone zone, TimeFormat fmt);
 
-inline std::string time2str(TimeZone zone, TimeFormat fmt)
+inline std::string time2s_u8L(TimeZone zone, TimeFormat fmt)
 {
-    return time2str(get_current_time_utc(), zone, fmt);
+    return time2s_u8L(get_current_time_utc(), zone, fmt);
 }
 
 inline std::string utc_timestamp(time_t t)
 {
-    return time2str(t, TimeZone::utc, TimeFormat::gcode);
+    return time2s_u8L(t, TimeZone::utc, TimeFormat::gcode);
 }
 
 inline std::string utc_timestamp()
@@ -33,7 +33,7 @@ inline std::string utc_timestamp()
 }
 
 inline std::string local_timestamp(TimeFormat fmt = TimeFormat::gcode) {
-     return time2str(get_current_time_utc(), TimeZone::local, fmt);
+     return time2s_u8L(get_current_time_utc(), TimeZone::local, fmt);
 }
 
 // String to time_t function. Returns time_t(-1) if fails to parse the input.
@@ -50,7 +50,7 @@ time_t str2time(const std::string &str, TimeZone zone, TimeFormat fmt);
 
 inline std::string iso_utc_timestamp(time_t t)
 {
-    return time2str(t, TimeZone::utc, TimeFormat::iso8601Z);
+    return time2s_u8L(t, TimeZone::utc, TimeFormat::iso8601Z);
 }
 
 inline std::string iso_utc_timestamp()

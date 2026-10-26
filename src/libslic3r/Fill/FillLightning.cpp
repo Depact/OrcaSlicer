@@ -52,7 +52,7 @@ void GeneratorDeleter::operator()(Generator *p) {
 
 GeneratorPtr build_generator(const PrintObject &print_object, const std::function<void()> &throw_on_cancel_callback)
 {
-    return GeneratorPtr(new Generator(print_object, throw_on_cancel_callback));
+    return GeneratorP_u8L(new Generator(print_object, throw_on_cancel_callback));
 }
 
 } // namespace Slic3r::FillAdaptive

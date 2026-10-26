@@ -302,7 +302,7 @@ std::string KeyChord::modifier_prefix(int modifier)
     if (modifier == wxMOD_CONTROL)
         return shortkey_ctrl_prefix();
     if (modifier == wxMOD_SHIFT)
-        return TR("Shift+");
+        return _u8L("Shift+");
     if (modifier == wxMOD_ALT)
         return shortkey_alt_prefix();
 #ifdef __APPLE__

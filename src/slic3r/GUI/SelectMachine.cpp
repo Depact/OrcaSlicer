@@ -1136,7 +1136,7 @@ void SelectMachineDialog::sync_ams_mapping_result(std::vector<FilamentInfo> &res
             wxString ams_id = _L("Ext");//
             wxColour ams_col = wxColour(0xCE, 0xCE, 0xCE);
             it->second->item->set_ams_info(ams_col, ams_id);
-            it->second->item->set_nozzle_info(get_mapped_nozzle_str(it->first));
+            it->second->item->set_nozzle_info(get_mapped_nozzle_s_u8L(it->first));
         }
         relayout_nozzle_cards();
         return;
@@ -1175,7 +1175,7 @@ void SelectMachineDialog::sync_ams_mapping_result(std::vector<FilamentInfo> &res
                     cols.push_back(DevAmsTray::decode_color(col));
                 }
                 m->set_ams_info(ams_col, ams_id,f->ctype, cols);
-                m->set_nozzle_info(get_mapped_nozzle_str(id));
+                m->set_nozzle_info(get_mapped_nozzle_s_u8L(id));
                 break;
             }
             iter++;
@@ -1622,7 +1622,7 @@ std::map<int, DevNozzle> SelectMachineDialog::get_mapped_nozzles(int fila_id) co
     return nozzle_map;
 }
 
-wxString SelectMachineDialog::get_mapped_nozzle_str(int fila_id) const
+wxString SelectMachineDialog::get_mapped_nozzle_s_u8L(int fila_id) const
 {
     if (m_print_type != FROM_NORMAL)
         return wxEmptyString; // no slicing data when printing from sdcard
@@ -1819,13 +1819,13 @@ bool SelectMachineDialog::CheckErrorSyncNozzleMappingResultV1(MachineObject* obj
         return false;
     }
 
-    if (obj_nozzle_mapping_ptr->GetResultStr() == "failed") {
+    if (obj_nozzle_mapping_ptr->GetResultS_u8L() == "failed") {
         const auto& err_msg = wxString::Format(_L("Failed to receive nozzle auto-mapping table from printer { msg: %s }. Please refresh the printer information."), obj_nozzle_mapping_ptr->GetMqttReason());
         show_status(PrintDialogStatus::PrintStatusRackNozzleMappingError, {err_msg});
         return false;
     }
 
-    if (obj_nozzle_mapping_ptr->GetResultStr() == "fail") {
+    if (obj_nozzle_mapping_ptr->GetResultS_u8L() == "fail") {
         const wxString& err_msg = wxString::Format(_L("The printer failed to build the nozzle auto-mapping table { code: %d }. Please refresh nozzle information."), obj_nozzle_mapping_ptr->GetErrno());
         show_status(PrintDialogStatus::PrintStatusRackNozzleMappingError, {err_msg});
         return false;
@@ -1894,13 +1894,13 @@ bool SelectMachineDialog::CheckErrorSyncNozzleMappingResultV0(MachineObject* obj
         return false;
     }
 
-    if (obj_nozzle_mapping_ptr->GetResultStr() == "failed") {
+    if (obj_nozzle_mapping_ptr->GetResultS_u8L() == "failed") {
         const auto& err_msg = wxString::Format(_L("Failed to receive nozzle auto-mapping table from printer { msg: %s }. Please refresh the printer information."), obj_nozzle_mapping_ptr->GetMqttReason());
         show_status(PrintDialogStatus::PrintStatusRackNozzleMappingError, {err_msg});
         return false;
     }
 
-    if (obj_nozzle_mapping_ptr->GetResultStr() == "fail") {
+    if (obj_nozzle_mapping_ptr->GetResultS_u8L() == "fail") {
         const wxString& err_msg = wxString::Format(_L("The printer failed to build the nozzle auto-mapping table { code: %d }. Please refresh nozzle information."), obj_nozzle_mapping_ptr->GetErrno());
         show_status(PrintDialogStatus::PrintStatusRackNozzleMappingError, {err_msg});
         return false;
@@ -2418,7 +2418,7 @@ void SelectMachineDialog::show_status(PrintDialogStatus status, std::vector<wxSt
             //source print
             MachineObject* obj_ = dev->get_selected_machine();
             if (obj_ == nullptr) return;
-            auto sourcet_print_name = obj_->get_printer_type_display_str();
+            auto sourcet_print_name = obj_->get_printer_type_display_s_u8L();
             sourcet_print_name.Replace(wxT("Bambu Lab "), wxEmptyString);
 
             //target print
@@ -3689,9 +3689,9 @@ void SelectMachineDialog::on_send_print()
         catch (...) {}
         BOOST_LOG_TRIVIAL(info) << "print_job: m_print_plate_idx =" << m_print_job->m_print_from_sdc_plate_idx;
 
-        auto input_str_arr = wxGetApp().split_str(m_required_data_file_name, ".gcode.3mf");
+        auto input_str_arr = wxGetApp().split_s_u8L(m_required_data_file_name, ".gcode.3mf");
         if (input_str_arr.size() <= 1) {
-            input_str_arr = wxGetApp().split_str(m_required_data_file_name, ".3mf");
+            input_str_arr = wxGetApp().split_s_u8L(m_required_data_file_name, ".3mf");
             if (input_str_arr.size() > 1) {
                 m_print_job->set_project_name(input_str_arr[0]);
             }
@@ -3920,7 +3920,7 @@ void SelectMachineDialog::on_set_finish_mapping(wxCommandEvent &evt)
             if (item->id == m_current_filament_id) {
                 auto ams_colour = wxColour(wxAtoi(selection_data_arr[0]), wxAtoi(selection_data_arr[1]), wxAtoi(selection_data_arr[2]), wxAtoi(selection_data_arr[3]));
                 m->set_ams_info(ams_colour, selection_data_arr[4], ctype, material_cols);
-                m->set_nozzle_info(get_mapped_nozzle_str(item->id));
+                m->set_nozzle_info(get_mapped_nozzle_s_u8L(item->id));
             }
             iter++;
         }
@@ -4615,7 +4615,7 @@ bool SelectMachineDialog::CheckErrorExtruderNozzleWithSlicing(MachineObject* obj
             // a matching nozzle instead.
             if (slicing_ext_idx == MAIN_EXTRUDER_ID && nozzle_sys->GetNozzleRack()->IsSupported()) {
                 if (nozzle_sys->CollectNozzles(MAIN_EXTRUDER_ID, slicing_ext.nozzle_flow_type, slicing_ext.nozzle_diameter).empty()) {
-                    wxString slicing_nozzle_str = DevNozzle::GetNozzleFlowTypeStr(slicing_ext.nozzle_flow_type);
+                    wxString slicing_nozzle_str = DevNozzle::GetNozzleFlowTypeS_u8L(slicing_ext.nozzle_flow_type);
                     if (slicing_ext.nozzle_diameter > 0.0f)
                         slicing_nozzle_str += wxString::Format(" %.1fmm", slicing_ext.nozzle_diameter);
                     wxString msg = wxString::Format(_L("The printer has no nozzle matching the slicing file (%s)."), slicing_nozzle_str);
@@ -4662,8 +4662,8 @@ bool SelectMachineDialog::CheckErrorExtruderNozzleWithSlicing(MachineObject* obj
             {
                 if (obj_->is_nozzle_flow_type_supported() && slicing_ext.nozzle_flow_type != installed_ext_nozzle.GetNozzleFlowType()) {
                     const wxString& pos = _get_nozzle_name(ext_sys->GetTotalExtderCount(), slicing_ext_idx);
-                    const wxString& installed_nozzle_str = installed_ext_nozzle.GetNozzleFlowTypeStr();
-                    const wxString& slicing_nozzle_str = DevNozzle::GetNozzleFlowTypeStr(slicing_ext.nozzle_flow_type);
+                    const wxString& installed_nozzle_str = installed_ext_nozzle.GetNozzleFlowTypeS_u8L();
+                    const wxString& slicing_nozzle_str = DevNozzle::GetNozzleFlowTypeS_u8L(slicing_ext.nozzle_flow_type);
                     wxString error_message = wxString::Format(_L("The nozzle flow setting of %s(%s) doesn't match with the slicing file(%s). "
                         "Please make sure the nozzle installed matches with settings in printer, "
                         "then set the corresponding printer preset while slicing."),
@@ -4715,7 +4715,7 @@ bool SelectMachineDialog::CheckErrorExtruderNozzleWithSlicing(MachineObject* obj
     return true;
 }
 
-static wxString _get_ext_loc_str(const std::unordered_set<int>& extruders, int total_ext_num)
+static wxString _get_ext_loc_s_u8L(const std::unordered_set<int>& extruders, int total_ext_num)
 {
     assert(!extruders.empty());
     if (total_ext_num == 1)
@@ -5294,14 +5294,14 @@ void SelectMachineDialog::update_show_status(MachineObject* obj_)
 
         if (!known_fila_soften_extruders.empty()) {
             const wxString& msg = wxString::Format(_L("The filament on %s may soften. Please unload."),
-                _get_ext_loc_str(known_fila_soften_extruders, obj_->GetExtderSystem()->GetTotalExtderCount()));
+                _get_ext_loc_s_u8L(known_fila_soften_extruders, obj_->GetExtderSystem()->GetTotalExtderCount()));
             show_status(PrintDialogStatus::PrintStatusFilamentWarningHighChamberTempSoft, std::vector<wxString> {msg});
             if (PrePrintChecker::is_error(PrintDialogStatus::PrintStatusFilamentWarningHighChamberTempSoft)) { return; }
         }
 
         if (!unknown_fila_soften_extruders.empty()) {
             const wxString& msg = wxString::Format(_L("The filament on %s is unknown and may soften. Please set filament."),
-                _get_ext_loc_str(unknown_fila_soften_extruders, obj_->GetExtderSystem()->GetTotalExtderCount()));
+                _get_ext_loc_s_u8L(unknown_fila_soften_extruders, obj_->GetExtderSystem()->GetTotalExtderCount()));
             show_status(PrintDialogStatus::PrintStatusFilamentWarningUnknownHighChamberTempSoft, std::vector<wxString> {msg});
             if (PrePrintChecker::is_error(PrintDialogStatus::PrintStatusFilamentWarningUnknownHighChamberTempSoft)) { return; }
         }
@@ -5370,7 +5370,7 @@ void SelectMachineDialog::reset_ams_material()
         wxString ams_id = "-";
         wxColour ams_col = wxColour(0xEE, 0xEE, 0xEE);
         m->set_ams_info(ams_col, ams_id);
-        m->set_nozzle_info(get_mapped_nozzle_str(id));
+        m->set_nozzle_info(get_mapped_nozzle_s_u8L(id));
         iter++;
     }
 }
@@ -6348,8 +6348,8 @@ void SelectMachineDialog::set_default_from_sdcard()
 
     // basic info
     try {
-        float float_time = std::stof(m_required_data_plate_data_list[m_print_plate_idx]->get_gcode_prediction_str());
-        double float_weight = std::stof(m_required_data_plate_data_list[m_print_plate_idx]->get_gcode_weight_str());
+        float float_time = std::stof(m_required_data_plate_data_list[m_print_plate_idx]->get_gcode_prediction_s_u8L());
+        double float_weight = std::stof(m_required_data_plate_data_list[m_print_plate_idx]->get_gcode_weight_s_u8L());
         wxString   time;
         time = wxString::Format("%s", short_time(get_time_dhms(float_time)));
         char weight[64];
@@ -7038,7 +7038,7 @@ void PrinterInfoBox::UpdatePlate(const std::string& plate_name)
 static wxString _get_tips(MachineObject* obj_)
 {
     wxString tips;
-    tips = obj_->get_printer_type_display_str();
+    tips = obj_->get_printer_type_display_s_u8L();
 
     wxString ext_diameter;
     if (obj_->GetExtderSystem()->GetTotalExtderCount() == 1) {
@@ -7087,7 +7087,7 @@ void PrinterInfoBox::SetPrinters(const std::vector<MachineObject*>& sorted_print
             drop_item.icon_textctrl = create_scaled_bitmap("printer_preview_BL-P001", this, 52);
         }
 
-        drop_item.tip = obj->get_printer_type_display_str();
+        drop_item.tip = obj->get_printer_type_display_s_u8L();
         drop_items.emplace_back(drop_item);
     }
 

@@ -114,7 +114,7 @@ void session::read_next_line()
                     std::stringstream ssOut;
                     resp->write_response(ssOut);
                     std::shared_ptr<std::string> str = std::make_shared<std::string>(ssOut.str());
-                    async_write(socket, boost::asio::buffer(str->c_str(), str->length()),
+                    async_write(socket, boost::asio::buffer(str->c_s_u8L(), str->length()),
                                 [this, self, str](const boost::beast::error_code& e, std::size_t s) {
                         std::cout << "done" << std::endl;
                         server.stop(self);
@@ -249,10 +249,10 @@ std::shared_ptr<HttpServer::Response> HttpServer::auth_handle_request(const std:
             GUI::wxGetApp().CallAfter([] { wxGetApp().ShowUserLogin(false); });
         }
 
-        const std::string title = login_ok ? TR("Authentication complete") : TR("Authentication failed");
+        const std::string title = login_ok ? _u8L("Authentication complete") : _u8L("Authentication failed");
         const std::string message = login_ok
-            ? TR("You can return to OrcaSlicer. This window will close automatically.")
-            : TR("Something went wrong. Please return to OrcaSlicer and try again.");
+            ? _u8L("You can return to OrcaSlicer. This window will close automatically.")
+            : _u8L("Something went wrong. Please return to OrcaSlicer and try again.");
         const std::string html =
             "<html><head><meta charset=\"utf-8\">"
             "<style>body{font-family:Arial,sans-serif;background:#f7f7f7;color:#222;margin:32px;}"
@@ -435,9 +435,9 @@ void HttpServer::ResponseRedirect::write_response(std::stringstream& ssOut)
         "<style>body{font-family:Arial,sans-serif;background:#f7f7f7;color:#222;margin:32px;}"
         "a.button{display:inline-block;padding:10px 16px;margin-top:12px;background:#0f8bff;color:#fff;text-decoration:none;border-radius:6px;}"
         "</style></head><body><div class=\"container\">"
-        "<h2>" + TR("Authentication complete") + "</h2>"
-        "<p>" + TR("You can return to OrcaSlicer. If your browser does not redirect automatically, use the button below.") + "</p>"
-        "<a class=\"button\" href=\"" + location_str + "\">" + TR("Continue") + "</a>"
+        "<h2>" + _u8L("Authentication complete") + "</h2>"
+        "<p>" + _u8L("You can return to OrcaSlicer. If your browser does not redirect automatically, use the button below.") + "</p>"
+        "<a class=\"button\" href=\"" + location_str + "\">" + _u8L("Continue") + "</a>"
         "<script>setTimeout(function(){try{window.close();}catch(e){}},1500);</script>"
         "</div></body></html>";
     ssOut << "HTTP/1.1 302 Found" << std::endl;

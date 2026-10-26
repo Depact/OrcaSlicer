@@ -91,7 +91,7 @@ boost::property_tree::ptree read_ini(const mz_zip_archive_file_stat &entry,
 
     if (!mz_zip_reader_extract_file_to_mem(&zip.arch, entry.m_filename,
                                            buf.data(), buf.size(), 0))
-        throw Slic3r::FileIOError(zip.get_errorstr());
+        throw Slic3r::FileIOError(zip.get_errors_u8L());
 
     boost::property_tree::ptree tree;
     std::stringstream ss(buf);
@@ -107,7 +107,7 @@ PNGBuffer read_png(const mz_zip_archive_file_stat &entry,
 
     if (!mz_zip_reader_extract_file_to_mem(&zip.arch, entry.m_filename,
                                            buf.data(), buf.size(), 0))
-        throw Slic3r::FileIOError(zip.get_errorstr());
+        throw Slic3r::FileIOError(zip.get_errors_u8L());
 
     return {std::move(buf), (name.empty() ? entry.m_filename : name)};
 }
@@ -121,7 +121,7 @@ ArchiveData extract_sla_archive(const std::string &zipfname,
     struct Arch: public MZ_Archive {
         Arch(const std::string &fname) {
             if (!open_zip_reader(&arch, fname))
-                throw Slic3r::FileIOError(get_errorstr());
+                throw Slic3r::FileIOError(get_errors_u8L());
         }
 
         ~Arch() { close_zip_reader(&arch); }

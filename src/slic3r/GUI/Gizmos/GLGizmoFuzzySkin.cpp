@@ -50,7 +50,7 @@ void GLGizmoFuzzySkin::on_shutdown()
 
 std::string GLGizmoFuzzySkin::on_get_name() const
 {
-    return TR("Paint-on fuzzy skin");
+    return _u8L("Paint-on fuzzy skin");
 }
 
 bool GLGizmoFuzzySkin::on_init()
@@ -294,7 +294,7 @@ void GLGizmoFuzzySkin::on_render_input_window(float x, float y, float bottom_lim
     ImGui::SameLine();
     m_imgui->disabled_begin(mo->is_fuzzy_skin_painted() == false);
     if (m_imgui->button(m_desc.at("remove_all"))) {
-        Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Reset selection"), UndoRedo::SnapshotType::GizmoAction);
+        Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Reset selection"), UndoRedo::SnapshotType::GizmoAction);
         int                  idx = -1;
         for (ModelVolume *mv : mo->volumes)
             if (mv->is_model_part()) {
@@ -329,7 +329,7 @@ void GLGizmoFuzzySkin::on_render_input_window(float x, float y, float bottom_lim
             ImGui::PushStyleColor(ImGuiCol_Text, HyperColor.Value);
             ImGui::Dummy(ImVec2(font_size * 1.8f, font_size * 1.3f));
             ImGui::SameLine();
-            m_imgui->bold_text(TR("Enable painted fuzzy skin for this object"));
+            m_imgui->bold_text(_u8L("Enable painted fuzzy skin for this object"));
             ImGui::PopStyleColor();
             ImVec2 line_end = ImGui::GetItemRectMax();
             line_end.y -= 2.0f;

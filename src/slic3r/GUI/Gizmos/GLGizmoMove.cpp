@@ -97,9 +97,9 @@ bool GLGizmoMove3D::on_init()
 std::string GLGizmoMove3D::on_get_name() const
 {
     if (!on_is_activable() && m_state == EState::Off) {
-        return TR("Move") + ":\n" + TR("Please select at least one object.");
+        return _u8L("Move") + ":\n" + _u8L("Please select at least one object.");
     } else {
-        return TR("Move");
+        return _u8L("Move");
     }
 }
 

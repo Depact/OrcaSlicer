@@ -52,7 +52,7 @@ public:
     void Clear();
 
     bool HasResult() const { return !m_result.empty(); }
-    std::string GetResultStr() const { return m_result; }
+    std::string GetResultS_u8L() const { return m_result; }
 
     // mqtt error info
     std::string GetMqttReason() const { return m_mqtt_reason; }

@@ -101,7 +101,7 @@ public:
         const std::string location_str;
 
     public:
-        ResponseRedirect(const std::string& location) : location_str(location) {}
+        ResponseRedirect(const std::string& location) : location_s_u8L(location) {}
         ~ResponseRedirect() override = default;
         void write_response(std::stringstream& ssOut) override;
     };

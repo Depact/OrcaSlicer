@@ -82,7 +82,7 @@ public:
         return support_intf_map.find(object) != support_intf_map.end();
     }
 
-    void set_layer_tools_ptr(const LayerTools* lt) { m_layer_tools = lt; }
+    void set_layer_tools_p_u8L(const LayerTools* lt) { m_layer_tools = lt; }
 
     // Returns true if entity is not printed with its usual extruder for a given
     // copy -- i.e. it was claimed as a wiping/purge extrusion. Public because the
@@ -250,7 +250,7 @@ public:
     }
 
     WipingExtrusions& wiping_extrusions() {
-        m_wiping_extrusions.set_layer_tools_ptr(this);
+        m_wiping_extrusions.set_layer_tools_p_u8L(this);
         return m_wiping_extrusions;
     }
 

@@ -2684,22 +2684,22 @@ public:
     virtual ~ConfigOptionResolver() {}
 
     // Find a ConfigOption instance for a given name.
-    virtual const ConfigOption* optptr(const t_config_option_key &opt_key) const = 0;
+    virtual const ConfigOption* optp_u8L(const t_config_option_key &opt_key) const = 0;
 
-    bool 						has(const t_config_option_key &opt_key) const { return this->optptr(opt_key) != nullptr; }
+    bool 						has(const t_config_option_key &opt_key) const { return this->optp_u8L(opt_key) != nullptr; }
 
-    const ConfigOption* 		option(const t_config_option_key &opt_key) const { return this->optptr(opt_key); }
+    const ConfigOption* 		option(const t_config_option_key &opt_key) const { return this->optp_u8L(opt_key); }
 
     template<typename TYPE>
     const TYPE* 				option(const t_config_option_key& opt_key) const
     {
-        const ConfigOption* opt = this->optptr(opt_key);
+        const ConfigOption* opt = this->optp_u8L(opt_key);
         return (opt == nullptr || opt->type() != TYPE::static_type()) ? nullptr : static_cast<const TYPE*>(opt);
     }
 
     const ConfigOption* 		option_throw(const t_config_option_key& opt_key) const
     {
-        const ConfigOption* opt = this->optptr(opt_key);
+        const ConfigOption* opt = this->optp_u8L(opt_key);
         if (opt == nullptr)
             throw UnknownOptionException(opt_key);
         return opt;
@@ -2734,7 +2734,7 @@ public:
     virtual const ConfigDef*        def() const = 0;
     // Find ando/or create a ConfigOption instance for a given name.
     using ConfigOptionResolver::optptr;
-    virtual ConfigOption*           optptr(const t_config_option_key &opt_key, bool create = false) = 0;
+    virtual ConfigOption*           optp_u8L(const t_config_option_key &opt_key, bool create = false) = 0;
     // Collect names of all configuration values maintained by this configuration store.
     virtual t_config_option_keys    keys() const = 0;
     // Set this config's options on target member by member, when target is of this config's static type or
@@ -2758,12 +2758,12 @@ public:
 
     // Non-virtual methods:
     ConfigOption* option(const t_config_option_key &opt_key, bool create = false)
-        { return this->optptr(opt_key, create); }
+        { return this->optp_u8L(opt_key, create); }
 
     template<typename TYPE>
     TYPE* option(const t_config_option_key &opt_key, bool create = false)
     {
-        ConfigOption* opt = this->optptr(opt_key, create);
+        ConfigOption* opt = this->optp_u8L(opt_key, create);
         if (opt != nullptr && opt->type() != TYPE::static_type()) {
             BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << ": attempt to access option with wrong type: " << opt_key;
             return nullptr;
@@ -2773,7 +2773,7 @@ public:
 
     ConfigOption* option_throw(const t_config_option_key &opt_key, bool create = false)
     {
-        ConfigOption *opt = this->optptr(opt_key, create);
+        ConfigOption *opt = this->optp_u8L(opt_key, create);
         if (opt == nullptr)
             throw UnknownOptionException(opt_key);
         return opt;
@@ -3000,10 +3000,10 @@ public:
         { return dynamic_cast<T*>(this->option(opt_key, create)); }
     template<class T> const T* opt(const t_config_option_key &opt_key) const
         { return dynamic_cast<const T*>(this->option(opt_key)); }
-    // Overrides ConfigResolver::optptr().
-    const ConfigOption*     optptr(const t_config_option_key &opt_key) const override;
-    // Overrides ConfigBase::optptr(). Find ando/or create a ConfigOption instance for a given name.
-    ConfigOption*           optptr(const t_config_option_key &opt_key, bool create = false) override;
+    // Overrides ConfigResolver::optp_u8L().
+    const ConfigOption*     optp_u8L(const t_config_option_key &opt_key) const override;
+    // Overrides ConfigBase::optp_u8L(). Find ando/or create a ConfigOption instance for a given name.
+    ConfigOption*           optp_u8L(const t_config_option_key &opt_key, bool create = false) override;
     // Overrides ConfigBase::keys(). Collect names of all configuration values maintained by this configuration store.
     t_config_option_keys    keys() const override;
     bool                    empty() const { return options.empty(); }
@@ -3124,7 +3124,7 @@ class StaticConfig : public virtual ConfigBase
 public:
     StaticConfig() {}
     /// Gets list of config option names for each config option of this->def, which has a static counter-part defined by the derived object
-    /// and which could be resolved by this->optptr(key) call.
+    /// and which could be resolved by this->optp_u8L(key) call.
     t_config_option_keys keys() const;
 
 protected:

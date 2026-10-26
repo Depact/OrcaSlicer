@@ -235,7 +235,7 @@ public:
         const wxPoint& pos = wxDefaultPosition,
         const wxSize& size = wxDefaultSize,
         long style = wxWANTS_CHARS,
-        const wxString& name = wxASCII_STR(wxGridNameStr))
+        const wxString& name = wxASCII_S_u8L(wxGridNameStr))
         :wxGrid(parent, id, pos, size, style, name)
     {
     }

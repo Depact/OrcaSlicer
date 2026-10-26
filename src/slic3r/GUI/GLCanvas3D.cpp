@@ -250,13 +250,13 @@ float RetinaHelper::get_scale_factor() { return float(m_window->GetContentScaleF
 
 
 std::string& get_object_limited_text() {
-    static std::string object_limited_text = TR("An object is placed in the left/right nozzle-only area or exceeds the printable height of the left nozzle.\n"
+    static std::string object_limited_text = _u8L("An object is placed in the left/right nozzle-only area or exceeds the printable height of the left nozzle.\n"
             "Please ensure the filaments used by this object are not arranged to other nozzles.");
     return object_limited_text;
 }
 
 std::string& get_object_clashed_text() {
-    static std::string object_clashed_text = TR("An object is laid over the boundary of plate or exceeds the height limit.\n"
+    static std::string object_clashed_text = _u8L("An object is laid over the boundary of plate or exceeds the height limit.\n"
             "Please solve the problem by moving it totally on or off the plate, and confirming that the height is within the build volume.");
     return object_clashed_text;
 }
@@ -1284,18 +1284,18 @@ void GLCanvas3D::CenterOfMass::render_details(GLCanvas3D& canvas)
     const Point   screen = CameraUtils::project(wxGetApp().plater()->get_camera(), center);
     ImGuiWrapper& imgui  = *wxGetApp().imgui();
     imgui.set_next_window_pos(float(screen.x() + 2. * marker_radii[pick.kind] * marker_scale(canvas)), float(screen.y()), ImGuiCond_Always, 0.f, 0.5f);
-    const std::string title = pick.kind == mkPlate  ? TR("Plate center of mass") :
-                              pick.kind == mkBody   ? TR("Part center of mass") :
-                              pick.kind == mkSupport ? TR("Support center of mass") :
-                              marker.assembly       ? TR("Assembly center of mass") :
-                                                      TR("Object center of mass");
+    const std::string title = pick.kind == mkPlate  ? _u8L("Plate center of mass") :
+                              pick.kind == mkBody   ? _u8L("Part center of mass") :
+                              pick.kind == mkSupport ? _u8L("Support center of mass") :
+                              marker.assembly       ? _u8L("Assembly center of mass") :
+                                                      _u8L("Object center of mass");
     bool open = true;
     imgui.begin(title + "###center_of_mass", &open,
                 ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings);
     if (ImGui::IsWindowAppearing())
         imgui.set_requires_extra_frame();
     if (canvas.get_canvas_type() == ECanvasType::CanvasPreview)
-        imgui.text(pick.set == 0 ? TR("Finished print") : (boost::format(TR("Printed up to layer %1%")) % (m_top_layer + 1)).str());
+        imgui.text(pick.set == 0 ? _u8L("Finished print") : (boost::format(_u8L("Printed up to layer %1%")) % (m_top_layer + 1)).str());
     // Masses are in mg, volumes in mm³.
     const auto xyz = [](const Vec3d& v, const char* format, const std::string& unit) {
         return (boost::format(format) % v.x() % v.y() % v.z()).str() + " " + unit;
@@ -1308,13 +1308,13 @@ void GLCanvas3D::CenterOfMass::render_details(GLCanvas3D& canvas)
             ImGui::TableSetColumnIndex(1);
             ImGuiWrapper::text(value);
         };
-        row(TR("Weight"), (boost::format("%.2f g") % (sum.mass / 1000.)).str());
-        row(TR("Volume"), (boost::format(u8"%.2f cm³") % (sum.volume / 1000.)).str());
+        row(_u8L("Weight"), (boost::format("%.2f g") % (sum.mass / 1000.)).str());
+        row(_u8L("Volume"), (boost::format(u8"%.2f cm³") % (sum.volume / 1000.)).str());
         if (marker.box.defined) {
-            row(TR("Center in bounding box"), xyz(center - marker.box.min, "X: %.2f, Y: %.2f, Z: %.2f", TR("mm")));
-            row(TR("Bounding box size"), xyz(marker.box.size(), "X: %.2f, Y: %.2f, Z: %.2f", TR("mm")));
+            row(_u8L("Center in bounding box"), xyz(center - marker.box.min, "X: %.2f, Y: %.2f, Z: %.2f", _u8L("mm")));
+            row(_u8L("Bounding box size"), xyz(marker.box.size(), "X: %.2f, Y: %.2f, Z: %.2f", _u8L("mm")));
         }
-        row(TR("Moment of inertia"), xyz(inertia / 1000., "X: %.0f, Y: %.0f, Z: %.0f", u8"g·mm²"));
+        row(_u8L("Moment of inertia"), xyz(inertia / 1000., "X: %.0f, Y: %.0f, Z: %.0f", u8"g·mm²"));
         ImGui::EndTable();
     }
     imgui.end();
@@ -1856,13 +1856,13 @@ static bool construct_error_string(ObjectFilamentResults& object_result, std::st
 {
     error_string.clear();
     if (!object_result.partly_outside_objects.empty()) {
-        error_string += TR("Following objects are laid over the boundary of plate or exceeds the height limit:\n");
+        error_string += _u8L("Following objects are laid over the boundary of plate or exceeds the height limit:\n");
         for(auto& object: object_result.partly_outside_objects)
         {
             error_string += object->name;
             error_string += "\n";
         }
-        error_string += TR("Please solve the problem by moving it totally on or off the plate, and confirming that the height is within the build volume.\n");
+        error_string += _u8L("Please solve the problem by moving it totally on or off the plate, and confirming that the height is within the build volume.\n");
         return true;
     }
     return false;
@@ -1875,7 +1875,7 @@ static std::pair<bool, bool> construct_extruder_unprintable_error(ObjectFilament
     if (object_result.filaments.empty())
         return {false,false};
 
-    const std::vector<std::string> nozzle_name_list = { TR("left nozzle"), TR("right nozzle") };
+    const std::vector<std::string> nozzle_name_list = { _u8L("left nozzle"), _u8L("right nozzle") };
 
     std::vector<ObjectFilamentInfo> left_unprintable_objects;
     std::vector<ObjectFilamentInfo> right_unprintable_objects;
@@ -1938,19 +1938,19 @@ static std::pair<bool, bool> construct_extruder_unprintable_error(ObjectFilament
         std::string nozzle_name = nozzle_name_list[idx];
         std::string model_prefix;
         if ((idx == 0 && left_unprintable_objects.size() > 1) || (idx == 1 && right_unprintable_objects.size() > 1))
-            model_prefix = (boost::format(TR("The position or size of some models exceeds the %s's printable range.")) % nozzle_name).str();
+            model_prefix = (boost::format(_u8L("The position or size of some models exceeds the %s's printable range.")) % nozzle_name).str();
         else
-            model_prefix = (boost::format(TR("The position or size of the model %s exceeds the %s's printable range."))
+            model_prefix = (boost::format(_u8L("The position or size of the model %s exceeds the %s's printable range."))
                            %object_result.object_filaments.front().object->name % nozzle_name).str();
         tips[idx] += model_prefix;
 
-        tips[idx] += (boost::format(TR(" Please check and adjust the part's position or size to fit the printable range:\n"))).str();
+        tips[idx] += (boost::format(_u8L(" Please check and adjust the part's position or size to fit the printable range:\n"))).str();
         if (idx == 0)
-            tips[idx] += (boost::format(TR("Left nozzle: X:%1%-%2%, Y:%3%-%4%, Z:%5%-%6%\n"))
+            tips[idx] += (boost::format(_u8L("Left nozzle: X:%1%-%2%, Y:%3%-%4%, Z:%5%-%6%\n"))
                          % format_number(left_x_min) % format_number(left_x_max) % format_number(left_y_min)
                          % format_number(left_y_max) % format_number(left_z_min) % format_number(left_z_max)).str();
         else
-            tips[idx] += (boost::format(TR("Right nozzle: X:%1%-%2%, Y:%3%-%4%, Z:%5%-%6%"))
+            tips[idx] += (boost::format(_u8L("Right nozzle: X:%1%-%2%, Y:%3%-%4%, Z:%5%-%6%"))
                          %format_number(right_x_min) %format_number(right_x_max) %format_number(right_y_min)
                          %format_number(right_y_max) %format_number(right_z_min) %format_number(right_z_max)).str();
         output_text = tips[idx];
@@ -3344,7 +3344,7 @@ void GLCanvas3D::reload_scene(bool refresh_immediately, bool force_full_scene_re
                     if (mvs->model_volume->is_model_part() && ! volume->convex_hull())
                         // Model volume was likely changed from modifier or support blocker / enforcer to a model part.
                         // Only model parts require convex hulls.
-                        volume->set_convex_hull(mvs->model_volume->get_convex_hull_shared_ptr());
+                        volume->set_convex_hull(mvs->model_volume->get_convex_hull_shared_p_u8L());
                     volume->set_offset_to_assembly(Vec3d(0, 0, 0));
                 }
                 else {
@@ -3354,7 +3354,7 @@ void GLCanvas3D::reload_scene(bool refresh_immediately, bool force_full_scene_re
                     if (mvs->model_volume->is_model_part() && ! volume->convex_hull())
                         // Model volume was likely changed from modifier or support blocker / enforcer to a model part.
                         // Only model parts require convex hulls.
-                        volume->set_convex_hull(mvs->model_volume->get_convex_hull_shared_ptr());
+                        volume->set_convex_hull(mvs->model_volume->get_convex_hull_shared_p_u8L());
                     volume->set_offset_to_assembly(mvs->model_volume->get_object()->instances[mvs->composite_id.instance_id]->get_offset_to_assembly());
                 }
             }
@@ -7560,11 +7560,11 @@ bool GLCanvas3D::_init_main_toolbar()
 void GLCanvas3D::update_shortcut_tooltips()
 {
     const ShortcutRegistry& shortcuts = wxGetApp().shortcuts();
-    m_main_toolbar.set_tooltip(m_main_toolbar.get_item_id("add"), shortcuts.with_key(TR("Add"), Shortcut::ImportModel));
-    m_main_toolbar.set_tooltip(m_main_toolbar.get_item_id("orient"), shortcuts.with_key(TR("Auto orient all/selected objects"), Shortcut::Orient) + "\n" + shortcuts.with_key(TR("Auto orient all objects on current plate"), Shortcut::OrientPlate));
-    m_main_toolbar.set_tooltip(m_main_toolbar.get_item_id("arrange"), shortcuts.with_key(TR("Arrange all objects"), Shortcut::Arrange) + "\n" + shortcuts.with_key(TR("Arrange objects on selected plates"), Shortcut::ArrangePlate));
-    m_main_toolbar.set_tooltip(m_main_toolbar.get_item_id("more"), shortcuts.with_key(TR("Add instance"), Shortcut::AddInstance));
-    m_main_toolbar.set_tooltip(m_main_toolbar.get_item_id("fewer"), shortcuts.with_key(TR("Remove instance"), Shortcut::RemoveInstance));
+    m_main_toolbar.set_tooltip(m_main_toolbar.get_item_id("add"), shortcuts.with_key(_u8L("Add"), Shortcut::ImportModel));
+    m_main_toolbar.set_tooltip(m_main_toolbar.get_item_id("orient"), shortcuts.with_key(_u8L("Auto orient all/selected objects"), Shortcut::Orient) + "\n" + shortcuts.with_key(_u8L("Auto orient all objects on current plate"), Shortcut::OrientPlate));
+    m_main_toolbar.set_tooltip(m_main_toolbar.get_item_id("arrange"), shortcuts.with_key(_u8L("Arrange all objects"), Shortcut::Arrange) + "\n" + shortcuts.with_key(_u8L("Arrange objects on selected plates"), Shortcut::ArrangePlate));
+    m_main_toolbar.set_tooltip(m_main_toolbar.get_item_id("more"), shortcuts.with_key(_u8L("Add instance"), Shortcut::AddInstance));
+    m_main_toolbar.set_tooltip(m_main_toolbar.get_item_id("fewer"), shortcuts.with_key(_u8L("Remove instance"), Shortcut::RemoveInstance));
 }
 
 //BBS: GUI refactor: GLToolbar
@@ -10536,9 +10536,9 @@ void GLCanvas3D::_render_imgui_select_plate_toolbar()
                         bar_current_perc_pos  = m_sel_plate_toolbar.m_items[i]->percent * (bar_size.x / total_plates_cnt / 100.0f);
                     }
                 }
-                text_top = TR("Slicing") + ": " + std::to_string(current_slicing_plate + 1);
+                text_top = _u8L("Slicing") + ": " + std::to_string(current_slicing_plate + 1);
             } else {
-                text_top = TR("Slice all");
+                text_top = _u8L("Slice all");
             }
             text_bottom = std::to_string(sliced_plates_cnt) + " / " + std::to_string(total_plates_cnt);
             ImVec2 bar_fg_end = ImVec2(bar_bg_bgn.x + bar_total_perc_pos + bar_current_perc_pos, bar_bg_end.y);
@@ -10546,13 +10546,13 @@ void GLCanvas3D::_render_imgui_select_plate_toolbar()
             ImGui::GetWindowDrawList()->AddRectFilled(bar_bg_bgn, bar_fg_end, IM_COL32(0, 150, 136, 255),   bar_size.y); // BAR PROGRESS
         }
         else if (all_plates_stats_item->slice_state == IMToolbarItem::SliceState::SLICE_FAILED) {
-            text_top    = TR("Failed");
+            text_top    = _u8L("Failed");
             text_bottom = std::to_string(sliced_plates_cnt) + " / " + std::to_string(total_plates_cnt);
             ImGui::GetWindowDrawList()->AddRectFilled(bar_bg_bgn, bar_bg_end, IM_COL32(225, 74, 74, 255),   bar_size.y);
         }
         else if (all_plates_stats_item->slice_state == IMToolbarItem::SliceState::SLICED) {
-            text_top    = TR("All Plates");
-            text_bottom = TR("Stats");
+            text_top    = _u8L("All Plates");
+            text_bottom = _u8L("Stats");
         }
 
         // draw text
@@ -10667,7 +10667,7 @@ void GLCanvas3D::_render_imgui_select_plate_toolbar()
             ImGui::GetWindowDrawList()->AddRectFilled(start_pos, end_pos, plate_dim, button_radius);
             // ORCA add slice button to guide user
             bool is_processing = m_process && m_process->running() ;
-            draw_info_btn(TR("Slice"),
+            draw_info_btn(_u8L("Slice"),
                 is_processing ? window_bg : (is_plate_hovered ? orca_hover : orca_active),
                 m_is_dark ? ImVec4(.9f, .9f, .9f, 1) : (is_processing ? ImVec4(.3f, .3f, .3f, 1) : ImVec4(1, 1, 1, 1))
             );
@@ -10692,7 +10692,7 @@ void GLCanvas3D::_render_imgui_select_plate_toolbar()
             draw_list->AddCircleFilled(center, 14.f * f_scale,IM_COL32(225, 74, 74, 255));
             draw_list->AddRectFilled(center - ImVec2(2.f, 10.f) * f_scale, center + ImVec2(2.f, 4.f) * f_scale, clr, 2.f * f_scale);
             draw_list->AddCircleFilled(center + ImVec2(0, 8.f * f_scale),2.f * f_scale, clr);
-            draw_info_btn(TR("Review"),
+            draw_info_btn(_u8L("Review"),
                 ImGui::ColorConvertU32ToFloat4(is_plate_hovered ? IM_COL32(239, 88, 88, 255) : IM_COL32(225, 74, 74, 255)),
                 m_is_dark ? ImVec4(.9f, .9f, .9f, 1) : ImVec4(1, 1, 1, 1)
             );
@@ -10805,7 +10805,7 @@ void GLCanvas3D::_render_plate_switcher()
             });
         if (hovered) {
             const std::string name = plate->get_plate_name();
-            imgui.tooltip(TR("Plate") + " " + std::to_string(i + 1) + (name.empty() ? "" : " (" + name + ")"), ImGui::GetFontSize() * 20.f);
+            imgui.tooltip(_u8L("Plate") + " " + std::to_string(i + 1) + (name.empty() ? "" : " (" + name + ")"), ImGui::GetFontSize() * 20.f);
         }
     }
 
@@ -11038,7 +11038,7 @@ void GLCanvas3D::_render_canvas_toolbar()
         ) {
             ImGui::Dummy({2.f * sc,0});
             ImGui::SameLine();
-            if (ImGui::BBLMenuItem(("        " + TR(name)).c_str(), nullptr, false, enable, ImGui::CalcTextSize(TR(name).c_str()).y))
+            if (ImGui::BBLMenuItem(("        " + _u8L(name)).c_str(), nullptr, false, enable, ImGui::CalcTextSize(_u8L(name).c_str()).y))
                 action();
             ImGui::SameLine(12.f * sc);
             ImGui::TextColored(enable ? ImVec4(1,1,1,1) : ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled), "%s", into_u8(condition ? ImGui::VisibleIcon : ImGui::HiddenIcon).c_str());
@@ -11538,11 +11538,11 @@ void GLCanvas3D::_render_assemble_control()
     {
         ImGui::SameLine(same_line_width);
         // input
-        std::vector<std::string> modes = {TR("Object"), TR("Part")};
+        std::vector<std::string> modes = {_u8L("Object"), _u8L("Part")};
         int selection_idx = m_selection.get_volume_selection_mode() == Selection::Instance ? 0 : 1;
-        auto label         = TR("Selection Mode") + ":" ;
+        auto label         = _u8L("Selection Mode") + ":" ;
         auto label_width   = imgui->calc_text_size(label).x ;
-        auto item_width    = imgui->calc_text_size(TR("Object")).x * 2.5 + imgui->calc_text_size("xx"sv).x+ item_spacing;
+        auto item_width    = imgui->calc_text_size(_u8L("Object")).x * 2.5 + imgui->calc_text_size("xx"sv).x+ item_spacing;
         //render imgui
         ImGui::AlignTextToFramePadding();
         ImGui::PushItemWidth(label_width);
@@ -12194,7 +12194,7 @@ void GLCanvas3D::_set_warning_notification(EWarning warning, bool state)
         SLICING_LIMIT_ERROR,
         SLICING_HEIGHT_OUTSIDE
     };
-    const static std::vector<std::string> extruder_name_list= {TR("left nozzle"), TR("right nozzle")};  // in ui, we treat extruder as nozzle
+    const static std::vector<std::string> extruder_name_list= {_u8L("left nozzle"), _u8L("right nozzle")};  // in ui, we treat extruder as nozzle
     std::string text;
     ErrorType error = ErrorType::PLATER_WARNING;
     const ModelObject* conflictObj=nullptr;
@@ -12211,7 +12211,7 @@ void GLCanvas3D::_set_warning_notification(EWarning warning, bool state)
         int         layer    = m_gcode_viewer.m_conflict_result.value().layer;
         const PrintInstance *inst2 = reinterpret_cast<const PrintInstance *>(m_gcode_viewer.m_conflict_result.value()._obj2);
 
-        text = (boost::format(TR("Conflicts of G-code paths have been found at layer %d, Z = %.2lfmm. Please separate the conflicted objects farther (%s <-> %s).")) % layer %
+        text = (boost::format(_u8L("Conflicts of G-code paths have been found at layer %d, Z = %.2lfmm. Please separate the conflicted objects farther (%s <-> %s).")) % layer %
                 height % objName1 % objName2)
                    .str();
         prevConflictText        = text;
@@ -12222,11 +12222,11 @@ void GLCanvas3D::_set_warning_notification(EWarning warning, bool state)
         }
         break;
     }
-    case EWarning::ObjectOutside:      text = TR("An object is laid over the plate boundaries."); break;
-    case EWarning::ToolHeightOutside:  text = TR("A G-code path goes beyond the max print height."); error = ErrorType::SLICING_ERROR; break;
-    case EWarning::ToolpathOutside:    text = TR("A G-code path goes beyond plate boundaries."); error = ErrorType::SLICING_ERROR; break;
+    case EWarning::ObjectOutside:      text = _u8L("An object is laid over the plate boundaries."); break;
+    case EWarning::ToolHeightOutside:  text = _u8L("A G-code path goes beyond the max print height."); error = ErrorType::SLICING_ERROR; break;
+    case EWarning::ToolpathOutside:    text = _u8L("A G-code path goes beyond plate boundaries."); error = ErrorType::SLICING_ERROR; break;
     case EWarning::TPUPrintableError: {
-        text = TR("Not support printing 2 or more TPU filaments.");
+        text = _u8L("Not support printing 2 or more TPU filaments.");
         error = ErrorType::SLICING_ERROR;
         break;
     }
@@ -12280,7 +12280,7 @@ void GLCanvas3D::_set_warning_notification(EWarning warning, bool state)
                 extruder_name = extruder_name_list[extruder_id-1];
             }
             else{
-                extruder_name += (boost::format(TR("Tool %d"))%extruder_id).str();
+                extruder_name += (boost::format(_u8L("Tool %d"))%extruder_id).str();
             }
 
             text += (boost::format(into_u8(_L_PLURAL("Filament %s is placed in the %s, but the generated G-code path exceeds the printable range of the %s.",
@@ -12339,15 +12339,15 @@ void GLCanvas3D::_set_warning_notification(EWarning warning, bool state)
         }
         if (!text.empty()) {
             text += "\n";
-            text += TR("Open wiki for more information.");
+            text += _u8L("Open wiki for more information.");
         }
         error = ErrorType::SLICING_HEIGHT_OUTSIDE;
         break;
     }
 
-    // BBS: remove TR() for SLA
+    // BBS: remove _u8L() for SLA
     case EWarning::SlaSupportsOutside: text = ("SLA supports outside the print area were detected."); error = ErrorType::PLATER_ERROR; break;
-    case EWarning::SomethingNotShown:  text = TR("Only the object being edited is visible."); break;
+    case EWarning::SomethingNotShown:  text = _u8L("Only the object being edited is visible."); break;
     case EWarning::ObjectClashed:
         error = ErrorType::PLATER_ERROR;
         break;
@@ -12368,24 +12368,24 @@ void GLCanvas3D::_set_warning_notification(EWarning warning, bool state)
         break;
     }
     case EWarning::MixUsePLAAndPETG:
-        text = TR("PLA and PETG filaments detected in the mixture. Adjust parameters according to the Wiki to ensure print quality.");
+        text = _u8L("PLA and PETG filaments detected in the mixture. Adjust parameters according to the Wiki to ensure print quality.");
         break;
     case EWarning::SingleExtruderMixedFilament:
         text = get_single_extruder_mixed_filament_warning_text();
         break;
     case EWarning::PrimeTowerOutside:
-        text  = TR("The prime tower extends beyond the plate boundary.");
+        text  = _u8L("The prime tower extends beyond the plate boundary.");
         break;
     case EWarning::NozzleFilamentIncompatible: {
-        text = TR(get_nozzle_filament_incompatible_text());
+        text = _u8L(get_nozzle_filament_incompatible_text());
         break;
     }
     case EWarning::MixtureFilamentIncompatible: {
-        text = TR(get_filament_mixture_warning_text());
+        text = _u8L(get_filament_mixture_warning_text());
         break;
     }
     case EWarning::FlushingVolumeZero:
-        text = TR("Partial flushing volume set to 0. Multi-color printing may cause color mixing in models. Please readjust flushing settings.");
+        text = _u8L("Partial flushing volume set to 0. Multi-color printing may cause color mixing in models. Please readjust flushing settings.");
         error = ErrorType::SLICING_ERROR;
         break;
     }
@@ -12399,7 +12399,7 @@ void GLCanvas3D::_set_warning_notification(EWarning warning, bool state)
     case PLATER_WARNING:
         if (warning == EWarning::MixUsePLAAndPETG) {
             if (state) {
-                notification_manager.push_slicing_customize_error_notification(NotificationType::BBLMixUsePLAAndPETG, NotificationLevel::WarningNotificationLevel, text, TR("Click Wiki for help."),
+                notification_manager.push_slicing_customize_error_notification(NotificationType::BBLMixUsePLAAndPETG, NotificationLevel::WarningNotificationLevel, text, _u8L("Click Wiki for help."),
                     [](wxEvtHandler*) {
                         std::string language = wxGetApp().app_config->get("language");
                         wxString    region = L"en";
@@ -12500,7 +12500,7 @@ void GLCanvas3D::_set_warning_notification(EWarning warning, bool state)
                     try_pop_up_before_slice(false, plater, partplate, true); // ignore the return value
                     return false;
                 };
-                notification_manager.push_slicing_customize_error_notification(NotificationType::BBLFilamentPrintableError, NotificationLevel::ErrorNotificationLevel, text,  TR("Click here to regroup"), callback);
+                notification_manager.push_slicing_customize_error_notification(NotificationType::BBLFilamentPrintableError, NotificationLevel::ErrorNotificationLevel, text,  _u8L("Click here to regroup"), callback);
             }
             else
                 notification_manager.close_slicing_customize_error_notification(NotificationType::BBLFilamentPrintableError, NotificationLevel::ErrorNotificationLevel);
@@ -12514,7 +12514,7 @@ void GLCanvas3D::_set_warning_notification(EWarning warning, bool state)
                     plater->get_view3D_canvas3D()->reload_scene(true);
                     return false;
                 };
-                notification_manager.push_flushing_volume_error_notification(NotificationType::BBLFlushingVolumeZero, NotificationLevel::WarningNotificationLevel, text, TR("Flushing Volume"), callback);
+                notification_manager.push_flushing_volume_error_notification(NotificationType::BBLFlushingVolumeZero, NotificationLevel::WarningNotificationLevel, text, _u8L("Flushing Volume"), callback);
             } else
                 notification_manager.close_flushing_volume_error_notification(NotificationType::BBLFlushingVolumeZero, NotificationLevel::WarningNotificationLevel);
         }

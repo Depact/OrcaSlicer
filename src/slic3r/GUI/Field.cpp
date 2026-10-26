@@ -151,7 +151,7 @@ ThumbnailErrors validate_thumbnails_string(wxString& str, const wxString& def_ex
     if (!thumbnails_list.empty()) {
         const auto& extentions = ConfigOptionEnum<GCodeThumbnailsFormat>::get_enum_names();
         for (const auto& [format, size] : thumbnails_list)
-            str += format_wxstr("%1%x%2%/%3%, ", size.x(), size.y(), extentions[int(format)]);
+            str += format_wxs_u8L("%1%x%2%/%3%, ", size.x(), size.y(), extentions[int(format)]);
         str.resize(str.Len() - 2);
     }
 
@@ -547,7 +547,7 @@ void Field::get_value_by_opt_type(wxString& str, const bool check_value/* = true
                 std::string opt_key_without_idx = m_opt_id.substr(0, m_opt_id.find('#'));
                 if (m_opt_id == "filament_flow_ratio") {
                     if (m_value.empty() || boost::any_cast<double>(m_value) != val) {
-                        wxString msg_text = format_wxstr(_L("Value %s is out of range, continue?"), str);
+                        wxString msg_text = format_wxs_u8L(_L("Value %s is out of range, continue?"), str);
 //                        wxMessageDialog dialog(m_parent, msg_text, _L("Parameter validation") + ": " + m_opt_id, wxICON_WARNING | wxYES | wxNO);
                         WarningDialog dialog(m_parent, msg_text, _L("Parameter validation") + ": " + m_opt_id, wxYES | wxNO);
                         if (dialog.ShowModal() == wxID_NO) {
@@ -563,7 +563,7 @@ void Field::get_value_by_opt_type(wxString& str, const bool check_value/* = true
                 }
                 else if(m_opt_id == "filament_retraction_distances_when_cut" || opt_key_without_idx == "retraction_distances_when_cut"){
                     if (m_value.empty() || boost::any_cast<double>(m_value) != val) {
-                        wxString msg_text = format_wxstr(_L("Value %s is out of range. The valid range is from %d to %d."), str, m_opt.min, m_opt.max);
+                        wxString msg_text = format_wxs_u8L(_L("Value %s is out of range. The valid range is from %d to %d."), str, m_opt.min, m_opt.max);
                         WarningDialog dialog(m_parent, msg_text, _L("Parameter validation") + ": " + m_opt_id, wxOK);
                         if (dialog.ShowModal()) {
                             if (m_value.empty()) {
@@ -689,7 +689,7 @@ void Field::get_value_by_opt_type(wxString& str, const bool check_value/* = true
                 set_value(str_out, true);
                 wxString error_str;
                 if (errors.has(ThumbnailError::InvalidVal))
-                    error_str += format_wxstr(_L("Invalid input format. Expected vector of dimensions in the following format: \"%1%\""),
+                    error_str += format_wxs_u8L(_L("Invalid input format. Expected vector of dimensions in the following format: \"%1%\""),
                                               "XxY/EXT, XxY/EXT, ...");
                 if (errors.has(ThumbnailError::OutOfRange)) {
                     if (!error_str.empty())
@@ -707,7 +707,7 @@ void Field::get_value_by_opt_type(wxString& str, const bool check_value/* = true
                 set_value(str, true);
             }
         } else if (m_opt.opt_key == "sparse_infill_rotate_template" || m_opt.opt_key == "solid_infill_rotate_template") {
-            std::string ustr(str.utf8_string());
+            std::string us_u8L(str.utf8_string());
             if (!ConfigOptionFloats::validate_string(ustr)) {
                 std::string v;
                 std::smatch match;
@@ -724,7 +724,7 @@ void Field::get_value_by_opt_type(wxString& str, const bool check_value/* = true
                     this->set_value(from_u8(v), true);
                     m_value = into_u8(v);
                 } catch (...) {
-                    show_error(m_parent, format_wxstr(_L("This parameter expects a valid template.")));
+                    show_error(m_parent, format_wxs_u8L(_L("This parameter expects a valid template.")));
                     wxString old_value(boost::any_cast<std::string>(m_value));
                     this->set_value(old_value, true); // Revert to previous value
                 }
@@ -734,14 +734,14 @@ void Field::get_value_by_opt_type(wxString& str, const bool check_value/* = true
             }
             break;
         } else if (m_opt.opt_key == "extra_solid_infills") {
-            std::string ustr(str.utf8_string());
+            std::string us_u8L(str.utf8_string());
             // New rule: accept either interval form (N or N#K) or explicit list (e.g. 1,7,9), with optional quotes.
             const std::regex rx_interval(u8R"(^\s*['"]?\s*\d+\s*(?:#\s*\d*)?\s*['"]?\s*$)");
             // List entries may be plain numbers or number with optional #K count, e.g., 5, 9#2, 18
             const std::regex rx_list(u8R"(^\s*['"]?\s*\d+(?:\s*#\s*\d*)?(?:\s*,\s*\d+(?:\s*#\s*\d*)?)*\s*['"]?\s*$)");
             bool is_valid = ustr.empty() || std::regex_match(ustr, rx_interval) || std::regex_match(ustr, rx_list);
             if (!is_valid) {
-                show_error(m_parent, format_wxstr(_L("Invalid pattern. Use N, N#K, or a comma-separated list with optional #K per entry. Examples: 5, 5#2, 1,7,9, 5,9#2,18.")));
+                show_error(m_parent, format_wxs_u8L(_L("Invalid pattern. Use N, N#K, or a comma-separated list with optional #K per entry. Examples: 5, 5#2, 1,7,9, 5,9#2,18.")));
                 wxString old_value(boost::any_cast<std::string>(m_value));
                 this->set_value(old_value, true); // Revert to previous value
             }
@@ -774,7 +774,7 @@ void Field::get_value_by_opt_type(wxString& str, const bool check_value/* = true
                 wxString text_value;
                 if (!m_value.empty()) text_value = get_thumbnail_string(boost::any_cast<Vec2d>(m_value));
                 set_value(text_value, true);
-                show_error(m_parent, format_wxstr(_L("Invalid format. Expected vector format: \"%1%\""), "XxY, XxY, ..."));
+                show_error(m_parent, format_wxs_u8L(_L("Invalid format. Expected vector format: \"%1%\""), "XxY, XxY, ..."));
             }
         }
 
@@ -810,7 +810,7 @@ void Field::get_value_by_opt_type(wxString& str, const bool check_value/* = true
                 if (!m_value.empty())
                     text_value = get_thumbnails_string(boost::any_cast<std::vector<Vec2d>>(m_value));
                 set_value(text_value, true);
-                show_error(m_parent, format_wxstr(_L("Invalid format. Expected vector format: \"%1%\""),"XxY, XxY, ..." ));
+                show_error(m_parent, format_wxs_u8L(_L("Invalid format. Expected vector format: \"%1%\""),"XxY, XxY, ..." ));
             }
         }
 
@@ -2186,7 +2186,7 @@ void PrinterAgentChoice::set_value(const std::string& value, bool change_event)
     {
         field->SetSelection(wxNOT_FOUND); // nothing shows as selected in the dropdown
         // TRN %1% is the ID of a printer agent that is no longer available
-        field->SetValue(format_wxstr(_L("%1% (missing)"), value)); // set a value not in the selection (upper display field)
+        field->SetValue(format_wxs_u8L(_L("%1% (missing)"), value)); // set a value not in the selection (upper display field)
     }
     else
     {
@@ -2629,7 +2629,7 @@ void ColourPicker::BUILD()
     if (m_opt.height >= 0) size.SetHeight(m_opt.height*m_em_unit);
     if (m_opt.width >= 0) size.SetWidth(m_opt.width*m_em_unit);
 
-    const wxString clr_str(m_opt.type == coString ? m_opt.get_default_value<ConfigOptionString>()->value :
+    const wxString clr_s_u8L(m_opt.type == coString ? m_opt.get_default_value<ConfigOptionString>()->value :
                                                    m_opt.get_default_value<ConfigOptionStrings>()->get_at(m_opt_idx));
     auto* button = new wxButton(m_parent, wxID_ANY, wxEmptyString, wxDefaultPosition, size, wxBORDER_NONE);
     window = button;

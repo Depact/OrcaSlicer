@@ -125,7 +125,7 @@ bool image_has_color(const wxImage &image)
 bool encode_color_png_bytes(const wxImage &image, std::vector<unsigned char> &out, std::string &error)
 {
     if (image.GetWidth() <= 0 || image.GetHeight() <= 0) {
-        error = TR("The selected image is empty.");
+        error = _u8L("The selected image is empty.");
         return false;
     }
     wxMemoryOutputStream stream;
@@ -135,14 +135,14 @@ bool encode_color_png_bytes(const wxImage &image, std::vector<unsigned char> &ou
     if (opaque.HasAlpha())
         opaque.ClearAlpha();
     if (!opaque.SaveFile(stream, wxBITMAP_TYPE_PNG)) {
-        error = TR("Failed to prepare the texture for use.");
+        error = _u8L("Failed to prepare the texture for use.");
         return false;
     }
     const size_t size = size_t(stream.GetLength());
     out.resize(size);
     stream.CopyTo(out.data(), size);
     if (out.empty()) {
-        error = TR("Failed to prepare the texture for use.");
+        error = _u8L("Failed to prepare the texture for use.");
         return false;
     }
     return true;
@@ -157,7 +157,7 @@ bool encode_gray_png_bytes(const wxImage &image, std::vector<unsigned char> &out
     const int     w    = gray.GetWidth();
     const int     h    = gray.GetHeight();
     if (w <= 0 || h <= 0) {
-        error = TR("The selected image is empty.");
+        error = _u8L("The selected image is empty.");
         return false;
     }
 
@@ -170,7 +170,7 @@ bool encode_gray_png_bytes(const wxImage &image, std::vector<unsigned char> &out
     const boost::filesystem::path tmp = boost::filesystem::temp_directory_path()
         / boost::filesystem::unique_path("orca_texdisp_%%%%%%%%.png");
     if (!Slic3r::png::write_gray_to_file(tmp.string(), size_t(w), size_t(h), pixels)) {
-        error = TR("Failed to prepare the texture for use.");
+        error = _u8L("Failed to prepare the texture for use.");
         return false;
     }
 
@@ -182,7 +182,7 @@ bool encode_gray_png_bytes(const wxImage &image, std::vector<unsigned char> &out
     boost::filesystem::remove(tmp, ec);
 
     if (out.empty()) {
-        error = TR("Failed to prepare the texture for use.");
+        error = _u8L("Failed to prepare the texture for use.");
         return false;
     }
     return true;
@@ -247,7 +247,7 @@ std::optional<TextureLibraryEntry> write_user_texture(const std::vector<unsigned
 {
     const std::string user_dir = user_texture_dir();
     if (user_dir.empty()) {
-        error = TR("Could not create the folder for imported textures.");
+        error = _u8L("Could not create the folder for imported textures.");
         return std::nullopt;
     }
 
@@ -259,7 +259,7 @@ std::optional<TextureLibraryEntry> write_user_texture(const std::vector<unsigned
         boost::nowide::ofstream ofs(dest.string(), std::ios::binary);
         ofs.write(reinterpret_cast<const char *>(bytes.data()), std::streamsize(bytes.size()));
         if (!ofs.good()) {
-            error = TR("Failed to save the imported texture.");
+            error = _u8L("Failed to save the imported texture.");
             return std::nullopt;
         }
     }
@@ -270,7 +270,7 @@ std::optional<TextureLibraryEntry> write_user_texture(const std::vector<unsigned
         if (e.path == dest_str)
             return e;
 
-    error = TR("Failed to save the imported texture.");
+    error = _u8L("Failed to save the imported texture.");
     return std::nullopt;
 }
 
@@ -405,14 +405,14 @@ void touch_user_texture(const std::string &path)
 bool remove_user_texture(const std::string &path, std::string &error)
 {
     if (!in_user_texture_dir(path)) {
-        error = TR("Only your own imported textures can be removed.");
+        error = _u8L("Only your own imported textures can be removed.");
         return false;
     }
     boost::system::error_code ec;
     boost::filesystem::remove(boost::filesystem::path(path), ec);
     if (ec) {
         BOOST_LOG_TRIVIAL(error) << "Could not delete texture " << path << ": " << ec.message();
-        error = TR("Could not delete the texture file.");
+        error = _u8L("Could not delete the texture file.");
         return false;
     }
 
@@ -428,7 +428,7 @@ std::optional<TextureLibraryEntry> import_texture_to_library(const std::string &
 {
     wxImage image;
     if (!image.LoadFile(from_u8(source_path)) || !image.IsOk()) {
-        error = TR("Could not load the selected image.");
+        error = _u8L("Could not load the selected image.");
         return std::nullopt;
     }
 
@@ -443,7 +443,7 @@ std::shared_ptr<std::vector<unsigned char>> load_texture_image_data(const std::s
 {
     std::vector<unsigned char> bytes = read_file_bytes(path);
     if (bytes.empty()) {
-        error = TR("Could not read the texture file.");
+        error = _u8L("Could not read the texture file.");
         return nullptr;
     }
     if (is_supported_height_map(bytes))
@@ -453,7 +453,7 @@ std::shared_ptr<std::vector<unsigned char>> load_texture_image_data(const std::s
     // an import would - keeping its colour if it has any - but leave the file on disk alone.
     wxImage image;
     if (!image.LoadFile(from_u8(path)) || !image.IsOk()) {
-        error = TR("Could not load the selected image.");
+        error = _u8L("Could not load the selected image.");
         return nullptr;
     }
     std::vector<unsigned char> converted;
@@ -468,7 +468,7 @@ std::optional<TextureLibraryEntry> save_texture_to_library(const DecodedHeightTe
     std::vector<unsigned char> scratch;
     const wxImage              wx = image_from_decoded(image, scratch);
     if (!wx.IsOk()) {
-        error = TR("The selected image is empty.");
+        error = _u8L("The selected image is empty.");
         return std::nullopt;
     }
 

@@ -755,8 +755,8 @@ void DesignSketchTool::apply_dimension(double v)
                                  kind == DimType::Diameter);
     if (!std::isfinite(v) || (needs_positive && v <= 0.0) ||
         (!needs_positive && kind != DimType::Angle && kind != DimType::None && v < 0.0)) {
-        show_refusal(needs_positive ? TR("The value must be greater than zero")
-                                    : TR("The value must not be negative (zero means coincident)"));
+        show_refusal(needs_positive ? _u8L("The value must be greater than zero")
+                                    : _u8L("The value must not be negative (zero means coincident)"));
         return;
     }
     switch (dimension_kind()) {
@@ -808,7 +808,7 @@ void DesignSketchTool::apply_dimension(double v)
     record_dimension_constraint(v);          // store a driving constraint for this dimension
     resolve_live();                          // live-solve so the viewport shows the solved sketch
     if (!m_solve_ok)                         // the number on screen is not the geometry's number
-        notify(TR("That dimension cannot be satisfied — the sketch is over-constrained"));
+        notify(_u8L("That dimension cannot be satisfied — the sketch is over-constrained"));
     m_selection.clear();
     if (on_selection_changed) on_selection_changed(0);
 }
@@ -939,7 +939,7 @@ void DesignSketchTool::announce_loop_defects()
     for (const RegionLoop& r : region_loops(m_entities))
         if (r.defect) { any = true; break; }
     if (any && !m_loop_defect_shown)
-        notify(TR("This profile crosses or folds back on itself at the red mark, so it does not bound one region"));
+        notify(_u8L("This profile crosses or folds back on itself at the red mark, so it does not bound one region"));
     m_loop_defect_shown = any;
 }
 
@@ -1450,7 +1450,7 @@ void DesignSketchTool::open_angle_editor(int ei)
     if (!on_inline_edit) return;
     DimAnnot a; a.kind = DimType::Angle; a.ea = ei;
     const wxPoint px(m_last_mouse_x, m_last_mouse_y);
-    on_inline_edit(px, measure_dim(a), TR("Angle (°)"),
+    on_inline_edit(px, measure_dim(a), _u8L("Angle (°)"),
                    [this, ei](double deg) { set_line_angle(ei, deg); },
                    []()                   {});
 }
@@ -1554,31 +1554,31 @@ void DesignSketchTool::arm_polyline_segment_edit()
     m_autoedit_dims.clear();
     m_autoedit_dims.push_back({ mid, L, [this, k, a](double len) {     // Length
         if (k < int(m_points.size())) {
-            if (!(len > 0.0)) { show_refusal(TR("The value must be greater than zero")); return; }
+            if (!(len > 0.0)) { show_refusal(_u8L("The value must be greater than zero")); return; }
             Vec2d dd = m_points[k] - a; const double n = dd.norm();
             if (n > 1e-9) m_points[k] = a + (len / n) * dd;
         }
-    }, {}, TR("Length") });
+    }, {}, _u8L("Length") });
     m_autoedit_dims.push_back({ mid, deg, [this, k, a](double dg) {     // Angle
         if (k < int(m_points.size())) {
             const double len = (m_points[k] - a).norm();
             const double r   = dg * M_PI / 180.0;
             m_points[k] = a + len * Vec2d(std::cos(r), std::sin(r));
         }
-    }, {}, TR("Angle (°)") });
+    }, {}, _u8L("Angle (°)") });
     m_autoedit_dim_idx = 0;
     wxGetApp().CallAfter([this] { open_next_autoedit_dim(); });
 }
 
 std::string DesignSketchTool::dimtype_title(DimType k) const {
     switch (k) {
-        case DimType::Length:         return TR("Length");
-        case DimType::Diameter:       return TR("Diameter");
-        case DimType::Radius:         return TR("Radius");
-        case DimType::Angle:          return TR("Angle (°)");
-        case DimType::Distance:       return TR("Distance");
-        case DimType::DistanceToLine: return TR("Distance");
-        default:                      return TR("Value");
+        case DimType::Length:         return _u8L("Length");
+        case DimType::Diameter:       return _u8L("Diameter");
+        case DimType::Radius:         return _u8L("Radius");
+        case DimType::Angle:          return _u8L("Angle (°)");
+        case DimType::Distance:       return _u8L("Distance");
+        case DimType::DistanceToLine: return _u8L("Distance");
+        default:                      return _u8L("Value");
     }
 }
 
@@ -1617,7 +1617,7 @@ void DesignSketchTool::open_primary_autoedit()
         if (q.kind == DimType::Angle) {
             const int ei = q.ea;
             m_autoedit_dims.push_back({ q.label_pos, measure_dim(q),
-                [this, ei](double v) { set_line_angle(ei, v); }, { ei }, TR("Angle (°)") });
+                [this, ei](double v) { set_line_angle(ei, v); }, { ei }, _u8L("Angle (°)") });
             continue;
         }
         DimAnnot a = q;
@@ -1626,8 +1626,8 @@ void DesignSketchTool::open_primary_autoedit()
             [this, a](double v) mutable {
                 const bool positive = a.kind == DimType::Length || a.kind == DimType::Radius || a.kind == DimType::Diameter;
                 if (!std::isfinite(v) || (positive && v <= 0.0) || (!positive && v < 0.0)) {
-                    show_refusal(positive ? TR("The value must be greater than zero")
-                                          : TR("The value must not be negative (zero means coincident)"));
+                    show_refusal(positive ? _u8L("The value must be greater than zero")
+                                          : _u8L("The value must not be negative (zero means coincident)"));
                     return;
                 }
                 a.value = v;
@@ -1654,8 +1654,8 @@ void DesignSketchTool::open_primary_autoedit()
             const double side = (m_entities[f.begin].p1 - m_entities[f.begin].p0).norm();
             const Vec2d  sp   = m_entities[f.begin].p0 - f.c0;
             double deg = std::atan2(sp.y(), sp.x()) * 180.0 / M_PI; if (deg < 0.0) deg += 360.0;
-            m_autoedit_dims.push_back({ m_live_poly_side_label,  side, [this, fi](double v){ set_polygon_side(fi, v); }, span(fi), TR("Side") });
-            m_autoedit_dims.push_back({ m_live_poly_angle_label, deg,  [this, fi](double v){ set_polygon_angle(fi, v); }, span(fi), TR("Angle (°)") });
+            m_autoedit_dims.push_back({ m_live_poly_side_label,  side, [this, fi](double v){ set_polygon_side(fi, v); }, span(fi), _u8L("Side") });
+            m_autoedit_dims.push_back({ m_live_poly_angle_label, deg,  [this, fi](double v){ set_polygon_angle(fi, v); }, span(fi), _u8L("Angle (°)") });
         }
     }
     if (m_live_rrect_fi >= 0) {
@@ -1665,16 +1665,16 @@ void DesignSketchTool::open_primary_autoedit()
         auto rr_w = [this, fi](double v){ const Feature& g = m_features[fi]; set_rounded_rect(fi, v, std::abs(g.c1.y()-g.c0.y()), g.param); };
         auto rr_h = [this, fi](double v){ const Feature& g = m_features[fi]; set_rounded_rect(fi, std::abs(g.c1.x()-g.c0.x()), v, g.param); };
         auto rr_r = [this, fi](double v){ const Feature& g = m_features[fi]; set_rounded_rect(fi, std::abs(g.c1.x()-g.c0.x()), std::abs(g.c1.y()-g.c0.y()), v); };
-        m_autoedit_dims.push_back({ m_live_rrect_w_label, w, rr_w, span(fi), TR("Width") });
-        m_autoedit_dims.push_back({ m_live_rrect_h_label, h, rr_h, span(fi), TR("Height") });
-        m_autoedit_dims.push_back({ m_live_rrect_r_label, r, rr_r, span(fi), TR("Radius") });
+        m_autoedit_dims.push_back({ m_live_rrect_w_label, w, rr_w, span(fi), _u8L("Width") });
+        m_autoedit_dims.push_back({ m_live_rrect_h_label, h, rr_h, span(fi), _u8L("Height") });
+        m_autoedit_dims.push_back({ m_live_rrect_r_label, r, rr_r, span(fi), _u8L("Radius") });
     }
     if (m_live_aslot_fi >= 0) {
         const Feature& f = m_features[m_live_aslot_fi];
         const int fi = m_live_aslot_fi;
         const double Rc = (f.c1 - f.c0).norm(), fw = 2.0 * f.param;
-        m_autoedit_dims.push_back({ m_live_aslot_r_label, Rc, [this, fi](double v){ const Feature& g = m_features[fi]; set_arc_slot(fi, v, g.param); }, span(fi), TR("Radius") });
-        m_autoedit_dims.push_back({ m_live_aslot_w_label, fw, [this, fi](double v){ const Feature& g = m_features[fi]; set_arc_slot(fi, (g.c1-g.c0).norm(), v * 0.5); }, span(fi), TR("Width") });
+        m_autoedit_dims.push_back({ m_live_aslot_r_label, Rc, [this, fi](double v){ const Feature& g = m_features[fi]; set_arc_slot(fi, v, g.param); }, span(fi), _u8L("Radius") });
+        m_autoedit_dims.push_back({ m_live_aslot_w_label, fw, [this, fi](double v){ const Feature& g = m_features[fi]; set_arc_slot(fi, (g.c1-g.c0).norm(), v * 0.5); }, span(fi), _u8L("Width") });
     }
     if (m_live_slot_fi >= 0) {
         const Feature& f = m_features[m_live_slot_fi];
@@ -1683,25 +1683,25 @@ void DesignSketchTool::open_primary_autoedit()
         const Vec2d  d  = f.c1 - f.c0;
         const double Lc = d.norm();
         double deg = std::atan2(d.y(), d.x()) * 180.0 / M_PI; if (deg < 0.0) deg += 360.0;
-        m_autoedit_dims.push_back({ m_live_slot_len_label, Lc, [this, fi](double v){ const Feature& g = m_features[fi]; set_slot(fi, v, g.param); }, span(fi), TR("Length") });
-        m_autoedit_dims.push_back({ m_live_slot_w_label, 2.0 * f.param, [this, fi](double v){ const Feature& g = m_features[fi]; set_slot(fi, (g.c1-g.c0).norm(), v * 0.5); }, span(fi), TR("Width") });
-        m_autoedit_dims.push_back({ m_live_slot_angle_label, deg, [this, fi](double v){ set_slot_angle(fi, v); }, span(fi), TR("Angle (°)") });
+        m_autoedit_dims.push_back({ m_live_slot_len_label, Lc, [this, fi](double v){ const Feature& g = m_features[fi]; set_slot(fi, v, g.param); }, span(fi), _u8L("Length") });
+        m_autoedit_dims.push_back({ m_live_slot_w_label, 2.0 * f.param, [this, fi](double v){ const Feature& g = m_features[fi]; set_slot(fi, (g.c1-g.c0).norm(), v * 0.5); }, span(fi), _u8L("Width") });
+        m_autoedit_dims.push_back({ m_live_slot_angle_label, deg, [this, fi](double v){ set_slot_angle(fi, v); }, span(fi), _u8L("Angle (°)") });
     }
     if (m_live_arc_ei >= 0) {   // arc Radius is already a scalar step above; add its sweep angle
         const int ei = m_live_arc_ei;
         const SketchEntity& e = m_entities[ei];
         const double swdeg = std::abs(e.end_angle - e.start_angle) * 180.0 / M_PI;
-        m_autoedit_dims.push_back({ m_live_arc_angle_label, swdeg, [this, ei](double v){ set_arc_sweep(ei, v); }, { ei }, TR("Angle (°)") });
+        m_autoedit_dims.push_back({ m_live_arc_angle_label, swdeg, [this, ei](double v){ set_arc_sweep(ei, v); }, { ei }, _u8L("Angle (°)") });
     }
     if (m_live_ellipse_ei >= 0) {
         const int ei = m_live_ellipse_ei;
         const SketchEntity& e = m_entities[ei];
-        m_autoedit_dims.push_back({ m_live_ellipse_major_label, e.radius, [this, ei](double v){ set_ellipse_axis(ei, true,  v); }, { ei }, TR("Semi-major axis") });
-        m_autoedit_dims.push_back({ m_live_ellipse_minor_label, e.rminor, [this, ei](double v){ set_ellipse_axis(ei, false, v); }, { ei }, TR("Semi-minor axis") });
+        m_autoedit_dims.push_back({ m_live_ellipse_major_label, e.radius, [this, ei](double v){ set_ellipse_axis(ei, true,  v); }, { ei }, _u8L("Semi-major axis") });
+        m_autoedit_dims.push_back({ m_live_ellipse_minor_label, e.rminor, [this, ei](double v){ set_ellipse_axis(ei, false, v); }, { ei }, _u8L("Semi-minor axis") });
         if (e.type == SketchEntity::Type::EllipseArc) {   // + included sweep
             const double swdeg = std::abs(e.end_angle - e.start_angle) * 180.0 / M_PI;
             m_autoedit_dims.push_back({ m_live_ellipsearc_sweep_label, swdeg,
-                [this, ei](double v){ set_ellipsearc_sweep(ei, v); }, { ei }, TR("Angle (°)") });
+                [this, ei](double v){ set_ellipsearc_sweep(ei, v); }, { ei }, _u8L("Angle (°)") });
         }
     }
     if (m_live_obrect_fi >= 0) {   // oblique rect: W,H already added as scalars; + orientation
@@ -1711,7 +1711,7 @@ void DesignSketchTool::open_primary_autoedit()
         double adeg = std::atan2(e0.p1.y() - e0.p0.y(), e0.p1.x() - e0.p0.x()) * 180.0 / M_PI;
         if (adeg < 0.0) adeg += 360.0;
         m_autoedit_dims.push_back({ m_live_obrect_angle_label, adeg,
-            [this, fi](double v){ set_rect_angle(fi, v); }, span(fi), TR("Angle (°)") });
+            [this, fi](double v){ set_rect_angle(fi, v); }, span(fi), _u8L("Angle (°)") });
     }
 
     trace_autoedit(m_autoedit_dims.empty() ? "built NO steps (no live quote matched)" : "opening",
@@ -1732,7 +1732,7 @@ void DesignSketchTool::open_polygon_side_editor(int fi)
     const double side = (m_entities[f.begin].p1 - m_entities[f.begin].p0).norm();
     const wxPoint px(m_last_mouse_x, m_last_mouse_y);
     // TRN Design sketch: length of one side of a regular polygon (inline value editor title)
-    on_inline_edit(px, side, TR("Side"),
+    on_inline_edit(px, side, _u8L("Side"),
                    [this, fi](double v) { set_polygon_side(fi, v); },
                    []()                 {});
 }
@@ -1746,7 +1746,7 @@ void DesignSketchTool::open_polygon_angle_editor(int fi)
     double deg = std::atan2(sp.y(), sp.x()) * 180.0 / M_PI;
     if (deg < 0.0) deg += 360.0;
     const wxPoint px(m_last_mouse_x, m_last_mouse_y);
-    on_inline_edit(px, deg, TR("Angle (°)"),
+    on_inline_edit(px, deg, _u8L("Angle (°)"),
                    [this, fi](double v) { set_polygon_angle(fi, v); },
                    []()                 {});
 }
@@ -1756,7 +1756,7 @@ void DesignSketchTool::open_polygon_angle_editor(int fi)
 void DesignSketchTool::set_polygon_side(int fi, double side)
 {
     if (fi < 0 || fi >= int(m_features.size())) return;
-    if (!(side > 0.0)) { show_refusal(TR("The value must be greater than zero")); return; }
+    if (!(side > 0.0)) { show_refusal(_u8L("The value must be greater than zero")); return; }
     const int n = std::max(3, m_features[fi].sides);
     const double R = side / (2.0 * std::sin(M_PI / double(n)));
     set_polygon_radius(fi, R);
@@ -2001,7 +2001,7 @@ void DesignSketchTool::open_arc_angle_editor(int ei)
     if (e.type != SketchEntity::Type::Arc) return;
     double swdeg = std::abs(e.end_angle - e.start_angle) * 180.0 / M_PI;
     const wxPoint px(m_last_mouse_x, m_last_mouse_y);
-    on_inline_edit(px, swdeg, TR("Angle (°)"),
+    on_inline_edit(px, swdeg, _u8L("Angle (°)"),
                    [this, ei](double v) { set_arc_sweep(ei, v); },
                    []()                 {});
 }
@@ -2015,7 +2015,7 @@ void DesignSketchTool::set_arc_sweep(int ei, double deg)
     if (ei < 0 || ei >= int(m_entities.size())) return;
     SketchEntity& e = m_entities[ei];
     if (e.type != SketchEntity::Type::Arc || e.radius < 1e-6) return;
-    if (!(deg > 0.0 && deg < 360.0)) { show_refusal(TR("The angle must be between 0° and 360°")); return; }
+    if (!(deg > 0.0 && deg < 360.0)) { show_refusal(_u8L("The angle must be between 0° and 360°")); return; }
     double sweep = deg * M_PI / 180.0;
     const double sign = (e.end_angle >= e.start_angle) ? 1.0 : -1.0;
     e.end_angle = e.start_angle + sign * sweep;
@@ -2087,7 +2087,7 @@ void DesignSketchTool::open_ellipse_axis_editor(int ei, bool major)
     if (e.type != SketchEntity::Type::Ellipse && e.type != SketchEntity::Type::EllipseArc) return;
     const double v = major ? e.radius : e.rminor;
     const wxPoint px(m_last_mouse_x, m_last_mouse_y);
-    on_inline_edit(px, v, major ? TR("Semi-major axis") : TR("Semi-minor axis"),
+    on_inline_edit(px, v, major ? _u8L("Semi-major axis") : _u8L("Semi-minor axis"),
                    [this, ei, major](double nv) { set_ellipse_axis(ei, major, nv); },
                    []()                         {});
 }
@@ -2098,9 +2098,9 @@ void DesignSketchTool::set_ellipse_axis(int ei, bool major, double v)
     if (ei < 0 || ei >= int(m_entities.size())) return;
     SketchEntity& e = m_entities[ei];
     if (e.type != SketchEntity::Type::Ellipse && e.type != SketchEntity::Type::EllipseArc) return;
-    if (!(v > 0.0)) { show_refusal(TR("The value must be greater than zero")); return; }
+    if (!(v > 0.0)) { show_refusal(_u8L("The value must be greater than zero")); return; }
     if (major ? v < e.rminor : v > e.radius) {
-        show_refusal(TR("The semi-major axis cannot be shorter than the semi-minor axis"));
+        show_refusal(_u8L("The semi-major axis cannot be shorter than the semi-minor axis"));
         return;
     }
     if (major) e.radius = v;
@@ -2119,7 +2119,7 @@ void DesignSketchTool::set_ellipsearc_sweep(int ei, double deg)
     if (ei < 0 || ei >= int(m_entities.size())) return;
     SketchEntity& e = m_entities[ei];
     if (e.type != SketchEntity::Type::EllipseArc) return;
-    if (!(deg > 0.0 && deg < 360.0)) { show_refusal(TR("The angle must be between 0° and 360°")); return; }
+    if (!(deg > 0.0 && deg < 360.0)) { show_refusal(_u8L("The angle must be between 0° and 360°")); return; }
     const double sweep = deg * M_PI / 180.0;
     const double sign  = (e.end_angle >= e.start_angle) ? 1.0 : -1.0;
     e.end_angle = e.start_angle + sign * sweep;
@@ -2188,7 +2188,7 @@ void DesignSketchTool::open_rounded_rect_editor(int fi, int which)
     const double r = f.param;
     const double v = (which == 0) ? w : (which == 1) ? h : r;
     const wxPoint px(m_last_mouse_x, m_last_mouse_y);
-    on_inline_edit(px, v, which == 0 ? TR("Width") : which == 1 ? TR("Height") : TR("Radius"),
+    on_inline_edit(px, v, which == 0 ? _u8L("Width") : which == 1 ? _u8L("Height") : _u8L("Radius"),
         [this, fi, which](double nv) {
             const Feature& g = m_features[fi];
             double gw = std::abs(g.c1.x() - g.c0.x());
@@ -2208,9 +2208,9 @@ void DesignSketchTool::set_rounded_rect(int fi, double w, double h, double r)
     if (fi < 0 || fi >= int(m_features.size())) return;
     Feature& f = m_features[fi];
     if (f.begin < 0 || f.end > int(m_entities.size()) || f.end <= f.begin) return;
-    if (!(w > 0.0 && h > 0.0 && r > 0.0)) { show_refusal(TR("The value must be greater than zero")); return; }
+    if (!(w > 0.0 && h > 0.0 && r > 0.0)) { show_refusal(_u8L("The value must be greater than zero")); return; }
     if (r >= std::min(w, h) * 0.5) {
-        show_refusal(TR("The corner radius must be less than half the shorter side"));
+        show_refusal(_u8L("The corner radius must be less than half the shorter side"));
         return;
     }
     const double xmin = std::min(f.c0.x(), f.c1.x()), ymin = std::min(f.c0.y(), f.c1.y());
@@ -2232,7 +2232,7 @@ void DesignSketchTool::open_arc_slot_editor(int fi, bool radius)
     const double Rc = (f.c1 - f.c0).norm();
     const double v  = radius ? Rc : (2.0 * f.param);     // width quote shows the FULL width
     const wxPoint px(m_last_mouse_x, m_last_mouse_y);
-    on_inline_edit(px, v, radius ? TR("Radius") : TR("Width"),
+    on_inline_edit(px, v, radius ? _u8L("Radius") : _u8L("Width"),
         [this, fi, radius](double nv) {
             const Feature& g = m_features[fi];
             const double gRc = (g.c1 - g.c0).norm();
@@ -2256,9 +2256,9 @@ void DesignSketchTool::set_arc_slot(int fi, double Rc, double w)
     Vec2d dirE = Ec - center;
     if (dirS.squaredNorm() < 1e-12 || dirE.squaredNorm() < 1e-12) return;
     dirS.normalize(); dirE.normalize();
-    if (!(Rc > 0.0 && w > 0.0)) { show_refusal(TR("The value must be greater than zero")); return; }
+    if (!(Rc > 0.0 && w > 0.0)) { show_refusal(_u8L("The value must be greater than zero")); return; }
     if (w >= Rc) {                                        // make_arc_slot needs w < Rc
-        show_refusal(TR("The slot is too wide for its radius — the width must be less than twice the radius"));
+        show_refusal(_u8L("The slot is too wide for its radius — the width must be less than twice the radius"));
         return;
     }
     std::vector<SketchEntity> rebuilt =
@@ -2282,7 +2282,7 @@ void DesignSketchTool::open_slot_editor(int fi, int which)
     double deg = std::atan2(d.y(), d.x()) * 180.0 / M_PI; if (deg < 0.0) deg += 360.0;
     const double v = (which == 0) ? d.norm() : (which == 1) ? 2.0 * f.param : deg;
     const wxPoint px(m_last_mouse_x, m_last_mouse_y);
-    on_inline_edit(px, v, which == 0 ? TR("Length") : which == 1 ? TR("Width") : TR("Angle (°)"),
+    on_inline_edit(px, v, which == 0 ? _u8L("Length") : which == 1 ? _u8L("Width") : _u8L("Angle (°)"),
         [this, fi, which](double nv) {
             const Feature& g = m_features[fi];
             if      (which == 0) set_slot(fi, nv, g.param);
@@ -2303,7 +2303,7 @@ void DesignSketchTool::set_slot(int fi, double length, double w)
     Vec2d dir = f.c1 - f.c0;
     if (dir.squaredNorm() < 1e-12) return;
     dir.normalize();
-    if (!(length > 0.0 && w > 0.0)) { show_refusal(TR("The value must be greater than zero")); return; }
+    if (!(length > 0.0 && w > 0.0)) { show_refusal(_u8L("The value must be greater than zero")); return; }
     const Vec2d c0 = f.c0, c1 = f.c0 + length * dir;
     std::vector<SketchEntity> rebuilt = make_slot(c0, c1, w);
     if (int(rebuilt.size()) != 4) return;
@@ -2386,8 +2386,8 @@ void DesignSketchTool::set_dimension_value(double v)
     DimAnnot& a = m_dimensions[m_pending_dim];
     const bool positive = a.kind == DimType::Length || a.kind == DimType::Radius || a.kind == DimType::Diameter;
     if (!std::isfinite(v) || (positive && v <= 0.0) || (!positive && a.kind != DimType::Angle && v < 0.0)) {
-        show_refusal(positive ? TR("The value must be greater than zero")
-                              : TR("The value must not be negative (zero means coincident)"));
+        show_refusal(positive ? _u8L("The value must be greater than zero")
+                              : _u8L("The value must not be negative (zero means coincident)"));
         return;
     }
     a.value = v;
@@ -2395,7 +2395,7 @@ void DesignSketchTool::set_dimension_value(double v)
         m_constraints[a.con] = constraint_for(a);
     resolve_live();
     if (!m_solve_ok)
-        notify(format(TR("%1% cannot be satisfied — the sketch is over-constrained"), dimtype_title(a.kind)));
+        notify(format(_u8L("%1% cannot be satisfied — the sketch is over-constrained"), dimtype_title(a.kind)));
     m_pending_dim = -1;
 }
 
@@ -8798,7 +8798,7 @@ void DesignSketchTool::op_pick(int ei)
         else if (ei != m_op_a) {
             Vec2d cC, cBis; double cTh = 0.0;
             if (!op_corner(m_op_a, ei, cC, cBis, cTh)) {   // parallel or straight: no corner
-                notify(TR("Those two lines do not meet at a corner — pick two lines that do"));
+                notify(_u8L("Those two lines do not meet at a corner — pick two lines that do"));
                 return;
             }
             m_op_b = ei;
@@ -8873,10 +8873,10 @@ void DesignSketchTool::open_op_editor()
     // Offset is signed the same way the arrow drag is (the sign picks the side), so the field
     // shows and accepts the sign instead of silently keeping the old one. Fillet/Chamfer sizes
     // are positive: a non-positive one is refused, not clamped to a hairline.
-    on_inline_edit(px, m_op_value, m_mode == Mode::Offset ? TR("Distance") : m_mode == Mode::Fillet ? TR("Radius") : TR("Size"),
+    on_inline_edit(px, m_op_value, m_mode == Mode::Offset ? _u8L("Distance") : m_mode == Mode::Fillet ? _u8L("Radius") : _u8L("Size"),
         [this](double v) {
             if (m_mode != Mode::Offset && v <= 0.0) {
-                show_refusal(TR("The size must be greater than zero"));
+                show_refusal(_u8L("The size must be greater than zero"));
                 return;
             }
             m_op_value   = v;
@@ -8958,8 +8958,8 @@ void DesignSketchTool::confirm_op()
             : SketchEngine::chamfer_lines(m_entities[m_op_a], m_entities[m_op_b], m_op_value, a_out, b_out, extra);
         if (!ok) {
             notify(fillet
-                ? TR("Fillet: the radius overruns a leg, or the two lines do not meet at a corner")
-                : TR("Chamfer: the distance overruns a leg, or the two lines do not meet at a corner"));
+                ? _u8L("Fillet: the radius overruns a leg, or the two lines do not meet at a corner")
+                : _u8L("Chamfer: the distance overruns a leg, or the two lines do not meet at a corner"));
             reset_op();
             return;
         }
@@ -9002,7 +9002,7 @@ void DesignSketchTool::confirm_op()
         const int a = m_op_a;
         auto out = SketchEngine::offset_entities(op_chain_entities(), m_op_value);
         if (out.empty()) {
-            notify(TR("Offset: an ellipse or a spline has no parallel of its own kind — pick lines, arcs or circles"));
+            notify(_u8L("Offset: an ellipse or a spline has no parallel of its own kind — pick lines, arcs or circles"));
             reset_op();
             return;
         }
@@ -9288,13 +9288,13 @@ void DesignSketchTool::open_tf_editor_a()
     Vec2d dir = m_tf_delta; if (dir.norm() > 1e-9) dir.normalize(); else dir = Vec2d(1, 0);
     const char* title = (m_mode == Mode::Rotate || m_mode == Mode::PolarArray) ? L("Angle (°)")
                       : (m_mode == Mode::Scale) ? L("Scale factor") : L("Distance");
-    on_inline_edit(px, cur, TR(title),
+    on_inline_edit(px, cur, _u8L(title),
         [this, dir](double v) {
             switch (m_mode) {
             case Mode::Move: case Mode::Array:        m_tf_delta = dir * v; break;          // signed: flips the direction
             case Mode::Rotate: case Mode::PolarArray: m_tf_angle = v * M_PI / 180.0; break; // signed: CCW positive
             case Mode::Scale:
-                if (v <= 0.0) { show_refusal(TR("The scale factor must be greater than zero")); return; }
+                if (v <= 0.0) { show_refusal(_u8L("The scale factor must be greater than zero")); return; }
                 m_tf_scale = v;
                 break;
             default: break;
@@ -9310,10 +9310,10 @@ void DesignSketchTool::open_tf_editor_count()
     if (!on_inline_edit || !tf_ready()) return;
     if (m_mode != Mode::Array && m_mode != Mode::PolarArray) return;
     const wxPoint px(m_last_mouse_x, m_last_mouse_y);
-    on_inline_edit(px, double(std::max(2, m_tf_count)), TR("Copies"),
+    on_inline_edit(px, double(std::max(2, m_tf_count)), _u8L("Copies"),
         [this](double v) {
             if (v < 2.0 || std::abs(v - std::round(v)) > 1e-9) {
-                show_refusal(TR("The number of copies must be a whole number, 2 or more"));
+                show_refusal(_u8L("The number of copies must be a whole number, 2 or more"));
                 return;
             }
             m_tf_count   = int(std::round(v));
@@ -9488,7 +9488,7 @@ void DesignSketchTool::confirm_transform()
             bool bound = false;
             for (auto& w : ladder) if (!w.empty() && try_add_constraints(w)) { bound = true; break; }
             if (!bound)
-                notify(TR("The array copies are unconstrained — the solver refused every binding"), false);
+                notify(_u8L("The array copies are unconstrained — the solver refused every binding"), false);
         }
     }
     reset_tf();
@@ -10260,7 +10260,7 @@ std::string DesignSketchTool::build_readout() const
         std::string out = b;
         // Tell the user how to end a polyline chain — there's no other affordance for it.
         if (m_mode == Mode::Polyline && m_points.size() >= 2)
-            out += "      " + TR("right-click or double-click to finish, click start to close");
+            out += "      " + _u8L("right-click or double-click to finish, click start to close");
         return out;
     }
     if (!m_active) return std::string();
@@ -11262,8 +11262,8 @@ bool DesignSketchTool::on_mouse_impl(wxMouseEvent& evt, GLCanvas3D& canvas)
                 // the click missed every live segment, or the picked segment has no crossing /
                 // target among the OTHER live entities (committed sketches aren't trimmed).
                 notify(m_mode == Mode::Extend
-                    ? TR("Extend: click a line or an arc that can reach another entity")
-                    : TR("Trim: click a segment where it crosses another entity"));
+                    ? _u8L("Extend: click a line or an arc that can reach another entity")
+                    : _u8L("Trim: click a segment where it crosses another entity"));
             }
             return true;
         }
@@ -11306,7 +11306,7 @@ bool DesignSketchTool::on_mouse_impl(wxMouseEvent& evt, GLCanvas3D& canvas)
             // 3) Empty space never commits (charter 4.2 withdrew that invisible gesture). A ready
             // op stays pending and says how to finish it; half-made picks are a selection, and
             // empty space clears a selection.
-            if (op_ready()) notify(TR("Press Enter or ✓ to apply, Esc to discard"), false);
+            if (op_ready()) notify(_u8L("Press Enter or ✓ to apply, Esc to discard"), false);
             else if (m_op_a >= 0) { reset_op(); m_selection.clear(); if (on_selection_changed) on_selection_changed(0); }
             return true;
         }
@@ -11359,7 +11359,7 @@ bool DesignSketchTool::on_mouse_impl(wxMouseEvent& evt, GLCanvas3D& canvas)
             }
             if (bi >= 0 && best <= screen_tol(canvas, evt, p, kToolPickPx)) { tf_pick(bi); return true; }
             // 3) Empty space never commits (charter 4.2): the pending transform waits for Enter/✓.
-            if (tf_ready()) notify(TR("Press Enter or ✓ to apply, Esc to discard"), false);
+            if (tf_ready()) notify(_u8L("Press Enter or ✓ to apply, Esc to discard"), false);
             return true;
         }
         if (evt.RightDown()) {
@@ -11784,7 +11784,7 @@ bool DesignSketchTool::on_mouse_impl(wxMouseEvent& evt, GLCanvas3D& canvas)
                     else if (t == SketchEntity::Type::Circle) { a.kind = DimType::Diameter; place_dimension(a); }
                     else if (t == SketchEntity::Type::Arc)    { a.kind = DimType::Radius;   place_dimension(a); }
                     else
-                        notify(TR("No dimension for that entity yet — click a line, a circle, an arc, or two points"));
+                        notify(_u8L("No dimension for that entity yet — click a line, a circle, an arc, or two points"));
                 }
             } else {
                 if (got_pt && !(pe == m_dim_e0 && pr == m_dim_r0)) {
@@ -11796,7 +11796,7 @@ bool DesignSketchTool::on_mouse_impl(wxMouseEvent& evt, GLCanvas3D& canvas)
                     a.ea = m_dim_e0; a.ra = m_dim_r0; a.eb = he;
                     place_dimension(a);
                 } else if (he >= 0) {
-                    notify(TR("Click a second point, or a line to measure the distance to"), false);
+                    notify(_u8L("Click a second point, or a line to measure the distance to"), false);
                 }
                 m_dim_has0 = false;                    // reset after the second pick
             }

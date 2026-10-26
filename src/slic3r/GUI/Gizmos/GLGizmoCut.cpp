@@ -244,20 +244,20 @@ GLGizmoCut3D::GLGizmoCut3D(GLCanvas3D& parent, const std::string& icon_filename,
     , m_connector_style (int(CutConnectorStyle::Prism))
     , m_connector_shape_id (int(CutConnectorShape::Circle))
 {
-    m_modes = { TR("Planar"), TR("Dovetail")//, TR("Grid")
-//              , TR("Radial"), TR("Modular")
+    m_modes = { _u8L("Planar"), _u8L("Dovetail")//, _u8L("Grid")
+//              , _u8L("Radial"), _u8L("Modular")
     };
 
-    m_connector_modes = { TR("Auto"), TR("Manual") };
+    m_connector_modes = { _u8L("Auto"), _u8L("Manual") };
 
-    m_connector_types = { TR("Plug"), TR("Dowel"), TR("Snap") };
+    m_connector_types = { _u8L("Plug"), _u8L("Dowel"), _u8L("Snap") };
 
-    m_connector_styles = { TR("Prism"), TR("Frustum")
-//              , TR("Claw")
+    m_connector_styles = { _u8L("Prism"), _u8L("Frustum")
+//              , _u8L("Claw")
     };
 
-    m_connector_shapes = { TR("Triangle"), TR("Square"), TR("Hexagon"), TR("Circle")
-//              , TR("D-shape")
+    m_connector_shapes = { _u8L("Triangle"), _u8L("Square"), _u8L("Hexagon"), _u8L("Circle")
+//              , _u8L("D-shape")
     };
 
     m_axis_names = { "X", "Y", "Z" };
@@ -269,22 +269,22 @@ GLGizmoCut3D::GLGizmoCut3D(GLCanvas3D& parent, const std::string& icon_filename,
     };
 
     m_labels_map = {
-        {"Connectors"   , TR("Connectors")},
-        {"Type"         , TR("Type")},
-        {"Style"        , TR("Style")},
-        {"Shape"        , TR("Shape")},
-        {"Depth"        , TR("Depth")},
-        {"Size"         , TR("Size")},
-        {"Rotation"     , TR("Rotation")},
-        {"Groove"       , TR("Groove")},
-        {"Width"        , TR("Width")},
-        {"Flap Angle"   , TR("Flap Angle")},
-        {"Groove Angle" , TR("Groove Angle")},
-        {"Cut position" , TR("Cut position")}, // ORCA
-        {"Multiple"     , TR("Multiple")}, // ORCA
-        {"Count"        , TR("Count")}, // ORCA
-        {"Gap"          , TR("Gap")}, // ORCA
-        {"Spacing"      , TR("Spacing")} // ORCA
+        {"Connectors"   , _u8L("Connectors")},
+        {"Type"         , _u8L("Type")},
+        {"Style"        , _u8L("Style")},
+        {"Shape"        , _u8L("Shape")},
+        {"Depth"        , _u8L("Depth")},
+        {"Size"         , _u8L("Size")},
+        {"Rotation"     , _u8L("Rotation")},
+        {"Groove"       , _u8L("Groove")},
+        {"Width"        , _u8L("Width")},
+        {"Flap Angle"   , _u8L("Flap Angle")},
+        {"Groove Angle" , _u8L("Groove Angle")},
+        {"Cut position" , _u8L("Cut position")}, // ORCA
+        {"Multiple"     , _u8L("Multiple")}, // ORCA
+        {"Count"        , _u8L("Count")}, // ORCA
+        {"Gap"          , _u8L("Gap")}, // ORCA
+        {"Spacing"      , _u8L("Spacing")} // ORCA
     };
 
 //    update_connector_shape();
@@ -295,10 +295,10 @@ std::string GLGizmoCut3D::get_tooltip() const
     std::string tooltip;
     if (m_hover_id == Z || (m_dragging && m_hover_id == CutPlane)) {
         double koef = m_imperial_units ? GizmoObjectManipulation::mm_to_in : 1.0;
-        std::string unit_str = " " + (m_imperial_units ? TR_CONTEXT("in", "inches") : TR("mm"));
+        std::string unit_str = " " + (m_imperial_units ? TR_CONTEXT("in", "inches") : _u8L("mm"));
         const BoundingBoxf3& tbb = m_transformed_bounding_box;
 
-        const std::string name = m_keep_as_parts ? TR("Part") : TR("Object");
+        const std::string name = m_keep_as_parts ? _u8L("Part") : _u8L("Object");
         if (tbb.max.z() >= 0.0) {
             double top = (tbb.min.z() <= 0.0 ? tbb.max.z() : tbb.size().z()) * koef;
             tooltip += format(static_cast<float>(top), 2) + " " + unit_str + " (" + name + " A)";
@@ -314,9 +314,9 @@ std::string GLGizmoCut3D::get_tooltip() const
 
     if (!m_dragging && m_hover_id == CutPlane) {
         if (CutMode(m_mode) == CutMode::cutTongueAndGroove)
-            return TR("Click to flip the cut plane\n"
+            return _u8L("Click to flip the cut plane\n"
                         "Drag to move the cut plane");
-        return TR("Click to flip the cut plane\n"
+        return _u8L("Click to flip the cut plane\n"
                     "Drag to move the cut plane\n"
                     "Right-click a part to assign it to the other side");
     }
@@ -463,7 +463,7 @@ bool GLGizmoCut3D::on_mouse(const wxMouseEvent &mouse_event)
 
 void GLGizmoCut3D::shift_cut(double delta)
 {
-    Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Move cut plane"), UndoRedo::SnapshotType::GizmoAction);
+    Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Move cut plane"), UndoRedo::SnapshotType::GizmoAction);
     set_center(m_plane_center + m_cut_normal * delta, true);
     m_ar_plane_center = m_plane_center;
 }
@@ -569,11 +569,11 @@ bool GLGizmoCut3D::render_cut_mode_combo()
     ImGui::AlignTextToFramePadding();
     ImGuiWrapper::push_combo_style(m_parent.get_scale());
     int selection_idx = int(m_mode);
-    const bool is_changed = m_imgui->combo(TR("Mode"), m_modes, selection_idx, 0, m_label_width, m_control_width);
+    const bool is_changed = m_imgui->combo(_u8L("Mode"), m_modes, selection_idx, 0, m_label_width, m_control_width);
     ImGuiWrapper::pop_combo_style();
 
     if (is_changed) {
-        Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Change cut mode"), UndoRedo::SnapshotType::GizmoAction);
+        Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Change cut mode"), UndoRedo::SnapshotType::GizmoAction);
         switch_to_mode(size_t(selection_idx));
         check_and_update_connectors_state();
     }
@@ -636,7 +636,7 @@ bool GLGizmoCut3D::render_slider_two_input(const std::string& label, float& valu
     if (m_imperial_units) {
         min_size *= f_mm_to_in;
     }
-    std::string format = value_in < 0.f ? " " : m_imperial_units ? "%.4f " + TR_CONTEXT("in", "inches") : "%.2f " + TR("mm");
+    std::string format = value_in < 0.f ? " " : m_imperial_units ? "%.4f " + TR_CONTEXT("in", "inches") : "%.2f " + _u8L("mm");
 
     m_imgui->bbl_slider_float_style(("##" + label).c_str(), &value, min_size, mean_size, format.c_str());
 
@@ -707,7 +707,7 @@ bool GLGizmoCut3D::render_slider_input(const std::string& label, float& value_in
     if (m_imperial_units) {
         min_size *= f_mm_to_in;
     }
-    std::string format = value_in < 0.f ? " " : m_imperial_units ? "%.4f  " + TR_CONTEXT("in", "inches") : "%.2f  " + TR("mm");
+    std::string format = value_in < 0.f ? " " : m_imperial_units ? "%.4f  " + TR_CONTEXT("in", "inches") : "%.2f  " + _u8L("mm");
 
     m_imgui->bbl_slider_float_style(("##" + label).c_str(), &value, min_size, max_value, format.c_str());
 
@@ -737,7 +737,7 @@ void GLGizmoCut3D::render_move_center_input(int axis)
 
     if (in_val != val) {
         move[axis] = val;
-        Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Move cut plane"), UndoRedo::SnapshotType::GizmoAction);
+        Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Move cut plane"), UndoRedo::SnapshotType::GizmoAction);
         set_center(move, true);
         m_ar_plane_center = m_plane_center;
 
@@ -1845,7 +1845,7 @@ void GLGizmoCut3D::on_start_dragging()
 {
     m_angle = 0.0;
     if (m_hover_id >= m_connectors_group_id && m_connector_mode == CutConnectorMode::Manual)
-        Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Move connector"), UndoRedo::SnapshotType::GizmoAction);
+        Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Move connector"), UndoRedo::SnapshotType::GizmoAction);
 
     if (m_hover_id == X || m_hover_id == Y || m_hover_id == CutPlaneZRotation)
         m_start_dragging_m = m_rotation_m;
@@ -1856,12 +1856,12 @@ void GLGizmoCut3D::on_stop_dragging()
     if (m_hover_id == X || m_hover_id == Y || m_hover_id == CutPlaneZRotation) {
         m_angle_arc.reset();
         m_angle = 0.0;
-        Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Rotate cut plane"), UndoRedo::SnapshotType::GizmoAction);
+        Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Rotate cut plane"), UndoRedo::SnapshotType::GizmoAction);
         m_start_dragging_m = m_rotation_m;
     }
     else if (m_hover_id == Z || m_hover_id == CutPlane || m_hover_id == CutPlaneXMove|| m_hover_id == CutPlaneYMove) {
         if (m_was_cut_plane_dragged)
-            Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Move cut plane"), UndoRedo::SnapshotType::GizmoAction);
+            Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Move cut plane"), UndoRedo::SnapshotType::GizmoAction);
         m_ar_plane_center = m_plane_center;
     }
 
@@ -2057,7 +2057,7 @@ void GLGizmoCut3D::render_clipper_cut()
     GLboolean cull_face = GL_FALSE;
     ::glGetBooleanv(GL_CULL_FACE, &cull_face);
     ::glDisable(GL_CULL_FACE);
-    m_c->object_clipper()->render_cut(m_part_selection.get_ignored_contours_ptr());
+    m_c->object_clipper()->render_cut(m_part_selection.get_ignored_contours_p_u8L());
     if (cull_face)
         ::glEnable(GL_CULL_FACE);
 
@@ -2438,7 +2438,7 @@ void GLGizmoCut3D::render_connectors_input_window(CutConnectors &connectors, flo
 
     m_imgui->disabled_begin(connectors.empty());
     ImGui::SameLine(m_label_width);
-    const std::string act_name = TR("Remove connectors");
+    const std::string act_name = _u8L("Remove connectors");
     if (render_reset_button("connectors", act_name)) {
         Plater::TakeSnapshot snapshot(wxGetApp().plater(), act_name, UndoRedo::SnapshotType::GizmoAction);
         reset_connectors();
@@ -2497,8 +2497,8 @@ void GLGizmoCut3D::render_connectors_input_window(CutConnectors &connectors, flo
         });
 
     if (m_connector_type == CutConnectorType::Snap) {
-        render_snap_specific_input(TR("Bulge"), _L("Bulge proportion related to radius"), m_snap_bulge_proportion, 0.15f, 5.f, 100.f * m_snap_space_proportion);
-        render_snap_specific_input(TR("Space"), _L("Space proportion related to radius"), m_snap_space_proportion, 0.3f, 10.f, 50.f);
+        render_snap_specific_input(_u8L("Bulge"), _L("Bulge proportion related to radius"), m_snap_bulge_proportion, 0.15f, 5.f, 100.f * m_snap_space_proportion);
+        render_snap_specific_input(_u8L("Space"), _L("Space proportion related to radius"), m_snap_space_proportion, 0.3f, 10.f, 50.f);
     }
 
     ImGui::Separator();
@@ -2575,7 +2575,7 @@ void GLGizmoCut3D::flip_cut_plane()
     m_rotation_m = m_rotation_m * rotation_transform(PI * Vec3d::UnitX());
     m_transformed_bounding_box = transformed_bounding_box(m_plane_center, m_rotation_m);
 
-    Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Flip cut plane"), UndoRedo::SnapshotType::GizmoAction);
+    Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Flip cut plane"), UndoRedo::SnapshotType::GizmoAction);
     m_start_dragging_m = m_rotation_m;
 
     update_clipper();
@@ -2676,7 +2676,7 @@ void GLGizmoCut3D::render_groove_two_float_input(const std::string& label, float
     float tolerance = in_tolerance;
     if (render_slider_two_input(label, val, tolerance, -0.1f, std::min(0.3f*in_val, 1.5f))) {
         if (m_imgui->get_last_slider_status().can_take_snapshot) {
-            Plater::TakeSnapshot snapshot(wxGetApp().plater(), GUI::format("%1%: %2%", TR("Groove change"), label), UndoRedo::SnapshotType::GizmoAction);
+            Plater::TakeSnapshot snapshot(wxGetApp().plater(), GUI::format("%1%: %2%", _u8L("Groove change"), label), UndoRedo::SnapshotType::GizmoAction);
             m_imgui->get_last_slider_status().invalidate_snapshot();
             m_groove_editing = true;
         }
@@ -2688,7 +2688,7 @@ void GLGizmoCut3D::render_groove_two_float_input(const std::string& label, float
     ImGui::SameLine();
 
     m_imgui->disabled_begin(is_approx(in_val, init_val) && is_approx(in_tolerance, 0.1f));
-        const std::string act_name = TR("Reset");
+        const std::string act_name = _u8L("Reset");
         if (render_reset_button("##groove_" + label + act_name, act_name)) {
         Plater::TakeSnapshot snapshot(wxGetApp().plater(), GUI::format("%1%: %2%", act_name, label), UndoRedo::SnapshotType::GizmoAction);
             in_val = init_val;
@@ -2720,7 +2720,7 @@ void GLGizmoCut3D::render_groove_float_input(const std::string& label, float& in
     float val       = in_val;
     if (render_slider_input(label, val, -0.1f, max_val)) {
         if (m_imgui->get_last_slider_status().can_take_snapshot) {
-            Plater::TakeSnapshot snapshot(wxGetApp().plater(), GUI::format("%1%: %2%", TR("Groove change"), label),
+            Plater::TakeSnapshot snapshot(wxGetApp().plater(), GUI::format("%1%: %2%", _u8L("Groove change"), label),
                                           UndoRedo::SnapshotType::GizmoAction);
             m_imgui->get_last_slider_status().invalidate_snapshot();
             m_groove_editing = true;
@@ -2732,7 +2732,7 @@ void GLGizmoCut3D::render_groove_float_input(const std::string& label, float& in
     ImGui::SameLine();
 
     if (!disabled) m_imgui->disabled_begin(is_approx(in_val, init_val) );
-    const std::string act_name = TR("Reset");
+    const std::string act_name = _u8L("Reset");
     if (render_reset_button("##groove_" + label + act_name, act_name)) {
         Plater::TakeSnapshot snapshot(wxGetApp().plater(), GUI::format("%1%: %2%", act_name, label), UndoRedo::SnapshotType::GizmoAction);
         in_val       = init_val;
@@ -2770,7 +2770,7 @@ void GLGizmoCut3D::render_groove_int_input(const std::string& label, int& in_val
     
     ImGui::SameLine();
     m_imgui->disabled_begin(in_val == init_val);
-    const std::string act_name = TR("Reset");
+    const std::string act_name = _u8L("Reset");
     if (render_reset_button("##int_" + label + act_name, act_name)) {
         Plater::TakeSnapshot snapshot(wxGetApp().plater(), GUI::format("%1%: %2%", act_name, label), UndoRedo::SnapshotType::GizmoAction);
         in_val     = init_val;
@@ -2827,7 +2827,7 @@ bool GLGizmoCut3D::render_angle_input(const std::string& label, float& in_val, c
     ImGui::SameLine();
 
     m_imgui->disabled_begin(is_approx(in_val, init_val));
-    const std::string act_name = TR("Reset");
+    const std::string act_name = _u8L("Reset");
     if (render_reset_button("##angle_" + label + act_name, act_name)) {
         Plater::TakeSnapshot snapshot(wxGetApp().plater(), GUI::format("%1%: %2%", act_name, label), UndoRedo::SnapshotType::GizmoAction);
         in_val = init_val;
@@ -2885,7 +2885,7 @@ void GLGizmoCut3D::render_snap_specific_input(const std::string& label, const wx
     ImGui::SameLine();
 
     m_imgui->disabled_begin(is_approx(in_val, init_val));
-    const std::string act_name = TR("Reset");
+    const std::string act_name = _u8L("Reset");
     if (render_reset_button("##snap_" + label + act_name, act_name)) {
         in_val = init_val;
         is_changed = true;
@@ -2923,7 +2923,7 @@ void GLGizmoCut3D::render_cut_plane_input_window(CutConnectors &connectors, floa
         ImGui::SameLine();
 
         m_imgui->disabled_begin(is_cut_plane_init);
-            std::string act_name = TR("Reset cutting plane");
+            std::string act_name = _u8L("Reset cutting plane");
             if (render_reset_button("cut_plane", act_name)) {
                 Plater::TakeSnapshot snapshot(wxGetApp().plater(), act_name, UndoRedo::SnapshotType::GizmoAction);
                 reset_cut_plane();
@@ -3029,7 +3029,7 @@ void GLGizmoCut3D::render_cut_plane_input_window(CutConnectors &connectors, floa
         ImGui::SameLine();
         m_imgui->disabled_begin(is_cut_plane_init && !has_connectors);
         if (m_imgui->button(_L("Reset"), _L("Reset cutting plane and remove connectors"))) {
-            Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Reset Cut"), UndoRedo::SnapshotType::GizmoAction);
+            Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Reset Cut"), UndoRedo::SnapshotType::GizmoAction);
             reset_cut_plane();
             reset_connectors();
         }
@@ -3165,10 +3165,10 @@ void GLGizmoCut3D::render_input_window_warning() const
     if (invalid_connector_warning) {
         wxString out = /*wxString(ImGui::WarningMarkerSmall)*/ _L("Warning") + ": " + _L("Invalid connectors detected") + ":";
         if (m_info_stats.outside_cut_contour > size_t(0))
-            out += "\n - " + format_wxstr(_L_PLURAL("%1$d connector is out of cut contour", "%1$d connectors are out of cut contour", m_info_stats.outside_cut_contour),
+            out += "\n - " + format_wxs_u8L(_L_PLURAL("%1$d connector is out of cut contour", "%1$d connectors are out of cut contour", m_info_stats.outside_cut_contour),
                                           m_info_stats.outside_cut_contour);
         if (m_info_stats.outside_bb > size_t(0))
-            out += "\n - " + format_wxstr(_L_PLURAL("%1$d connector is out of object", "%1$d connectors are out of object", m_info_stats.outside_bb),
+            out += "\n - " + format_wxs_u8L(_L_PLURAL("%1$d connector is out of object", "%1$d connectors are out of object", m_info_stats.outside_bb),
                                            m_info_stats.outside_bb);
         if (m_info_stats.is_overlap)
             out += "\n - " + _L("Some connectors are overlapped");
@@ -3249,7 +3249,7 @@ bool GLGizmoCut3D::is_outside_of_cut_contour(size_t idx, const CutConnectors& co
             bool is_invalid = (contour_idx == -1);
             if (m_part_selection.valid() && ! is_invalid) {
                 assert(contour_idx >= 0);
-                const std::vector<size_t>& ignored = *(m_part_selection.get_ignored_contours_ptr());
+                const std::vector<size_t>& ignored = *(m_part_selection.get_ignored_contours_p_u8L());
                 is_invalid = (std::find(ignored.begin(), ignored.end(), size_t(contour_idx)) != ignored.end());
             }
             if (is_invalid) {
@@ -3491,7 +3491,7 @@ void GLGizmoCut3D::apply_connectors_in_model(ModelObject* mo, int &dowels_count)
                 connector.pos += m_cut_normal * 0.5 * double(connector.height);
             }
         }
-        apply_cut_connectors(mo, TR("Connector"));
+        apply_cut_connectors(mo, _u8L("Connector"));
     }
 }
 
@@ -3554,7 +3554,7 @@ static void check_objects_after_cut(const ModelObjectPtrs& objects)
     wxString names = from_u8(err_objects_names[0]);
     for (size_t i = 1; i < err_objects_names.size(); i++)
         names += ", " + from_u8(err_objects_names[i]);
-    WarningDialog(wxGetApp().plater(), format_wxstr(_L_PLURAL("Object (%1%) has duplicated connectors. "
+    WarningDialog(wxGetApp().plater(), format_wxs_u8L(_L_PLURAL("Object (%1%) has duplicated connectors. "
                                 "Some connectors may be missing in slicing result.\n"
                                 "Please report to the OrcaSlicer team in which scenario this issue happened.\n"
                                 "Thank you.",
@@ -3590,7 +3590,7 @@ void GLGizmoCut3D::perform_cut(const Selection& selection)
 
     // perform cut
     {
-        Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Cut by Plane"));
+        Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Cut by Plane"));
 
         // This shall delete the part selection class and deallocate the memory.
         ScopeGuard part_selection_killer([this]() { m_part_selection = PartSelection(); });
@@ -3730,7 +3730,7 @@ bool GLGizmoCut3D::unproject_on_cut_plane(const Vec2d& mouse_position, Vec3d& po
         if (cont_id == -1)
             return false;
         if (m_part_selection.valid()) {
-            const std::vector<size_t>& ign = *m_part_selection.get_ignored_contours_ptr();
+            const std::vector<size_t>& ign = *m_part_selection.get_ignored_contours_p_u8L();
             if (std::find(ign.begin(), ign.end(), cont_id) != ign.end())
                 return false;
         }    
@@ -3850,7 +3850,7 @@ bool GLGizmoCut3D::process_cut_line(SLAGizmoEventType action, const Vec2d& mouse
 
             const Vec3d trans_center_pos = m.inverse() * (new_plane_center - instance_offset) + new_tbb.center();
             if (new_tbb.contains(trans_center_pos)) {
-                Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Cut by line"), UndoRedo::SnapshotType::GizmoAction);
+                Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Cut by line"), UndoRedo::SnapshotType::GizmoAction);
                 m_transformed_bounding_box = new_tbb;
                 set_center(new_plane_center);
                 m_start_dragging_m = m_rotation_m = m;
@@ -3880,7 +3880,7 @@ bool GLGizmoCut3D::add_connector(CutConnectors& connectors, const Vec2d& mouse_p
     Vec3d pos;
     Vec3d pos_world;
     if (unproject_on_cut_plane(mouse_position.cast<double>(), pos, pos_world)) {
-        Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Add connector"), UndoRedo::SnapshotType::GizmoAction);
+        Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Add connector"), UndoRedo::SnapshotType::GizmoAction);
         unselect_all_connectors();
 
         connectors.emplace_back(pos, m_rotation_m,
@@ -3907,7 +3907,7 @@ bool GLGizmoCut3D::delete_selected_connectors(CutConnectors& connectors)
     if (connectors.empty())
         return false;
 
-    Plater::TakeSnapshot snapshot(wxGetApp().plater(), TR("Delete connector"), UndoRedo::SnapshotType::GizmoAction);
+    Plater::TakeSnapshot snapshot(wxGetApp().plater(), _u8L("Delete connector"), UndoRedo::SnapshotType::GizmoAction);
 
     // remove  connectors
     for (int i = int(connectors.size()) - 1; i >= 0; i--)

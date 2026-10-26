@@ -34,7 +34,7 @@ TextureDisplacementPrepareJob::TextureDisplacementPrepareJob(
 
 void TextureDisplacementPrepareJob::process(Ctl &ctl)
 {
-    const std::string status = TR("Preparing mesh for texture displacement");
+    const std::string status = _u8L("Preparing mesh for texture displacement");
     ctl.update_status(1, status);
 
     // Only ever touches m_input (captured by value before this job was queued) and local state - never

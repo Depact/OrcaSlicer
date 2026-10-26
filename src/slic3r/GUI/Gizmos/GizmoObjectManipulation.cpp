@@ -369,7 +369,7 @@ void GizmoObjectManipulation::change_rotation_value(int axis, double value)
 
     selection.setup_cache();
     selection.rotate((M_PI / 180.0) * (transformation_type.absolute() ? rotation : rotation - m_cache.rotation), transformation_type);
-    wxGetApp().plater()->take_snapshot(TR("Set orientation"), UndoRedo::SnapshotType::GizmoAction);
+    wxGetApp().plater()->take_snapshot(_u8L("Set orientation"), UndoRedo::SnapshotType::GizmoAction);
     m_glcanvas.do_rotate("");
 
     m_cache.rotation = rotation;
@@ -560,7 +560,7 @@ void GizmoObjectManipulation::reset_position_value()
         return;
 
     // Copy position values from GLVolumes into Model (ModelInstance / ModelVolume), trigger background processing.
-    wxGetApp().plater()->take_snapshot(TR("Reset position"), UndoRedo::SnapshotType::GizmoAction);
+    wxGetApp().plater()->take_snapshot(_u8L("Reset position"), UndoRedo::SnapshotType::GizmoAction);
     m_glcanvas.do_move("");
 
     UpdateAndShow(true);
@@ -842,7 +842,7 @@ void GizmoObjectManipulation::do_render_move_window(ImGuiWrapper *imgui_wrapper,
     unsigned int current_active_id = ImGui::GetActiveID();
 
     Selection &              selection = m_glcanvas.get_selection();
-    std::vector<std::string> modes     = {TR("World"), TR("Object")};//TR("Part") // ORCA use shorter terms to make UI more compact
+    std::vector<std::string> modes     = {_u8L("World"), _u8L("Object")};//_u8L("Part") // ORCA use shorter terms to make UI more compact
     if (selection.is_multiple_full_object() || selection.is_wipe_tower()) {
         modes.pop_back();
     }
@@ -951,8 +951,8 @@ void GizmoObjectManipulation::do_render_move_window(ImGuiWrapper *imgui_wrapper,
 
         // The last mode aligns to the parent. Aligning within the selection needs two items.
         std::vector<std::string> align_modes = {
-            TR("Selection"),
-            m_alignment_helper.is_parts_selection(true) ? TR("Object") : TR("Plate")
+            _u8L("Selection"),
+            m_alignment_helper.is_parts_selection(true) ? _u8L("Object") : _u8L("Plate")
         };
         if (!m_alignment_helper.can_align(AlignType::X_MIN)) {
             align_modes.erase(align_modes.begin());
@@ -1014,7 +1014,7 @@ void GizmoObjectManipulation::do_render_move_window(ImGuiWrapper *imgui_wrapper,
                     // otherwise the helper names it.
                     std::string why_not;
                     if (m_alignment_helper.get_items_count(type, m_align_to_parent, &why_not) > 0)
-                        why_not = TR("Select at least 3 parts or objects");
+                        why_not = _u8L("Select at least 3 parts or objects");
                     if (!why_not.empty())
                         text += "\n" + from_u8(why_not);
                 }
@@ -1204,7 +1204,7 @@ void GizmoObjectManipulation::do_render_rotate_window(ImGuiWrapper *imgui_wrappe
         reset_rotation_value(true);
     if (m_show_clear_rotation && ImGui::IsItemHovered()) {
         float tooltip_size = imgui_wrapper->calc_text_size(_L("Reset current rotation to the value when open the rotation tool.")).x + 3 * space_size;
-        imgui_wrapper->tooltip(TR("Reset current rotation to the value when open the rotation tool."), tooltip_size);
+        imgui_wrapper->tooltip(_u8L("Reset current rotation to the value when open the rotation tool."), tooltip_size);
     }
 
     // send focus to m_glcanvas
@@ -1362,7 +1362,7 @@ void GizmoObjectManipulation::do_render_scale_input_window(ImGuiWrapper* imgui_w
     int index_unit = 1;
 
     Selection &              selection = m_glcanvas.get_selection();
-    std::vector<std::string> modes     = {TR("World"), TR("Object"), TR("Part")}; // ORCA use shorter terms to make UI more compact
+    std::vector<std::string> modes     = {_u8L("World"), _u8L("Object"), _u8L("Part")}; // ORCA use shorter terms to make UI more compact
     if (selection.is_single_full_object()) { modes.pop_back(); }
     if (selection.is_multiple_full_object()) {
         modes.pop_back();

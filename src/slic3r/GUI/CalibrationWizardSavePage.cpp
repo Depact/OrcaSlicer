@@ -68,13 +68,13 @@ static wxString get_default_name(wxString filament_name, CalibMode mode){
     case Slic3r::CalibMode::Calib_PA_Tower:
         break;
     case Slic3r::CalibMode::Calib_Flow_Rate:
-        filament_name = format_wxstr(_L("%1% Flow Rate Calibrated"), filament_name);
+        filament_name = format_wxs_u8L(_L("%1% Flow Rate Calibrated"), filament_name);
         break;
     case Slic3r::CalibMode::Calib_Temp_Tower:
-        filament_name = format_wxstr(_L("%1% Temperature Calibrated"), filament_name);
+        filament_name = format_wxs_u8L(_L("%1% Temperature Calibrated"), filament_name);
         break;
     case Slic3r::CalibMode::Calib_Vol_speed_Tower:
-        filament_name = format_wxstr(_L("%1% Max Vol Speed Calibrated"), filament_name);
+        filament_name = format_wxs_u8L(_L("%1% Max Vol Speed Calibrated"), filament_name);
         break;
     case Slic3r::CalibMode::Calib_VFA_Tower:
         break;

@@ -176,7 +176,7 @@ std::vector<SerialPortInfo> scan_serial_ports_extended()
 		if (IOServiceGetMatchingServices(kIOMasterPortDefault, classes, &iter) == KERN_SUCCESS) {
 			io_object_t port;
 			while ((port = IOIteratorNext(iter)) != 0) {
-				CFTypeRef cf_property = IORegistryEntryCreateCFProperty(port, CFSTR(kIOCalloutDeviceKey), kCFAllocatorDefault, 0);
+				CFTypeRef cf_property = IORegistryEntryCreateCFProperty(port, CFS_u8L(kIOCalloutDeviceKey), kCFAllocatorDefault, 0);
 				if (cf_property) {
 					char path[PATH_MAX];
 					Boolean result = CFStringGetCString((CFStringRef)cf_property, path, sizeof(path), kCFStringEncodingUTF8);
@@ -187,16 +187,16 @@ std::vector<SerialPortInfo> scan_serial_ports_extended()
 
 						// Attempt to read out the device friendly name
 						if ((cf_property = IORegistryEntrySearchCFProperty(port, kIOServicePlane,
-						         CFSTR("USB Interface Name"), kCFAllocatorDefault,
+						         CFS_u8L("USB Interface Name"), kCFAllocatorDefault,
 						         kIORegistryIterateRecursively | kIORegistryIterateParents)) ||
 						    (cf_property = IORegistryEntrySearchCFProperty(port, kIOServicePlane,
-						         CFSTR("USB Product Name"), kCFAllocatorDefault,
+						         CFS_u8L("USB Product Name"), kCFAllocatorDefault,
 						         kIORegistryIterateRecursively | kIORegistryIterateParents)) ||
 						    (cf_property = IORegistryEntrySearchCFProperty(port, kIOServicePlane,
-						         CFSTR("Product Name"), kCFAllocatorDefault,
+						         CFS_u8L("Product Name"), kCFAllocatorDefault,
 						         kIORegistryIterateRecursively | kIORegistryIterateParents)) ||
 						    (cf_property = IORegistryEntryCreateCFProperty(port, 
-						         CFSTR(kIOTTYDeviceKey), kCFAllocatorDefault, 0))) {
+						         CFS_u8L(kIOTTYDeviceKey), kCFAllocatorDefault, 0))) {
 							// Description limited to 127 char, anything longer would not be user friendly anyway.
 							char description[128];
 							if (CFStringGetCString((CFStringRef)cf_property, description, sizeof(description), kCFStringEncodingUTF8)) {
@@ -210,9 +210,9 @@ std::vector<SerialPortInfo> scan_serial_ports_extended()
 
 						// Attempt to read out the VID & PID
 						int vid, pid;
-						auto cf_vendor = IORegistryEntrySearchCFProperty(port, kIOServicePlane, CFSTR("idVendor"),
+						auto cf_vendor = IORegistryEntrySearchCFProperty(port, kIOServicePlane, CFS_u8L("idVendor"),
 							kCFAllocatorDefault, kIORegistryIterateRecursively | kIORegistryIterateParents);
-						auto cf_product = IORegistryEntrySearchCFProperty(port, kIOServicePlane, CFSTR("idProduct"),
+						auto cf_product = IORegistryEntrySearchCFProperty(port, kIOServicePlane, CFS_u8L("idProduct"),
 							kCFAllocatorDefault, kIORegistryIterateRecursively | kIORegistryIterateParents);
 						if (cf_vendor && cf_product) {
 							if (CFNumberGetValue((CFNumberRef)cf_vendor, kCFNumberIntType, &vid) &&
@@ -319,11 +319,11 @@ void Serial::set_baud_rate(unsigned baud_rate)
 
 #if __APPLE__
 		termios ios;
-		handle_errno(::tcgetattr(handle, &ios));
+		handle_errno(::tcgetat_u8L(handle, &ios));
 		handle_errno(::cfsetspeed(&ios, baud_rate));
 		speed_t newSpeed = baud_rate;
 		handle_errno(::ioctl(handle, IOSSIOSPEED, &newSpeed));
-		handle_errno(::tcsetattr(handle, TCSANOW, &ios));
+		handle_errno(::tcsetat_u8L(handle, TCSANOW, &ios));
 #elif __linux__
 
 		/* The following definitions are kindly borrowed from:
@@ -357,9 +357,9 @@ void Serial::set_baud_rate(unsigned baud_rate)
 
 #elif __OpenBSD__
 		struct termios ios;
-		handle_errno(::tcgetattr(handle, &ios));
+		handle_errno(::tcgetat_u8L(handle, &ios));
 		handle_errno(::cfsetspeed(&ios, baud_rate));
-		handle_errno(::tcsetattr(handle, TCSAFLUSH, &ios));
+		handle_errno(::tcsetat_u8L(handle, TCSAFLUSH, &ios));
 #else
 		throw Slic3r::RuntimeError("Custom baud rates are not currently supported on this OS");
 #endif
@@ -368,7 +368,7 @@ void Serial::set_baud_rate(unsigned baud_rate)
 
 
 /*
-void Serial::set_DTR(bool on)
+void Serial::set_D_u8L(bool on)
 {
 	auto handle = native_handle();
 #if defined(_WIN32) && !defined(__SYMBIAN32__)
@@ -491,11 +491,11 @@ size_t Serial::printer_write_line(const std::string &line)
 
 void Serial::printer_reset()
 {
-	this->set_DTR(false);
+	this->set_D_u8L(false);
 	std::this_thread::sleep_for(std::chrono::milliseconds(200));
-	this->set_DTR(true);
+	this->set_D_u8L(true);
 	std::this_thread::sleep_for(std::chrono::milliseconds(200));
-	this->set_DTR(false);
+	this->set_D_u8L(false);
 	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 

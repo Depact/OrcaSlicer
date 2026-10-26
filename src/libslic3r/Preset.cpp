@@ -4760,10 +4760,10 @@ void PhysicalPrinterCollection::load_printers(
                     printer.loaded = true;
                 }
                 catch (const std::ifstream::failure& err) {
-                    throw Slic3r::RuntimeError((boost::format(TR("The selected preset cannot be loaded: %1%\n\tReason: %2%")) % printer.file % err.what()).str());
+                    throw Slic3r::RuntimeError((boost::format(_u8L("The selected preset cannot be loaded: %1%\n\tReason: %2%")) % printer.file % err.what()).str());
                 }
                 catch (const std::runtime_error& err) {
-                    throw Slic3r::RuntimeError((boost::format(TR("Failed loading the preset file: %1%\n\tReason: %2%")) % printer.file % err.what()).str());
+                    throw Slic3r::RuntimeError((boost::format(_u8L("Failed loading the preset file: %1%\n\tReason: %2%")) % printer.file % err.what()).str());
                 }
                 printers_loaded.emplace_back(printer);
             }

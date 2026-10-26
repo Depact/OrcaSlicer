@@ -16,7 +16,7 @@ void Lab2RGB(float L, float a, float b, float* R, float* G, float* B);
 void RGB2XYZ(float R, float G, float B, float* X, float* Y, float* Z);
 void XYZ2Lab(float X, float Y, float Z, float* L, float* a, float* b);
 void RGB2Lab(float R, float G, float B, float* L, float* a, float* b);
-// Inline so libslic3r can use it without linking libslic3r_gui.
+// The input r, g, b values should be in range [0, 1]. The output h is in range [0, 360], s is in range [0, 1] and v is in range [0, 1].
 inline void RGB2HSV(float r, float g, float b, float* h, float* s, float* v)
 {
     float Cmax = std::max(std::max(r, g), b);

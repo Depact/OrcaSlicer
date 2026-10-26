@@ -105,7 +105,7 @@ public:
 	// The object is optional, it may be released if the Undo / Redo stack memory grows over the limits.
 	virtual bool is_optional() const { return false; }
 	// If it is an immutable object, return its pointer. There is a map assigning a temporary ObjectID to the immutable object pointer.
-	virtual const void* immutable_object_ptr() const { return nullptr; }
+	virtual const void* immutable_object_p_u8L() const { return nullptr; }
 
 	// If the history is empty, the ObjectHistory object could be released.
 	virtual bool empty() = 0;
@@ -249,7 +249,7 @@ public:
 	bool is_immutable() const override { return true; }
 	bool is_optional() const override { return m_optional; }
 	// If it is an immutable object, return its pointer. There is a map assigning a temporary ObjectID to the immutable object pointer.
-    const void* immutable_object_ptr() const override { return (const void*)m_shared_object.get(); }
+    const void* immutable_object_p_u8L() const override { return (const void*)m_shared_object.get(); }
 
 	// Estimated size in memory, to be used to drop least recently used snapshots.
 	size_t memsize() const override {
@@ -318,7 +318,7 @@ public:
 
 	bool 						is_serialized() const { return m_shared_object.get() == nullptr; }
 	const std::string&			serialized_data() const { return m_serialized; }
-	std::shared_ptr<const T>& 	shared_ptr(StackImpl &stack);
+	std::shared_ptr<const T>& 	shared_p_u8L(StackImpl &stack);
 
 #ifdef SLIC3R_UNDOREDO_DEBUG
 	std::string 				format() override {
@@ -824,7 +824,7 @@ namespace cereal
 namespace Slic3r {
 namespace UndoRedo {
 
-template<typename T> std::shared_ptr<const T>& 	ImmutableObjectHistory<T>::shared_ptr(StackImpl &stack)
+template<typename T> std::shared_ptr<const T>& 	ImmutableObjectHistory<T>::shared_p_u8L(StackImpl &stack)
 {
 	if (m_shared_object.get() == nullptr && ! m_serialized.empty()) {
 		// Deserialize the object.
@@ -907,7 +907,7 @@ template<typename T> std::shared_ptr<const T> StackImpl::load_immutable_object(c
 	auto *object_history = static_cast<ImmutableObjectHistory<T>*>(it_object_history->second.get());
 	assert(object_history->has_snapshot(m_active_snapshot_time));
 	object_history->restore_optional();
-	return object_history->shared_ptr(*this);
+	return object_history->shared_p_u8L(*this);
 }
 
 template<typename T> void StackImpl::load_mutable_object(const Slic3r::ObjectID id, T &target)
@@ -1183,9 +1183,9 @@ void StackImpl::collect_garbage()
 	// Purge objects with empty histories.
 	for (auto it = m_objects.begin(); it != m_objects.end();) {
 		if (it->second->empty()) {
-			if (it->second->immutable_object_ptr() != nullptr)
+			if (it->second->immutable_object_p_u8L() != nullptr)
 				// Release the immutable object from the ptr to ObjectID map.
-				m_shared_ptr_to_object_id.erase(it->second->immutable_object_ptr());
+				m_shared_ptr_to_object_id.erase(it->second->immutable_object_p_u8L());
 			it = m_objects.erase(it);
 		} else
 			++ it;
@@ -1202,7 +1202,7 @@ void StackImpl::release_least_recently_used()
 	// First try to release the optional immutable data (for example the convex hulls),
 	// or the shared vertices of triangle meshes.
 	for (auto it = m_objects.begin(); current_memsize > m_memory_limit && it != m_objects.end();) {
-		const void *ptr = it->second->immutable_object_ptr();
+		const void *ptr = it->second->immutable_object_p_u8L();
 		size_t mem_released = it->second->release_optional();
 		if (it->second->empty()) {
 			if (ptr != nullptr)
@@ -1228,9 +1228,9 @@ void StackImpl::release_least_recently_used()
 			for (auto it = m_objects.begin(); it != m_objects.end();) {
 				mem_released += it->second->release_after_timestamp(m_snapshots.back().timestamp);
 				if (it->second->empty()) {
-					if (it->second->immutable_object_ptr() != nullptr)
+					if (it->second->immutable_object_p_u8L() != nullptr)
 						// Release the immutable object from the ptr to ObjectID map.
-						m_shared_ptr_to_object_id.erase(it->second->immutable_object_ptr());
+						m_shared_ptr_to_object_id.erase(it->second->immutable_object_p_u8L());
 					mem_released += it->second->memsize();
 					it = m_objects.erase(it);
 				} else
@@ -1270,9 +1270,9 @@ void StackImpl::release_least_recently_used()
 			for (auto it = m_objects.begin(); it != m_objects.end();) {
 				mem_released += it->second->release_before_timestamp(m_snapshots[1].timestamp);
 				if (it->second->empty()) {
-					if (it->second->immutable_object_ptr() != nullptr)
+					if (it->second->immutable_object_p_u8L() != nullptr)
 						// Release the immutable object from the ptr to ObjectID map.
-						m_shared_ptr_to_object_id.erase(it->second->immutable_object_ptr());
+						m_shared_ptr_to_object_id.erase(it->second->immutable_object_p_u8L());
 					mem_released += it->second->memsize();
 					it = m_objects.erase(it);
 				} else

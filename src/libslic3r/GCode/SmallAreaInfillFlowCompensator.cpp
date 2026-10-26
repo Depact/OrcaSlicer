@@ -58,7 +58,7 @@ SmallAreaInfillFlowCompensator::SmallAreaInfillFlowCompensator(const Slic3r::GCo
                     }
                 } catch (...) {
                     // TRN %1% is the line of the model that could not be parsed.
-                    throw Slic3r::InvalidArgument(Slic3r::format(TR("Small Area Flow Compensation: Error parsing data point in small area infill compensation model: %1%"), line) + "\n");
+                    throw Slic3r::InvalidArgument(Slic3r::format(_u8L("Small Area Flow Compensation: Error parsing data point in small area infill compensation model: %1%"), line) + "\n");
                 }
             }
         }
@@ -66,26 +66,26 @@ SmallAreaInfillFlowCompensator::SmallAreaInfillFlowCompensator(const Slic3r::GCo
         for (size_t i = 0; i < eLengths.size(); i++) {
             if (i == 0) {
                 if (!nearly_equal(eLengths[i], 0.0)) {
-                    throw Slic3r::InvalidArgument(TR("Small Area Flow Compensation: First extrusion length for small area infill compensation model must be 0"));
+                    throw Slic3r::InvalidArgument(_u8L("Small Area Flow Compensation: First extrusion length for small area infill compensation model must be 0"));
                 }
             } else {
                 if (nearly_equal(eLengths[i], 0.0)) {
-                    throw Slic3r::InvalidArgument(TR("Small Area Flow Compensation: Only the first extrusion length for small area infill compensation model can be 0"));
+                    throw Slic3r::InvalidArgument(_u8L("Small Area Flow Compensation: Only the first extrusion length for small area infill compensation model can be 0"));
                 }
                 if (eLengths[i] <= eLengths[i - 1]) {
-                    throw Slic3r::InvalidArgument(TR("Small Area Flow Compensation: Extrusion lengths for subsequent points must be increasing"));
+                    throw Slic3r::InvalidArgument(_u8L("Small Area Flow Compensation: Extrusion lengths for subsequent points must be increasing"));
                 }
             }
         }
 
         for (size_t i = 1; i < flowComps.size(); ++i) {
             if (flowComps[i] <= flowComps[i - 1]) {
-                throw Slic3r::InvalidArgument(TR("Small Area Flow Compensation: Flow compensation factors must strictly increase with extrusion length"));
+                throw Slic3r::InvalidArgument(_u8L("Small Area Flow Compensation: Flow compensation factors must strictly increase with extrusion length"));
             }
         }
 
         if (!flowComps.empty() && !nearly_equal(flowComps.back(), 1.0)) {
-            throw Slic3r::InvalidArgument(TR("Small Area Flow Compensation: Final compensation factor for small area infill flow compensation model must be 1.0"));
+            throw Slic3r::InvalidArgument(_u8L("Small Area Flow Compensation: Final compensation factor for small area infill flow compensation model must be 1.0"));
         }
 
         flowModel = std::make_unique<PchipInterpolatorHelper>(eLengths, flowComps);

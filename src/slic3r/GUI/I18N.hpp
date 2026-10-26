@@ -8,7 +8,7 @@
 #define _devL(s)	wxString((s))
 #define _omitL(s)   ("")
 #define _utf8(s)    Slic3r::GUI::I18N::translate_utf8((s))
-#define TR(s)     Slic3r::GUI::I18N::translate_utf8((s))
+#define _u8L(s)     Slic3r::GUI::I18N::translate_utf8((s))
 #endif /* _ */
 
 #ifndef _L_CONTEXT
@@ -86,7 +86,7 @@ namespace I18N {
 } // namespace I18N
 
 // Return translated std::string as a wxString
-wxString	L_str(const std::string &str);
+wxString	L_s_u8L(const std::string &str);
 
 } // namespace GUI
 } // namespace Slic3r

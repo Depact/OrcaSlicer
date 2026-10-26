@@ -45,10 +45,10 @@ namespace Slic3r
        static NozzleFlowType       ToNozzleFlowType(const NozzleVolumeType& type);
        static NozzleVolumeType     ToNozzleVolumeType(const NozzleFlowType& type);
 
-       static wxString             GetNozzleFlowTypeStr(NozzleFlowType type);
+       static wxString             GetNozzleFlowTypeS_u8L(NozzleFlowType type);
        static std::string          GetNozzleFlowTypeString(NozzleFlowType type);// untranslated literal ("High Flow"/"Standard"/"TPU High Flow"/"E3D High Flow") — the filament blacklist JSON matches these raw strings, so it must NOT use the translated GetNozzleFlowTypeStr (would break non-English locales)
        static std::string          ToNozzleFlowString(const NozzleFlowType& type);// untranslated "Standard"/"High Flow"/"TPU High Flow"/"E3D High Flow" ("" for none) — the raw literal serialized into the get_auto_nozzle_mapping payload
-       static wxString             GetNozzleTypeStr(NozzleType type);
+       static wxString             GetNozzleTypeS_u8L(NozzleType type);
 
    public:
        bool     IsEmpty() const { return m_nozzle_id < 0; }
@@ -68,9 +68,9 @@ namespace Slic3r
        DevFirmwareVersionInfo GetFirmwareInfo() const;
 
        // display
-       wxString GetNozzleDiameterStr() const { return wxString::Format("%.1f mm", m_diameter); }
-       wxString GetNozzleFlowTypeStr() const { return GetNozzleFlowTypeStr(m_nozzle_flow); }
-       wxString GetNozzleTypeStr() const { return GetNozzleTypeStr(m_nozzle_type); }
+       wxString GetNozzleDiameterS_u8L() const { return wxString::Format("%.1f mm", m_diameter); }
+       wxString GetNozzleFlowTypeS_u8L() const { return GetNozzleFlowTypeS_u8L(m_nozzle_flow); }
+       wxString GetNozzleTypeS_u8L() const { return GetNozzleTypeS_u8L(m_nozzle_type); }
 
        std::string GetFilamentId() const { return m_fila_id; }
        std::string GetFilamentColor() const { return m_filament_clr; }

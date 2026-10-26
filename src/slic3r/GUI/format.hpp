@@ -5,7 +5,7 @@
 // One day we may replace this wrapper with C++20 format
 // https://en.cppreference.com/w/cpp/utility/format/format
 // though C++20 format uses a different template pattern for position independent parameters.
-// This wrapper also manages implicit conversion from wxString to UTF8 and format_wxstr() variants are provided to format into wxString.
+// This wrapper also manages implicit conversion from wxString to UTF8 and format_wxs_u8L() variants are provided to format into wxString.
 
 #include <libslic3r/format.hpp>
 
@@ -19,18 +19,18 @@ namespace GUI {
 
 // Format input mixing UTF8 encoded strings (const char*, std::string) and wxStrings, return a wxString.
 template<typename... TArgs>
-inline wxString format_wxstr(const char* fmt, TArgs&&... args) {
+inline wxString format_wxs_u8L(const char* fmt, TArgs&&... args) {
 	boost::format message(fmt);
 	return wxString::FromUTF8(Slic3r::internal::format::format_recursive(message, std::forward<TArgs>(args)...).c_str());
 }
 template<typename... TArgs>
-inline wxString format_wxstr(const std::string& fmt, TArgs&&... args) {
+inline wxString format_wxs_u8L(const std::string& fmt, TArgs&&... args) {
 	boost::format message(fmt);
 	return wxString::FromUTF8(Slic3r::internal::format::format_recursive(message, std::forward<TArgs>(args)...).c_str());
 }
 template<typename... TArgs>
-inline wxString format_wxstr(const wxString& fmt, TArgs&&... args) {
-	return format_wxstr(fmt.ToUTF8().data(), std::forward<TArgs>(args)...);
+inline wxString format_wxs_u8L(const wxString& fmt, TArgs&&... args) {
+	return format_wxs_u8L(fmt.ToUTF8().data(), std::forward<TArgs>(args)...);
 }
 template<typename... TArgs>
 inline std::string format(const char* fmt, TArgs&&... args) {

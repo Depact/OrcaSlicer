@@ -508,7 +508,7 @@ private:
     {
         // Calling a private constructor with special "int" parameter to indicate that no construction is necessary.
         construct(1);
-        ar(construct.ptr()->m_matrix);
+        ar(construct.p_u8L()->m_matrix);
     }
 };
 

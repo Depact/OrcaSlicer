@@ -105,8 +105,8 @@ std::pair<std::string, std::vector<size_t>> SlicingProcessCompletedEvent::format
         wxString errmsg = GUI::from_u8(boost::format(_utf8(L("An error occurred. The system may have run out of memory, or a bug may have occurred."))).str());
         error           = std::string(errmsg.ToUTF8()) + "\n" + std::string(ex.what());
     } catch (const HardCrash& ex) {
-        error = GUI::format(TR("A fatal error occurred: \"%1%\""), ex.what()) + "\n" +
-                TR("Please save your project and restart the application.");
+        error = GUI::format(_u8L("A fatal error occurred: \"%1%\""), ex.what()) + "\n" +
+                _u8L("Please save your project and restart the application.");
     } catch (PlaceholderParserError& ex) {
         error     = ex.what();
         monospace = 1;
@@ -124,7 +124,7 @@ std::pair<std::string, std::vector<size_t>> SlicingProcessCompletedEvent::format
     } catch (std::exception& ex) {
         error = ex.what();
     } catch (...) {
-        error = TR("Unknown C++ exception.");
+        error = _u8L("Unknown C++ exception.");
     }
     return std::make_pair(std::move(error), std::vector<size_t>{monospace});
 }
@@ -440,21 +440,21 @@ static void rethrow_seh_exception(unsigned long win32_seh_catched)
     if (win32_seh_catched) {
         // Rethrow SEH exception as Slicer::HardCrash.
         if (win32_seh_catched == STATUS_ACCESS_VIOLATION || win32_seh_catched == STATUS_DATATYPE_MISALIGNMENT)
-            throw Slic3r::HardCrash(TR("Access violation"));
+            throw Slic3r::HardCrash(_u8L("Access violation"));
         if (win32_seh_catched == STATUS_ILLEGAL_INSTRUCTION || win32_seh_catched == STATUS_PRIVILEGED_INSTRUCTION)
-            throw Slic3r::HardCrash(TR("Illegal instruction"));
+            throw Slic3r::HardCrash(_u8L("Illegal instruction"));
         if (win32_seh_catched == STATUS_FLOAT_DIVIDE_BY_ZERO || win32_seh_catched == STATUS_INTEGER_DIVIDE_BY_ZERO)
-            throw Slic3r::HardCrash(TR("Divide by zero"));
+            throw Slic3r::HardCrash(_u8L("Divide by zero"));
         if (win32_seh_catched == STATUS_FLOAT_OVERFLOW || win32_seh_catched == STATUS_INTEGER_OVERFLOW)
-            throw Slic3r::HardCrash(TR("Overflow"));
+            throw Slic3r::HardCrash(_u8L("Overflow"));
         if (win32_seh_catched == STATUS_FLOAT_UNDERFLOW)
-            throw Slic3r::HardCrash(TR("Underflow"));
+            throw Slic3r::HardCrash(_u8L("Underflow"));
 #ifdef STATUS_FLOATING_RESEVERED_OPERAND
         if (win32_seh_catched == STATUS_FLOATING_RESEVERED_OPERAND)
-            throw Slic3r::HardCrash(TR("Floating reserved operand"));
+            throw Slic3r::HardCrash(_u8L("Floating reserved operand"));
 #endif // STATUS_FLOATING_RESEVERED_OPERAND
         if (win32_seh_catched == STATUS_STACK_OVERFLOW)
-            throw Slic3r::HardCrash(TR("Stack overflow"));
+            throw Slic3r::HardCrash(_u8L("Stack overflow"));
     }
 }
 
@@ -842,7 +842,7 @@ bool BackgroundSlicingProcess::invalidate_all_steps()
 // Copy the final G-code to target location (possibly a SD card, if it is a removable media, then verify that the file was written without an error).
 void BackgroundSlicingProcess::finalize_gcode()
 {
-    m_print->set_status(95, TR("Running post-processing scripts"));
+    m_print->set_status(95, _u8L("Running post-processing scripts"));
 
     // Perform the final post-processing of the export path by applying the print statistics over the file name.
     std::string export_path = m_fff_print->print_statistics().finalize_output_path(m_export_path);
@@ -874,7 +874,7 @@ void BackgroundSlicingProcess::finalize_gcode()
         remove_post_processed_temp_file();
     } catch (...) {
         remove_post_processed_temp_file();
-        throw Slic3r::ExportError(TR("Unknown error occurred during exporting G-code."));
+        throw Slic3r::ExportError(_u8L("Unknown error occurred during exporting G-code."));
     }
     switch (copy_ret_val) {
     case CopyFileResult::SUCCESS: break; // no error
@@ -907,7 +907,7 @@ void BackgroundSlicingProcess::finalize_gcode()
                                               export_path));
         break;
     default:
-        throw Slic3r::ExportError(TR("Unknown error occurred during exporting G-code."));
+        throw Slic3r::ExportError(_u8L("Unknown error occurred during exporting G-code."));
         BOOST_LOG_TRIVIAL(error) << "Unexpected fail code(" << (int) copy_ret_val << ") durring copy_file() to " << export_path << ".";
         break;
     }
