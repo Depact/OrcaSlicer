@@ -185,32 +185,24 @@ def render_rich(rows: list[dict], title: str, height: int, ascii_only: bool) -> 
 
     charts = []
     if info["has_cpu"]:
-        # CPU % chart - shows build intensity
+        # CPU% chart - total line + per-process breakdown stacked below
         charts.append(render_chart(
-            "CPU %", info["cpu"], 0.0, 100.0, height, width,
+            "CPU%", info["cpu"], 0.0, 100.0, height, width,
             "bright_red", "{:.0f}%", info["start"], info["end"],
             info["duration"], block,
+            stack=info["cpu_stack"], stacks=CPU_STACKS,
         ))
-        # Per-process cores stacked chart - shows core usage by tool
+        # Cores by tool - stacked cores
         charts.append(render_stacked_chart(
             info["stack"], STACKS, height, width, info["start"], info["end"],
             info["duration"], ascii_only,
         ))
-        # Per-process CPU% stacked chart - shows CPU% by tool
-        charts.append(render_stacked_chart(
-            info["cpu_stack"], CPU_STACKS, height, width, info["start"], info["end"],
-            info["duration"], ascii_only,
-        ))
-        # Per-process RAM stacked chart - shows RAM by tool
-        charts.append(render_stacked_chart(
-            info["ram_stack"], RAM_STACKS, height, width, info["start"], info["end"],
-            info["duration"], ascii_only,
-        ))
-        # RAM chart - total RAM used by build
+        # RAM chart - per-process stacked + total line below
         charts.append(render_chart(
             "RAM GB", info["ram"], 0.0, max(0.1, peak(info["ram"]) * 1.05),
             height, width, "bright_blue", "{:.1f} GB", info["start"], info["end"],
             info["duration"], block,
+            stack=info["ram_stack"], stacks=RAM_STACKS,
         ))
 
     console.print(f"[bold]{title}[/bold]")
@@ -240,7 +232,8 @@ def axis_line(low, high, height, fmt, width, block):
 
 
 def render_chart(label, values, low, high, height, width, color, fmt,
-                 start, end, duration, block):
+                 start, end, duration, block,
+                 stack=None, stacks=None):
     from rich import box
     from rich.console import Group
     from rich.panel import Panel
@@ -260,6 +253,48 @@ def render_chart(label, values, low, high, height, width, color, fmt,
         lines.append(line)
     lines.append(axis_line(low, high, height, fmt, chart_width, block))
     lines.extend(footer_lines(start, end, duration, chart_width, block))
+
+    if stack is not None and stacks is not None:
+        # Stacked bars below line chart in same panel
+        first_len = len(next(iter(stack.values())))
+        stack_bars = max(1, min(width // 2, first_len))
+        series = []
+        for key, label, color, ascii_char in stacks:
+            series.append((label, color, ascii_char, bucket_avg(stack[key], stack_bars)))
+        totals = [sum(values[index] for _label, _color, _char, values in series)
+                  for index in range(stack_bars)]
+        stack_high = max(0.1, peak(totals))
+        stack_span = stack_high
+        lines.append(Text(""))  # small gap
+        for row in range(stack_bars - 1, -1, -1):
+            threshold = (row / stack_bars) * stack_span
+            line = Text()
+            line.append("       ", style="dim")
+            for index in range(stack_bars):
+                cumulative = 0.0
+                chosen = None
+                for label, color, ascii_char, values in series:
+                    cumulative += values[index]
+                    if threshold < cumulative:
+                        chosen = (color, ascii_char)
+                        break
+                if chosen is None:
+                    line.append(" ")
+                elif ascii_only:
+                    line.append(chosen[1], style=chosen[0])
+                else:
+                    line.append("█", style=chosen[0])
+            lines.append(line)
+        baseline = Text()
+        baseline.append("   0 ", style="dim")
+        baseline.append(("-" if ascii_only else "─") * (stack_bars * 2 - 1), style="dim")
+        lines.append(baseline)
+        legend = Text()
+        for _key, label, color, ascii_char in stacks:
+            legend.append("█ " if not ascii_only else f"{ascii_char} ", style=color)
+            legend.append(f"{label}  ", style="dim")
+        lines.append(legend)
+
     return Panel(Group(*lines), title=label, border_style="dim", padding=(0, 0),
                  box=box.ASCII if block == "#" else box.ROUNDED)
 
@@ -277,7 +312,7 @@ def render_stacked_chart(stack, stacks, height, width, start, end, duration, asc
         series.append((label, color, ascii_char, bucket_avg(stack[key], bars)))
     totals = [sum(values[index] for _label, _color, _char, values in series)
               for index in range(bars)]
-    high = max(1.0, peak(totals))
+    high = max(0.1, peak(totals))
     span = high
 
     lines = []
@@ -307,14 +342,19 @@ def render_stacked_chart(stack, stacks, height, width, start, end, duration, asc
     lines.append(baseline)
 
     legend = Text()
-    for _key, label, color, ascii_char in STACKS:
+    for _key, label, color, ascii_char in stacks:
         legend.append("█ " if not ascii_only else f"{ascii_char} ", style=color)
         legend.append(f"{label}  ", style="dim")
 
     lines.append(legend)
     # Empty footer without duration
 
-    return Panel(Group(*lines), title="Build cores by tool", border_style="dim",
+    title = {
+        "cores_compiler": "Cores by tool",
+        "cpu_compiler": "CPU% by tool",
+        "ram_compiler": "RAM GB by tool",
+    }.get(next(iter(stacks))[0], "Stacked chart")
+    return Panel(Group(*lines), title=title, border_style="dim",
                  padding=(0, 0), box=box.ASCII if ascii_only else box.ROUNDED)
 
 
