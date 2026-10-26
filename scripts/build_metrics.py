@@ -185,12 +185,9 @@ def render_rich(rows: list[dict], title: str, height: int, ascii_only: bool) -> 
 def footer_lines(start, end, duration, chart_width, block):
     from rich.text import Text
 
-    middle = f"duration {format_duration(duration)}"
-    footer_width = 9 + chart_width
+    # Empty footer without duration
     footer = Text()
-    footer.append(" " * ((footer_width - len(middle)) // 2))
-    footer.append(middle, style="bold")
-    footer.append(" " * (footer_width - len(middle) - (footer_width - len(middle)) // 2))
+    footer.append(" " * (9 + chart_width))
     return [footer]
 
 
@@ -276,8 +273,7 @@ def render_stacked_chart(stack, height, width, start, end, duration, ascii_only,
         legend.append(f"{label}  ", style="dim")
 
     lines.append(legend)
-    lines.extend(footer_lines(start, end, duration, bars * 2 - 1,
-                              "#" if ascii_only else "█"))
+    # Empty footer without duration
 
     return Panel(Group(*lines), title="Build cores by tool", border_style="dim",
                  padding=(0, 0), box=box.ASCII if ascii_only else box.ROUNDED)
@@ -384,10 +380,7 @@ def render_combined_stacked_chart(stack, height, width, start, end, duration, as
         ram_legend.append(f"{label}  ", style="dim")
     lines.append(ram_legend)
 
-    # Combined footer
-    total_bars = max(cpu_bars, ram_bars)
-    lines.extend(footer_lines(start, end, duration, total_bars * 2 - 1,
-                              "#" if ascii_only else "█"))
+    # Empty footer without duration
 
     return Panel(Group(*lines), title="CPU% and RAM by tool", border_style="dim",
                  padding=(0, 0), box=box.ASCII if ascii_only else box.ROUNDED)
