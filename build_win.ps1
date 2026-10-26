@@ -111,15 +111,7 @@ try {
         $python = Get-Command py -ErrorAction SilentlyContinue
         if (-not $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
         if ($python) {
-            & $python -c '
-from rich.console import Console
-from rich.rule import Rule
-import sys
-ts = sys.argv[1]
-text = sys.argv[2]
-console = Console()
-console.print(Rule(f"[{ts}] {text}", style="cyan", align="left"))
-' $ts $Text
+            & $python "$RepoRoot\scripts\build_units\rich_utils.py" step $ts $Text
         } else {
             Write-Host "[$ts] $Text"
         }
@@ -294,12 +286,7 @@ console.print(Rule(char="\u2501", style="green"))
     Write-Host ""
     $python = Get-Command py -ErrorAction SilentlyContinue
     if ($python) {
-        & $python -c '
-from rich.console import Console
-from rich.rule import Rule
-console = Console()
-console.print(Rule(char="\u2501", style="green"))
-' 
+        & $python "$RepoRoot\scripts\build_units\rich_utils.py" rule '━' green
     } else {
         Write-Host "=========================================="
     }
