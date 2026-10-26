@@ -232,7 +232,7 @@ def axis_line(low, high, height, fmt, width, block):
 
 
 def render_chart(label, values, low, high, height, width, color, fmt,
-                 start, end, duration, block,
+                 start, end, duration, block, ascii_only=False,
                  stack=None, stacks=None):
     from rich import box
     from rich.console import Group

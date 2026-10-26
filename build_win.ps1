@@ -111,15 +111,15 @@ try {
         $python = Get-Command py -ErrorAction SilentlyContinue
         if (-not $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
         if ($python) {
-            & $python -c "
+            & $python -c '
 from rich.console import Console
 from rich.rule import Rule
 import sys
 ts = sys.argv[1]
 text = sys.argv[2]
 console = Console()
-console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
-" $ts $Text
+console.print(Rule(f"[{ts}] {text}", style="cyan", align="left"))
+' $ts $Text
         } else {
             Write-Host "[$ts] $Text"
         }
