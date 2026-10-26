@@ -157,11 +157,10 @@ def render_rich(rows: list[dict], title: str, height: int, ascii_only: bool) -> 
             "bright_red", "{:.0f}%", info["start"], info["end"],
             info["duration"], block,
         ))
-        # Cores chart - total cores used by build
-        charts.append(render_chart(
-            "Cores", info["cores"], 0.0, max(1.0, peak(info["cores"])),
-            height, width, "bright_yellow", "{:.0f}", info["start"], info["end"],
-            info["duration"], block,
+        # Per-process cores stacked chart - shows core usage by tool
+        charts.append(render_stacked_chart(
+            info["stack"], height, width, info["start"], info["end"],
+            info["duration"], ascii_only,
         ))
         # RAM chart - total RAM used by build
         charts.append(render_chart(

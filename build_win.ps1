@@ -323,8 +323,8 @@ from rich.tree import Tree
 import sys
 console = Console()
 tree = Tree('Total: ' + sys.argv[3], style='default')
-tree.add(f'Configure: {sys.argv[1]}')
-tree.add(f'Build:     {sys.argv[2]}')
+tree.add('Configure: ' + sys.argv[1])
+tree.add('Build:     ' + sys.argv[2])
 console.print(tree)
 " $configureStr $buildStr $totalStr
     } else {
