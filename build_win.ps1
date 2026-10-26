@@ -252,15 +252,15 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
             Write-Host ""
             $python = Get-Command py -ErrorAction SilentlyContinue
             if ($python) {
-                & $python -c "
+                & $python -c '
 from rich.console import Console
 from rich.rule import Rule
 import sys
 console = Console()
-console.print(Rule('Dependencies packed successfully', style='green'))
-console.print('Archive: ' + sys.argv[1], style='green')
-console.print(Rule(style='green'))
-" $zipPath
+console.print(Rule("Dependencies packed successfully", style="green"))
+console.print("Archive: " + sys.argv[1], style="green")
+console.print(Rule(char="━", style="green"))
+' $zipPath
             } else {
                 Write-Host "==========================================" -ForegroundColor Green
                 Write-Host "  Dependencies packed successfully!" -ForegroundColor Green
@@ -292,14 +292,16 @@ console.print(Rule(style='green'))
 
     $total = (Get-Date) - $started
     Write-Host ""
+    $total = (Get-Date) - $started
+    Write-Host ""
     $python = Get-Command py -ErrorAction SilentlyContinue
     if ($python) {
-        & $python -c "
+        & $python -c '
 from rich.console import Console
 from rich.rule import Rule
 console = Console()
-console.print(Rule(char='━', style='green'))
-" 
+console.print(Rule(char="━", style="green"))
+' 
     } else {
         Write-Host "=========================================="
     }
@@ -317,16 +319,16 @@ console.print(Rule(char='━', style='green'))
     $python = Get-Command py -ErrorAction SilentlyContinue
     if (-not $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
     if ($python) {
-        & $python -c "
+        & $python -c '
 from rich.console import Console
 from rich.tree import Tree
 import sys
 console = Console()
-tree = Tree('Total: ' + sys.argv[3], style='default')
-tree.add('Configure: ' + sys.argv[1])
-tree.add('Build:     ' + sys.argv[2])
+tree = Tree("Total: " + sys.argv[3], style="default")
+tree.add("Configure: " + sys.argv[1])
+tree.add("Build:     " + sys.argv[2])
 console.print(tree)
-" $configureStr $buildStr $totalStr
+' $configureStr $buildStr $totalStr
     } else {
         Write-Host ("  Total:     {0}" -f $totalStr)
         Write-Host ("  Configure: {0}" -f $configureStr)
