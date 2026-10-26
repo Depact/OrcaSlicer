@@ -1446,7 +1446,7 @@ public:
 
 PageTemperatures::PageTemperatures(ConfigWizard *parent)
     : ConfigWizardPage(parent, _L("Nozzle and Bed Temperatures"), _L("Temperatures"), 1)
-    , spin_ex_u8L(new SpinCtrlDouble(this))
+    , spin_extr(new SpinCtrlDouble(this))
     , spin_bed (new SpinCtrlDouble(this))
 {
     // BBS: FIXME

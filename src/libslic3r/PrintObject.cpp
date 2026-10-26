@@ -1248,7 +1248,7 @@ FillLightning::GeneratorPtr PrintObject::prepare_lightning_infill_data()
             break;
         }
 
-    return has_lightning_infill ? FillLightning::build_generator(std::as_const(*this), [this]() -> void { this->throw_if_canceled(); }) : FillLightning::GeneratorP_u8L();
+    return has_lightning_infill ? FillLightning::build_generator(std::as_const(*this), [this]() -> void { this->throw_if_canceled(); }) : FillLightning::GeneratorPtr();
 }
 
 AdaptiveInfillFields PrintObject::prepare_adaptive_infill_fields() const

@@ -319,8 +319,8 @@ TroubleshootDialog::TroubleshootDialog()
         wxString os = GetOStype();
         if(!os.IsEmpty())
             url += "&os_type=%22" + os +"%22";
-        url += "&version="     + encodestr(wxString(SoftFever_VERSION));
-        url += "&os_version="  + encodestr(GetOSinfo());
+        url += "&version="     + encodeStr(wxString(SoftFever_VERSION));
+        url += "&os_version="  + encodeStr(GetOSinfo());
         wxLaunchDefaultBrowser(url);
     });
 

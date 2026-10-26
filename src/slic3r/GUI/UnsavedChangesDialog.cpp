@@ -1745,13 +1745,13 @@ FullCompareDialog::FullCompareDialog(const wxString& option_name, const wxString
     auto add_value = [grid_sizer, border, this](wxString label, const std::set<wxString>& diff_set, bool is_colored = false) {
         wxTextCtrl* text = new wxTextCtrl(this, wxID_ANY, label, wxDefaultPosition, wxSize(400, 400), wxTE_MULTILINE | wxTE_READONLY | wxBORDER_DEFAULT | wxTE_RICH);
         wxGetApp().UpdateDarkUI(text);
-        text->SetStyle(0, label.Len(), wxTextAt_u8L(is_colored ? wxColour(orange) : wxNullColour, wxNullColour, this->GetFont()));
+        text->SetStyle(0, label.Len(), wxTextAttr(is_colored ? wxColour(orange) : wxNullColour, wxNullColour, this->GetFont()));
 
         for (const wxString& str : diff_set) {
             int pos = label.First(str);
             if (pos == wxNOT_FOUND)
                 continue;
-            text->SetStyle(pos, pos + (int)str.Len(), wxTextAt_u8L(is_colored ? wxColour(orange) : wxNullColour, wxNullColour, this->GetFont().Bold()));
+            text->SetStyle(pos, pos + (int)str.Len(), wxTextAttr(is_colored ? wxColour(orange) : wxNullColour, wxNullColour, this->GetFont().Bold()));
         }
 
         grid_sizer->Add(text, 1, wxALL | wxEXPAND, border);

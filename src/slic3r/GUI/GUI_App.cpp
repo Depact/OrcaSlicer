@@ -4682,7 +4682,7 @@ void GUI_App::UpdateDVCDarkUI(wxDataViewCtrl* dvc, bool highlited/* = false*/)
         wxItemAttr attr;
         attr.SetTextColour(NppDarkMode::GetTextColor());
         attr.SetFont(m_normal_font);
-        dvc->SetHeaderAt_u8L(attr);
+        dvc->SetHeaderAttr(attr);
     }
 #endif //_MSW_DARK_MODE
     if (dvc->HasFlag(wxDV_ROW_LINES))

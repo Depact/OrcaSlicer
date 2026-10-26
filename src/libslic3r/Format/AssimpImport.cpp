@@ -243,16 +243,16 @@ void collect_materials(const aiScene& scene, const boost::filesystem::path& base
             continue;
 
         TextureImage image;
-        const aiTexture* embedded_texture = scene.GetEmbeddedTexture(texture_path.c_str());
+        const aiTexture* embedded_texture = scene.GetEmbeddedTexture(texture_path.C_Str());
         if (embedded_texture) {
             if (!read_embedded_texture(*embedded_texture, image))
                 continue;
         } else {
             const boost::filesystem::path resolved = resource_path::resolve_external_resource_path(
-                base_dir, texture_path.c_str(), "Assimp texture");
+                base_dir, texture_path.C_Str(), "Assimp texture");
             if (resolved.empty()) {
                 BOOST_LOG_TRIVIAL(warning) << "AssimpImport: texture file not found: "
-                                           << texture_path.c_str();
+                                           << texture_path.C_Str();
                 continue;
             }
             if (!read_external_texture_file(resolved, image)) {

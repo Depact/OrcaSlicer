@@ -83,7 +83,7 @@ enum class InfoItemType
 };
 
 class ObjectDataViewModelNode;
-WX_DEFINE_ARRAY_P_u8L(ObjectDataViewModelNode*, MyObjectTreeModelNodePtrArray);
+WX_DEFINE_ARRAY_PTR(ObjectDataViewModelNode*, MyObjectTreeModelNodePtrArray);
 
 class ObjectDataViewModelNode
 {

@@ -90,7 +90,7 @@ public:
 
     LockedPtr lock_rw()
     {
-        return LockedP_u8L(&m_queue, Unlocker<Queue>(UniqueLock(m_mutex)));
+        return LockedPtr(&m_queue, Unlocker<Queue>(UniqueLock(m_mutex)));
     }
 private:
     Queue m_queue;

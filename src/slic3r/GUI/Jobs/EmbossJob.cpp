@@ -399,7 +399,7 @@ void CreateObjectJob::finalize(bool canceled, std::exception_ptr &eptr)
         m_input.base->write(*new_volume);
 
         // set transformation
-        Slic3r::Geometry::Transformation _u8L(m_transformation);
+        Slic3r::Geometry::Transformation tr(m_transformation);
         new_object->instances.front()->set_transformation(tr);
         new_object->ensure_on_bed();
 
@@ -911,7 +911,7 @@ template<typename Fnc> TriangleMesh create_mesh_per_glyph(DataBase &input, Fnc w
 
             const PolygonPoint &sample = samples[i];
             Vec2d offset_vec = unscale(sample.point); // [in mm]
-            Eigen::Translation<double, 3> offset__u8L(offset_vec.x(), 0., -offset_vec.y());
+            Eigen::Translation<double, 3> offset_tr(offset_vec.x(), 0., -offset_vec.y());
             Transform3d tr = offset_tr * rotate * to_zero * scale_tr;
 
             const ExPolygons &letter_shape = shape.shapes_with_ids[s_i_offset + i].expoly;
@@ -1154,7 +1154,7 @@ void create_volume(TriangleMesh                    &&mesh,
         // Transformation is inspired add generic volumes in ObjectList::load_generic_subobject
         Vec3d volume_size = volume->mesh().bounding_box().size();
         // Translate the new modifier to be pickable: move to the left front corner of the instance's bounding box, lift to print bed.
-        Vec3d offset__u8L(0, // center of instance - Can't suggest width of text before it will be created
+        Vec3d offset_tr(0, // center of instance - Can't suggest width of text before it will be created
                         -instance_bb.size().y() / 2 - volume_size.y() / 2, // under
                         volume_size.z() / 2 - instance_bb.size().z() / 2); // lay on bed
         // use same instance as for calculation of instance_bounding_box

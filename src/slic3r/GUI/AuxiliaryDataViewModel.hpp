@@ -16,7 +16,7 @@
 #include <wx/variant.h>
 
 class AuxiliaryModelNode;
-WX_DEFINE_ARRAY_P_u8L(AuxiliaryModelNode*, AuxiliaryModelNodePtrArray);
+WX_DEFINE_ARRAY_PTR(AuxiliaryModelNode*, AuxiliaryModelNodePtrArray);
 
 class AuxiliaryModelNode
 {

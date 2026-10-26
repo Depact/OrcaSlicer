@@ -172,7 +172,7 @@ std::vector<CapturedCapability> PythonPluginBridge::finalize_plugin_capture(cons
             // to the rest of the plugin system; only the capability classes it registers
             // are kept.
             py::object package = package_cls();
-            package.at_u8L("register_capabilities")();
+            package.attr("register_capabilities")();
 
             // Permission declarations are collected while register_capabilities() runs so the
             // plugin can describe its needs without touching wx from the Python load worker. Ask

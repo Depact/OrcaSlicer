@@ -319,11 +319,11 @@ void Serial::set_baud_rate(unsigned baud_rate)
 
 #if __APPLE__
 		termios ios;
-		handle_errno(::tcgetat_u8L(handle, &ios));
+		handle_errno(::tcgetattr(handle, &ios));
 		handle_errno(::cfsetspeed(&ios, baud_rate));
 		speed_t newSpeed = baud_rate;
 		handle_errno(::ioctl(handle, IOSSIOSPEED, &newSpeed));
-		handle_errno(::tcsetat_u8L(handle, TCSANOW, &ios));
+		handle_errno(::tcsetattr(handle, TCSANOW, &ios));
 #elif __linux__
 
 		/* The following definitions are kindly borrowed from:
@@ -357,9 +357,9 @@ void Serial::set_baud_rate(unsigned baud_rate)
 
 #elif __OpenBSD__
 		struct termios ios;
-		handle_errno(::tcgetat_u8L(handle, &ios));
+		handle_errno(::tcgetattr(handle, &ios));
 		handle_errno(::cfsetspeed(&ios, baud_rate));
-		handle_errno(::tcsetat_u8L(handle, TCSAFLUSH, &ios));
+		handle_errno(::tcsetattr(handle, TCSAFLUSH, &ios));
 #else
 		throw Slic3r::RuntimeError("Custom baud rates are not currently supported on this OS");
 #endif

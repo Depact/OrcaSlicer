@@ -614,7 +614,7 @@ static int glad_gl_has_extension(const char *exts, char **exts_i, const char *ex
     return 0;
 }
 
-static GLADapiproc glad_gl_get_proc_from_userp_u8L(void *userptr, const char* name) {
+static GLADapiproc glad_gl_get_proc_from_userptr(void *userptr, const char* name) {
     return (GLAD_GNUC_EXTENSION (GLADapiproc (*)(const char *name)) userptr)(name);
 }
 
@@ -660,7 +660,7 @@ static int glad_gl_find_core_gles2(void) {
     return GLAD_MAKE_VERSION(major, minor);
 }
 
-int gladLoadGLES2UserP_u8L( GLADuserptrloadfunc load, void *userptr) {
+int gladLoadGLES2UserPtr( GLADuserptrloadfunc load, void *userptr) {
     int version;
 
     glad_glGetString = (PFNGLGETSTRINGPROC) load(userptr, "glGetString");
@@ -679,7 +679,7 @@ int gladLoadGLES2UserP_u8L( GLADuserptrloadfunc load, void *userptr) {
 
 
 int gladLoadGLES2( GLADloadfunc load) {
-    return gladLoadGLES2UserP_u8L( glad_gl_get_proc_from_userptr, GLAD_GNUC_EXTENSION (void*) load);
+    return gladLoadGLES2UserPtr( glad_gl_get_proc_from_userptr, GLAD_GNUC_EXTENSION (void*) load);
 }
 
 
@@ -785,7 +785,7 @@ static GLADapiproc glad_gles2_get_proc(void *vuserptr, const char* name) {
     result = glad_dlsym_handle(userptr.handle, name);
 #endif
     if (result == NULL) {
-        result = userptr.get_proc_address_p_u8L(name);
+        result = userptr.get_proc_address_ptr(name);
     }
 
     return result;
@@ -815,7 +815,7 @@ static void* glad_gles2_dlopen_handle(void) {
 #endif
 }
 
-static struct _glad_gles2_userptr glad_gles2_build_userp_u8L(void *handle) {
+static struct _glad_gles2_userptr glad_gles2_build_userptr(void *handle) {
     struct _glad_gles2_userptr userptr;
 #if GLAD_PLATFORM_EMSCRIPTEN
     GLAD_UNUSED(handle);
@@ -839,7 +839,7 @@ int gladLoaderLoadGLES2(void) {
     GLAD_UNUSED(glad_gles2_dlopen_handle);
     GLAD_UNUSED(glad_gles2_build_userptr);
     userptr.get_proc_address_ptr = emscripten_GetProcAddress;
-    version = gladLoadGLES2UserP_u8L(glad_gles2_get_proc, &userptr);
+    version = gladLoadGLES2UserPtr(glad_gles2_get_proc, &userptr);
 #else
     if (eglGetProcAddress == NULL) {
         return 0;
@@ -848,9 +848,9 @@ int gladLoaderLoadGLES2(void) {
     did_load = _glad_GLES2_loader_handle == NULL;
     handle = glad_gles2_dlopen_handle();
     if (handle != NULL) {
-        userptr = glad_gles2_build_userp_u8L(handle);
+        userptr = glad_gles2_build_userptr(handle);
 
-        version = gladLoadGLES2UserP_u8L(glad_gles2_get_proc, &userptr);
+        version = gladLoadGLES2UserPtr(glad_gles2_get_proc, &userptr);
 
         if (!version && did_load) {
             gladLoaderUnloadGLES2();

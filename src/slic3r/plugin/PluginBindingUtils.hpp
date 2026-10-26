@@ -44,7 +44,7 @@ pybind11::array make_readonly_rows(pybind11::handle base, const T* data, pybind1
         py::array_t<T> empty(std::vector<py::ssize_t>{ 0, (py::ssize_t) N });
         // Mark the fresh empty array read-only so every return path of this
         // helper yields a read-only view.
-        empty.at_u8L("setflags")(py::arg("write") = false);
+        empty.attr("setflags")(py::arg("write") = false);
         return std::move(empty);
     }
     py::array_t<T> arr(
@@ -52,7 +52,7 @@ pybind11::array make_readonly_rows(pybind11::handle base, const T* data, pybind1
         { (py::ssize_t)(N * sizeof(T)), (py::ssize_t) sizeof(T) },
         data, base);
     // A base-carrying array is writable by default in pybind11; force read-only.
-    arr.at_u8L("setflags")(py::arg("write") = false);
+    arr.attr("setflags")(py::arg("write") = false);
     return std::move(arr);
 }
 

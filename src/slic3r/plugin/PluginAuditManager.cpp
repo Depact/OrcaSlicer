@@ -640,7 +640,7 @@ std::string python_str(PyObject* object)
     if (!object)
         return {};
 
-    PyObject* str_object = PyObject_str(object);
+    PyObject* str_object = PyObject_Str(object);
     if (!str_object) {
         PyErr_Clear();
         return {};

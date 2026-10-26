@@ -667,15 +667,15 @@ void PluginHostUi::RegisterBindings(pybind11::module_& host)
            "(\"ok\"/\"cancel\"/\"yes\"/\"no\"). buttons: \"ok\"|\"ok_cancel\"|\"yes_no\"|\"yes_no_cancel\"; "
            "icon: \"info\"|\"warning\"|\"error\"|\"question\".");
 
-    ui.at_u8L("PD_APP_MODAL")      = py::int_(wxPD_APP_MODAL);
-    ui.at_u8L("PD_AUTO_HIDE")      = py::int_(wxPD_AUTO_HIDE);
-    ui.at_u8L("PD_CAN_ABORT")      = py::int_(wxPD_CAN_ABORT);
-    ui.at_u8L("PD_CAN_SKIP")       = py::int_(wxPD_CAN_SKIP);
-    ui.at_u8L("PD_ELAPSED_TIME")   = py::int_(wxPD_ELAPSED_TIME);
-    ui.at_u8L("PD_ESTIMATED_TIME") = py::int_(wxPD_ESTIMATED_TIME);
-    ui.at_u8L("PD_REMAINING_TIME") = py::int_(wxPD_REMAINING_TIME);
-    ui.at_u8L("WINDOW_MODELESS")   = py::int_(WINDOW_MODELESS);
-    ui.at_u8L("WINDOW_MODAL")      = py::int_(WINDOW_MODAL);
+    ui.attr("PD_APP_MODAL")      = py::int_(wxPD_APP_MODAL);
+    ui.attr("PD_AUTO_HIDE")      = py::int_(wxPD_AUTO_HIDE);
+    ui.attr("PD_CAN_ABORT")      = py::int_(wxPD_CAN_ABORT);
+    ui.attr("PD_CAN_SKIP")       = py::int_(wxPD_CAN_SKIP);
+    ui.attr("PD_ELAPSED_TIME")   = py::int_(wxPD_ELAPSED_TIME);
+    ui.attr("PD_ESTIMATED_TIME") = py::int_(wxPD_ESTIMATED_TIME);
+    ui.attr("PD_REMAINING_TIME") = py::int_(wxPD_REMAINING_TIME);
+    ui.attr("WINDOW_MODELESS")   = py::int_(WINDOW_MODELESS);
+    ui.attr("WINDOW_MODAL")      = py::int_(WINDOW_MODAL);
 
     py::class_<UiWindowHandle>(ui, "UiWindow", "Handle to a plugin HTML window or modal dialog created by create_window().")
         .def_property_readonly("id", [](const UiWindowHandle& h) { return h.id; })

@@ -531,8 +531,8 @@ template<typename T> struct IsTriviallyCopyable : public std::is_trivially_copya
 // A very lightweight ROII wrapper around C FILE.
 // The old C file API is much faster than C++ streams, thus they are recommended for processing large / huge files.
 struct FilePtr {
-    FileP_u8L(FILE *f) : f(f) {}
-    ~FileP_u8L() { this->close(); }
+    FilePtr(FILE *f) : f(f) {}
+    ~FilePtr() { this->close(); }
     void close() {
         if (this->f) {
             ::fclose(this->f);

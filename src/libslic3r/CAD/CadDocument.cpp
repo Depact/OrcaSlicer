@@ -3027,16 +3027,16 @@ void CadDocument::apply_feature(TopoDS_Shape& result, bool& have_body,
             // ISO external thread depth is ~0.61*P, so allow up to 0.7*P (0.49 wrongly rejected
             // every real thread -> nothing rendered). Still bound it well under a full pitch.
             // R >= 0.5 (not >): M1, the smallest size in the standards table, is exactly 0.5.
-            const char* why = R < 0.5                   ? _u8L("thread: the diameter must be at least 1 mm")
+            std::string why = R < 0.5                   ? _u8L("thread: the diameter must be at least 1 mm")
                             : P <= 0.1                  ? _u8L("thread: the pitch must be more than 0.1 mm")
                             : (D <= 1e-3 || D >= 0.7 * P) ? _u8L("thread: the depth must be between 0 and 0.7 x the pitch")
                             : D >= 0.45 * R             ? _u8L("thread: the depth is too large for this diameter")
                             : H <= 0.5 * P              ? _u8L("thread: the length must be more than half a pitch")
                             : H / P >= 400.0            ? _u8L("thread: too many turns (length / pitch must stay under 400)")
-                                                        : nullptr;
+                                                        : std::string();
             // Legacy recipes keep their old outcome (the body left as it was) so a project that
             // opened before still opens; every thread made now reports the reason instead.
-            if (why != nullptr) {
+            if (!why.empty()) {
                 if (f.thread_major_nominal) throw std::runtime_error(why);
                 break;
             }

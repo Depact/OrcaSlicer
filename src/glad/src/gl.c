@@ -2367,7 +2367,7 @@ static int glad_gl_has_extension(const char *exts, char **exts_i, const char *ex
     return 0;
 }
 
-static GLADapiproc glad_gl_get_proc_from_userp_u8L(void *userptr, const char* name) {
+static GLADapiproc glad_gl_get_proc_from_userptr(void *userptr, const char* name) {
     return (GLAD_GNUC_EXTENSION (GLADapiproc (*)(const char *name)) userptr)(name);
 }
 
@@ -2436,7 +2436,7 @@ static int glad_gl_find_core_gl(void) {
     return GLAD_MAKE_VERSION(major, minor);
 }
 
-int gladLoadGLUserP_u8L( GLADuserptrloadfunc load, void *userptr) {
+int gladLoadGLUserPtr( GLADuserptrloadfunc load, void *userptr) {
     int version;
 
     glad_glGetString = (PFNGLGETSTRINGPROC) load(userptr, "glGetString");
@@ -2476,7 +2476,7 @@ int gladLoadGLUserP_u8L( GLADuserptrloadfunc load, void *userptr) {
 
 
 int gladLoadGL( GLADloadfunc load) {
-    return gladLoadGLUserP_u8L( glad_gl_get_proc_from_userptr, GLAD_GNUC_EXTENSION (void*) load);
+    return gladLoadGLUserPtr( glad_gl_get_proc_from_userptr, GLAD_GNUC_EXTENSION (void*) load);
 }
 
 
@@ -2563,7 +2563,7 @@ static GLADapiproc glad_gl_get_proc(void *vuserptr, const char *name) {
     GLADapiproc result = NULL;
 
     if(userptr.gl_get_proc_address_ptr != NULL) {
-        result = GLAD_GNUC_EXTENSION (GLADapiproc) userptr.gl_get_proc_address_p_u8L(name);
+        result = GLAD_GNUC_EXTENSION (GLADapiproc) userptr.gl_get_proc_address_ptr(name);
     }
     if(result == NULL) {
         result = glad_dlsym_handle(userptr.handle, name);
@@ -2603,7 +2603,7 @@ static void* glad_gl_dlopen_handle(void) {
     return _glad_GL_loader_handle;
 }
 
-static struct _glad_gl_userptr glad_gl_build_userp_u8L(void *handle) {
+static struct _glad_gl_userptr glad_gl_build_userptr(void *handle) {
     struct _glad_gl_userptr userptr;
 
     userptr.handle = handle;
@@ -2632,9 +2632,9 @@ int gladLoaderLoadGL(void) {
     did_load = _glad_GL_loader_handle == NULL;
     handle = glad_gl_dlopen_handle();
     if (handle) {
-        userptr = glad_gl_build_userp_u8L(handle);
+        userptr = glad_gl_build_userptr(handle);
 
-        version = gladLoadGLUserP_u8L(glad_gl_get_proc, &userptr);
+        version = gladLoadGLUserPtr(glad_gl_get_proc, &userptr);
 
         if (did_load) {
             gladLoaderUnloadGL();

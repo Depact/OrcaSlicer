@@ -175,8 +175,8 @@ wxSize BitmapTextRenderer::GetSize() const
         {
             wxDataViewCtrl* const view = GetView();
             wxClientDC dc(view);
-            if (GetAt_u8L().HasFont())
-                dc.SetFont(GetAt_u8L().GetEffectiveFont(view->GetFont()));
+            if (GetAttr().HasFont())
+                dc.SetFont(GetAttr().GetEffectiveFont(view->GetFont()));
 
             size = m_markupText->Measure(dc);
 

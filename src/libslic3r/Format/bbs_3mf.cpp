@@ -566,7 +566,7 @@ bool bbs_get_attribute_value_bool(const char** attributes, unsigned int attribut
 void add_vec3(std::stringstream &stream, const Slic3r::Vec3f &tr)
 {
     for (unsigned r = 0; r < 3; ++r) {
-        stream << _u8L(r);
+        stream << r;
         if (r != 2)
             stream << " ";
     }
@@ -2902,7 +2902,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
                 //ConfigSubstitution config_substitution;
                 //config_substitution.opt_def   = optdef;
                 //config_substitution.old_value = value;
-                //config_substitution.new_value = ConfigOptionUniqueP_u8L(opt->clone());
+                //config_substitution.new_value = ConfigOptionUniquePtr(opt->clone());
                 preset->loading_substitutions.emplace_back(std::move(config_substitutions[i]));
             }*/
             if (!config_substitutions.empty()) {
@@ -7842,7 +7842,7 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
     {
         for (unsigned c = 0; c < 4; ++c) {
             for (unsigned r = 0; r < 3; ++r) {
-                stream << _u8L(r, c);
+                stream << tr(r, c);
                 if (r != 2 || c != 3) stream << " ";
             }
         }

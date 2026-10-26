@@ -399,7 +399,7 @@ namespace client
             case TYPE_DOUBLE:
                 return expr(- this->d(), start_pos, this->it_range.end()); 
             default:
-                this->throw_exception(_u8L("Cannot apply unary minus operator."));
+                this->throw_exception(L("Cannot apply unary minus operator."));
             }
             assert(false);
             // Suppress compiler warnings.
@@ -417,7 +417,7 @@ namespace client
             case TYPE_DOUBLE:
                 return expr(static_cast<int>(this->d()), start_pos, this->it_range.end()); 
             default:
-                this->throw_exception(_u8L("Cannot convert to integer."));
+                this->throw_exception(L("Cannot convert to integer."));
             }
             assert(false);
             // Suppress compiler warnings.
@@ -435,7 +435,7 @@ namespace client
             case TYPE_DOUBLE:
                 return expr(static_cast<int>(std::round(this->d())), start_pos, this->it_range.end());
             default:
-                this->throw_exception(_u8L("Cannot round a non-numeric value."));
+                this->throw_exception(L("Cannot round a non-numeric value."));
             }
             assert(false);
             // Suppress compiler warnings.
@@ -450,7 +450,7 @@ namespace client
             case TYPE_DOUBLE:
                 return expr(static_cast<int>(std::floor(this->d())), start_pos, this->it_range.end());
             default:
-                this->throw_exception(_u8L("Cannot floor a non-numeric value."));
+                this->throw_exception(L("Cannot floor a non-numeric value."));
             }
             assert(false);
             // Suppress compiler warnings.
@@ -465,7 +465,7 @@ namespace client
             case TYPE_DOUBLE:
                 return expr(static_cast<int>(std::ceil(this->d())), start_pos, this->it_range.end());
             default:
-                this->throw_exception(_u8L("Cannot ceil a non-numeric value."));
+                this->throw_exception(L("Cannot ceil a non-numeric value."));
             }
             assert(false);
             // Suppress compiler warnings.
@@ -481,7 +481,7 @@ namespace client
             case TYPE_BOOL:
                 return expr(! this->b(), start_pos, this->it_range.end());
             default:
-                this->throw_exception(_u8L("Cannot apply a not operator."));
+                this->throw_exception(L("Cannot apply a not operator."));
             }
             assert(false);
             // Suppress compiler warnings.
@@ -508,7 +508,7 @@ namespace client
                 if (rhs.deferred())
                     m_deferred = Deferred::Text;
             } else {
-                const char *err_msg = _u8L("Cannot add non-numeric types.");
+                const char *err_msg = L("Cannot add non-numeric types.");
                 this->throw_if_not_numeric(err_msg);
                 rhs.throw_if_not_numeric(err_msg);
                 if (this->type() == TYPE_DOUBLE || rhs.type() == TYPE_DOUBLE)
@@ -526,7 +526,7 @@ namespace client
                 // Inside an if / else block to be skipped.
                 this->reset();
             } else {
-                const char *err_msg = _u8L("Cannot subtract non-numeric types.");
+                const char *err_msg = L("Cannot subtract non-numeric types.");
                 this->throw_if_not_numeric(err_msg);
                 rhs.throw_if_not_numeric(err_msg);
                 if (this->type() == TYPE_DOUBLE || rhs.type() == TYPE_DOUBLE)
@@ -544,7 +544,7 @@ namespace client
                 // Inside an if / else block to be skipped.
                 this->reset();
             } else {
-                const char *err_msg = _u8L("Cannot multiply with non-numeric type.");
+                const char *err_msg = L("Cannot multiply with non-numeric type.");
                 this->throw_if_not_numeric(err_msg);
                 rhs.throw_if_not_numeric(err_msg);
                 if (this->type() == TYPE_DOUBLE || rhs.type() == TYPE_DOUBLE)
@@ -562,10 +562,10 @@ namespace client
                 // Inside an if / else block to be skipped.
                 this->reset();
             } else {
-                this->throw_if_not_numeric(_u8L("Cannot divide a non-numeric type."));
-                rhs.throw_if_not_numeric(_u8L("Cannot divide with a non-numeric type."));
+                this->throw_if_not_numeric(L("Cannot divide a non-numeric type."));
+                rhs.throw_if_not_numeric(L("Cannot divide with a non-numeric type."));
                 if (rhs.type() == TYPE_INT ? (rhs.i() == 0) : (rhs.d() == 0.))
-                    rhs.throw_exception(_u8L("Division by zero"));
+                    rhs.throw_exception(L("Division by zero"));
                 if (this->type() == TYPE_DOUBLE || rhs.type() == TYPE_DOUBLE)
                     this->set_d_lite(this->as_d() / rhs.as_d());
                 else
@@ -581,10 +581,10 @@ namespace client
                 // Inside an if / else block to be skipped.
                 this->reset();
             } else {
-                this->throw_if_not_numeric(_u8L("Cannot divide a non-numeric type."));
-                rhs.throw_if_not_numeric(_u8L("Cannot divide with a non-numeric type."));
+                this->throw_if_not_numeric(L("Cannot divide a non-numeric type."));
+                rhs.throw_if_not_numeric(L("Cannot divide with a non-numeric type."));
                 if (rhs.type() == TYPE_INT ? (rhs.i() == 0) : (rhs.d() == 0.))
-                    rhs.throw_exception(_u8L("Division by zero"));
+                    rhs.throw_exception(L("Division by zero"));
                 if (this->type() == TYPE_DOUBLE || rhs.type() == TYPE_DOUBLE)
                     this->set_d_lite(std::fmod(this->as_d(), rhs.as_d()));
                 else
@@ -606,7 +606,7 @@ namespace client
             if (self.type() != TYPE_EMPTY) {
                 // Not inside an if / else block to be skipped
                 if (self.type() != TYPE_BOOL)
-                    self.throw_exception(_u8L("Not a boolean expression"));
+                    self.throw_exception(L("Not a boolean expression"));
                 out = self.b();
             }
         }
@@ -615,7 +615,7 @@ namespace client
         {
             assert(self.type() != TYPE_EMPTY);
             if (self.type() != TYPE_BOOL)
-                self.throw_exception(_u8L("Not a boolean expression"));
+                self.throw_exception(L("Not a boolean expression"));
             out = self.b() ? "true" : "false";
         }
 
@@ -649,7 +649,7 @@ namespace client
                 // Both type are bool.
                 if (op != '=')
                     boost::throw_exception(qi::expectation_failure<Iterator>(
-                        lhs.it_range.begin(), rhs.it_range.end(), spirit::info(std::string("*") + _u8L("Cannot compare the types."))));
+                        lhs.it_range.begin(), rhs.it_range.end(), spirit::info(std::string("*") + L("Cannot compare the types."))));
                 value = lhs.b() == rhs.b();
             } else if (lhs.type() == TYPE_STRING || rhs.type() == TYPE_STRING) {
                 // One type is string, the other could be converted to string.
@@ -657,7 +657,7 @@ namespace client
                         (op == '<') ? (lhs.to_string() < rhs.to_string()) : (lhs.to_string() > rhs.to_string());
             } else {
                 boost::throw_exception(qi::expectation_failure<Iterator>(
-                    lhs.it_range.begin(), rhs.it_range.end(), spirit::info(std::string("*") + _u8L("Cannot compare the types."))));
+                    lhs.it_range.begin(), rhs.it_range.end(), spirit::info(std::string("*") + L("Cannot compare the types."))));
             }
             lhs.reset();
             lhs.set_b_lite(invert ? ! value : value);
@@ -672,7 +672,7 @@ namespace client
 
         static void throw_if_not_numeric(const expr &param)
         {
-            const char *err_msg = _u8L("Not a numeric type.");
+            const char *err_msg = L("Not a numeric type.");
             param.throw_if_not_numeric(err_msg);
         }
 
@@ -734,10 +734,10 @@ namespace client
                 return;
             throw_if_not_numeric(param1);
             if (param2.type() != TYPE_INT)
-                param2.throw_exception(_u8L("digits: second parameter must be integer"));
+                param2.throw_exception(L("digits: second parameter must be integer"));
             bool has_decimals = param3.type() != TYPE_EMPTY;
             if (has_decimals && param3.type() != TYPE_INT)
-                param3.throw_exception(_u8L("digits: third parameter must be integer"));
+                param3.throw_exception(L("digits: third parameter must be integer"));
 
             char buf[256];
             int  ndigits = std::clamp(param2.as_i(), 0, 64);
@@ -762,7 +762,7 @@ namespace client
                 // One type is string, the other could be converted to string.
                 subject = &lhs.s();
             } else {
-                lhs.throw_exception(_u8L("Left hand side of a regex match must be a string."));
+                lhs.throw_exception(L("Left hand side of a regex match must be a string."));
             }
             try {
                 std::string pattern(++ rhs.begin(), -- rhs.end());
@@ -773,7 +773,7 @@ namespace client
             } catch (SLIC3R_REGEX_NAMESPACE::regex_error &ex) {
                 // Syntax error in the regular expression
                 boost::throw_exception(qi::expectation_failure<Iterator>(
-                    rhs.begin(), rhs.end(), spirit::info("*" + Slic3r::format(_u8L("Regular expression compilation failed: %1%"), ex.what()))));
+                    rhs.begin(), rhs.end(), spirit::info("*" + Slic3r::format(L("Regular expression compilation failed: %1%"), ex.what()))));
             }
         }
 
@@ -789,7 +789,7 @@ namespace client
                 return;
             subject.throw_if_deferred();
             if (subject.type() != TYPE_STRING)
-                subject.throw_exception(_u8L("regex_replace() first parameter must be a string."));
+                subject.throw_exception(L("regex_replace() first parameter must be a string."));
             try {
                 std::string re(++ pattern.begin(), -- pattern.end());
                 std::string result = SLIC3R_REGEX_NAMESPACE::regex_replace(subject.s(), SLIC3R_REGEX_NAMESPACE::regex(re), replacement.to_string());
@@ -797,7 +797,7 @@ namespace client
             } catch (SLIC3R_REGEX_NAMESPACE::regex_error &ex) {
                 // Syntax error in the regular expression
                 boost::throw_exception(qi::expectation_failure<Iterator>(
-                    pattern.begin(), pattern.end(), spirit::info("*" + Slic3r::format(_u8L("Regular expression compilation failed: %1%"), ex.what()))));
+                    pattern.begin(), pattern.end(), spirit::info("*" + Slic3r::format(L("Regular expression compilation failed: %1%"), ex.what()))));
             }
         }
 
@@ -815,15 +815,15 @@ namespace client
                 match.throw_if_deferred();
                 pattern.throw_if_deferred();
                 if (match.type() != TYPE_STRING)
-                    match.throw_exception(_u8L("one_of(): First parameter (the string to match against) has to be a string value"));
+                    match.throw_exception(L("one_of(): First parameter (the string to match against) has to be a string value"));
                 if (pattern.type() != TYPE_STRING)
-                    match.throw_exception(_u8L("one_of(): Pattern has to be a string value"));
+                    match.throw_exception(L("one_of(): Pattern has to be a string value"));
                 if (RegEx) {
                     try {
                         out.set_b(SLIC3R_REGEX_NAMESPACE::regex_match(match.s(), SLIC3R_REGEX_NAMESPACE::regex(pattern.s())));
                     } catch (SLIC3R_REGEX_NAMESPACE::regex_error &) {
                         // Syntax error in the regular expression
-                        pattern.throw_exception(_u8L("Regular expression compilation failed"));
+                        pattern.throw_exception(L("Regular expression compilation failed"));
                     }
                 } else
                     out.set_b(match.s() == pattern.s());
@@ -837,7 +837,7 @@ namespace client
             }
             if (! out.b()) {
                 if (match.type() != TYPE_STRING)
-                    match.throw_exception(_u8L("one_of(): First parameter (the string to match against) has to be a string value"));
+                    match.throw_exception(L("one_of(): First parameter (the string to match against) has to be a string value"));
                 regex_op(match, pattern, '=', out);
             }
         }
@@ -854,7 +854,7 @@ namespace client
                 value = (op == '|') ? (lhs.b() || rhs.b()) : (lhs.b() && rhs.b());
             } else {
                 boost::throw_exception(qi::expectation_failure<Iterator>(
-                    lhs.it_range.begin(), rhs.it_range.end(), spirit::info(std::string("*") + _u8L("Cannot apply logical operation to non-boolean operands."))));
+                    lhs.it_range.begin(), rhs.it_range.end(), spirit::info(std::string("*") + L("Cannot apply logical operation to non-boolean operands."))));
             }
             lhs.set_b_lite(value);
         }
@@ -863,7 +863,7 @@ namespace client
 
         static const char* deferred_message()
         {
-            return _u8L("This value is known only after the G-code is generated. It can be printed, but not used in a calculation or a comparison.");
+            return L("This value is known only after the G-code is generated. It can be printed, but not used in a calculation or a comparison.");
         }
 
         // Reports the deferred message for a type error on a deferred value, since it holds a tag in place of the value.
@@ -1046,30 +1046,30 @@ namespace client
                     opt = ctx->resolve_symbol(opt_key_str.substr(0, idx));
                     if (opt != nullptr) {
                         if (! opt->is_vector())
-                            ctx->throw_exception(_u8L("Trying to index a scalar variable"), opt_key);
+                            ctx->throw_exception(L("Trying to index a scalar variable"), opt_key);
                         char *endptr = nullptr;
                         idx = strtol(opt_key_str.c_str() + idx + 1, &endptr, 10);
                         if (endptr == nullptr || *endptr != 0)
-                            ctx->throw_exception(_u8L("Invalid vector index"), IteratorRange(opt_key.begin() + idx + 1, opt_key.end()));
+                            ctx->throw_exception(L("Invalid vector index"), IteratorRange(opt_key.begin() + idx + 1, opt_key.end()));
                     }
                 }
             }
             if (opt == nullptr)
-                ctx->throw_exception(ctx->skipping() ? _u8L("Variable does not exist (in an inactive branch)") : _u8L("Variable does not exist"), opt_key);
+                ctx->throw_exception(ctx->skipping() ? L("Variable does not exist (in an inactive branch)") : L("Variable does not exist"), opt_key);
             if (ctx->skipping())
                 return;
             if (opt->is_scalar()) {
                 if (opt->is_nil())
-                    ctx->throw_exception(_u8L("Trying to reference an undefined (nil) optional variable"), opt_key);
+                    ctx->throw_exception(L("Trying to reference an undefined (nil) optional variable"), opt_key);
                 output = opt->serialize();
             } else {
                 const ConfigOptionVectorBase *vec = static_cast<const ConfigOptionVectorBase*>(opt);
                 if (vec->empty())
-                    ctx->throw_exception(_u8L("Indexing an empty vector variable"), opt_key);
+                    ctx->throw_exception(L("Indexing an empty vector variable"), opt_key);
                 if (idx >= vec->size())
                     idx = 0;
                 if (vec->is_nil(idx))
-                    ctx->throw_exception(_u8L("Trying to reference an undefined (nil) element of vector of optional values"), opt_key);
+                    ctx->throw_exception(L("Trying to reference an undefined (nil) element of vector of optional values"), opt_key);
                 output = vec->vserialize()[idx];
             }
         }
@@ -1083,7 +1083,7 @@ namespace client
             if (ctx->skipping() && ! ctx->check_inactive_names())
                 return;
 
-            const char         *not_found = ctx->skipping() ? _u8L("Variable does not exist (in an inactive branch)") : _u8L("Variable does not exist");
+            const char         *not_found = ctx->skipping() ? L("Variable does not exist (in an inactive branch)") : L("Variable does not exist");
             std::string         opt_key_str(opt_key.begin(), opt_key.end());
             const ConfigOption *opt = ctx->resolve_symbol(opt_key_str);
             if (opt == nullptr) {
@@ -1096,24 +1096,24 @@ namespace client
                     ctx->throw_exception(not_found, opt_key);
             }
             if (! opt->is_vector())
-                ctx->throw_exception(_u8L("Trying to index a scalar variable"), opt_key);
+                ctx->throw_exception(L("Trying to index a scalar variable"), opt_key);
             const ConfigOption *opt_index = ctx->resolve_symbol(std::string(opt_vector_index.begin(), opt_vector_index.end()));
             if (opt_index == nullptr)
                 ctx->throw_exception(not_found, opt_key);
             if (opt_index->type() != coInt)
-                ctx->throw_exception(_u8L("Indexing variable has to be integer"), opt_key);
+                ctx->throw_exception(L("Indexing variable has to be integer"), opt_key);
             if (ctx->skipping())
                 return;
             const ConfigOptionVectorBase *vec = static_cast<const ConfigOptionVectorBase*>(opt);
             if (vec->empty())
-                ctx->throw_exception(_u8L("Indexing an empty vector variable"), opt_key);
+                ctx->throw_exception(L("Indexing an empty vector variable"), opt_key);
 			int idx = opt_index->getInt();
 			if (idx < 0)
-                ctx->throw_exception(_u8L("Negative vector index"), opt_key);
+                ctx->throw_exception(L("Negative vector index"), opt_key);
             if (idx >= (int)vec->size())
                 idx = 0;
             if (vec->is_nil(idx))
-                ctx->throw_exception(_u8L("Trying to reference an undefined (nil) element of vector of optional values"), opt_key);
+                ctx->throw_exception(L("Trying to reference an undefined (nil) element of vector of optional values"), opt_key);
 			output = vec->vserialize()[idx];
         }
 
@@ -1128,7 +1128,7 @@ namespace client
                 if (opt == nullptr) {
                     opt = ctx->resolve_output_symbol(key);
                     if (opt == nullptr)
-                        ctx->throw_exception(_u8L("Not a variable name"), opt_key);
+                        ctx->throw_exception(L("Not a variable name"), opt_key);
                     output.writable = true;
                 }
                 output.opt = opt;
@@ -1138,7 +1138,7 @@ namespace client
                 if (ctx->resolve_symbol(key) == nullptr && ctx->resolve_output_symbol(key) == nullptr &&
                     ctx->inactive_local_variables.count(key) == 0 &&
                     (ctx->context_data == nullptr || ctx->context_data->inactive_global_variables.count(key) == 0))
-                    ctx->throw_exception(_u8L("Not a variable name (in an inactive branch)"), opt_key);
+                    ctx->throw_exception(L("Not a variable name (in an inactive branch)"), opt_key);
             }
             output.it_range = opt_key;
         }
@@ -1172,7 +1172,7 @@ namespace client
             assert(opt.opt->is_scalar());
 
             if (opt.opt->is_nil())
-                ctx->throw_exception(_u8L("Trying to reference an undefined (nil) optional variable"), opt.it_range);
+                ctx->throw_exception(L("Trying to reference an undefined (nil) optional variable"), opt.it_range);
 
             switch (opt.opt->type()) {
             case coFloat:   output.set_d(opt.opt->getFloat());   break;
@@ -1199,7 +1199,7 @@ namespace client
     			    for (;;) {
     			        const ConfigOption *opt_parent = opt_def->ratio_over.empty() ? nullptr : ctx->resolve_symbol(opt_def->ratio_over);
     			        if (opt_parent == nullptr)
-    			            ctx->throw_exception(_u8L("FloatOrPercent variable failed to resolve the \"ratio_over\" dependencies"), opt.it_range);
+    			            ctx->throw_exception(L("FloatOrPercent variable failed to resolve the \"ratio_over\" dependencies"), opt.it_range);
     			        if (boost::ends_with(opt_def->ratio_over, "line_width")) {
                     		// Line width supports defaults and a complex graph of dependencies.
                             assert(opt_parent->type() == coFloatOrPercent);
@@ -1221,7 +1221,7 @@ namespace client
     		    break;
     		}
             default:
-                ctx->throw_exception(_u8L("Unsupported scalar variable type"), opt.it_range);
+                ctx->throw_exception(L("Unsupported scalar variable type"), opt.it_range);
             }
         }
 
@@ -1235,7 +1235,7 @@ namespace client
             assert(opt.opt->is_vector());
             const ConfigOptionVectorBase* vec = static_cast<const ConfigOptionVectorBase*>(opt.opt);
             if (vec->empty())
-                ctx->throw_exception(_u8L("Indexing an empty vector variable"), opt.it_range);
+                ctx->throw_exception(L("Indexing an empty vector variable"), opt.it_range);
 
             // Helper to resolve a FloatOrPercent value (handles ratio_over chain for percent values).
             // elem_index: the element index used to access this vector element, so that
@@ -1256,7 +1256,7 @@ namespace client
                     for (;;) {
                         const ConfigOption *opt_parent = opt_def->ratio_over.empty() ? nullptr : ctx->resolve_symbol(opt_def->ratio_over);
                         if (opt_parent == nullptr)
-                            ctx->throw_exception(_u8L("FloatOrPercent variable failed to resolve the \"ratio_over\" dependencies"), opt.it_range);
+                            ctx->throw_exception(L("FloatOrPercent variable failed to resolve the \"ratio_over\" dependencies"), opt.it_range);
                         if (boost::ends_with(opt_def->ratio_over, "line_width")) {
                             // Line width supports defaults and a complex graph of dependencies.
                             assert(opt_parent->type() == coFloatOrPercent);
@@ -1339,12 +1339,12 @@ namespace client
                     }
                     break;
                 }
-                default: ctx->throw_exception(_u8L("Referencing a vector variable when scalar is expected"), opt.it_range);
+                default: ctx->throw_exception(L("Referencing a vector variable when scalar is expected"), opt.it_range);
                 }
             } else {
                 size_t idx = (opt.index < 0) ? 0 : (opt.index >= int(vec->size())) ? 0 : size_t(opt.index);
                 if (vec->is_nil(idx))
-                    ctx->throw_exception(_u8L("Trying to reference an undefined (nil) element of vector of optional values"), opt.it_range);
+                    ctx->throw_exception(L("Trying to reference an undefined (nil) element of vector of optional values"), opt.it_range);
                 switch (opt.opt->type()) {
                 case coFloats:   output.set_d(static_cast<const ConfigOptionFloats*>(opt.opt)->values[idx]); break;
                 case coInts:     output.set_i(static_cast<const ConfigOptionInts*>(opt.opt)->values[idx]); break;
@@ -1363,27 +1363,27 @@ namespace client
                     break;
                 }
                 default:
-                    ctx->throw_exception(_u8L("Unsupported vector variable type"), opt.it_range);
+                    ctx->throw_exception(L("Unsupported vector variable type"), opt.it_range);
                 }
             }
         }
 
         static void check_writable(const MyContext *ctx, OptWithPos &opt) {
             if (! opt.writable)
-                ctx->throw_exception(_u8L("Cannot modify a read-only variable"), opt.it_range);
+                ctx->throw_exception(L("Cannot modify a read-only variable"), opt.it_range);
         }
 
         static void check_numeric(const expr &param) {
             if (! param.numeric_type())
-                param.throw_exception(_u8L("Right side is not a numeric expression"));
+                param.throw_exception(L("Right side is not a numeric expression"));
         };
 
         static size_t evaluate_count(const expr &expr_count) {
             if (expr_count.type() != expr::TYPE_INT)
-                expr_count.throw_exception(_u8L("Expected number of elements to fill a vector with."));
+                expr_count.throw_exception(L("Expected number of elements to fill a vector with."));
             int count = expr_count.i();
             if (count < 0)
-                expr_count.throw_exception(_u8L("Negative number of elements specified."));
+                expr_count.throw_exception(L("Negative number of elements specified."));
             return size_t(count);
         };
 
@@ -1411,11 +1411,11 @@ namespace client
                 break;
             case coBool:
                 if (rhs.type() != expr::TYPE_BOOL)
-                    ctx->throw_exception(_u8L("Right side is not a boolean expression"), rhs.it_range);
+                    ctx->throw_exception(L("Right side is not a boolean expression"), rhs.it_range);
                 static_cast<ConfigOptionBool*>(wropt)->value = rhs.b();
                 break;
             default:
-                ctx->throw_exception(_u8L("Unsupported output scalar variable type"), lhs.it_range);
+                ctx->throw_exception(L("Unsupported output scalar variable type"), lhs.it_range);
             }
         }
 
@@ -1425,12 +1425,12 @@ namespace client
             assert(lhs.opt->is_vector());
             check_writable(ctx, lhs);
             if (! lhs.has_index())
-                ctx->throw_exception(_u8L("Referencing an output vector variable when scalar is expected"), lhs.it_range);
+                ctx->throw_exception(L("Referencing an output vector variable when scalar is expected"), lhs.it_range);
             ConfigOptionVectorBase *vec = const_cast<ConfigOptionVectorBase*>(static_cast<const ConfigOptionVectorBase*>(lhs.opt));
             if (vec->empty())
-                ctx->throw_exception(_u8L("Indexing an empty vector variable"), lhs.it_range);
+                ctx->throw_exception(L("Indexing an empty vector variable"), lhs.it_range);
             if (lhs.index >= int(vec->size()))
-                ctx->throw_exception(_u8L("Index out of range"), lhs.it_range);
+                ctx->throw_exception(L("Index out of range"), lhs.it_range);
             switch (lhs.opt->type()) {
             case coFloats:
                 check_numeric(rhs);
@@ -1449,11 +1449,11 @@ namespace client
                 break;
             case coBools:
                 if (rhs.type() != expr::TYPE_BOOL)
-                    ctx->throw_exception(_u8L("Right side is not a boolean expression"), rhs.it_range);
+                    ctx->throw_exception(L("Right side is not a boolean expression"), rhs.it_range);
                 static_cast<ConfigOptionBools*>(vec)->values[lhs.index] = rhs.b();
                 break;
             default:
-                ctx->throw_exception(_u8L("Unsupported output vector variable type"), lhs.it_range);
+                ctx->throw_exception(L("Unsupported output vector variable type"), lhs.it_range);
             }
         }
 
@@ -1476,7 +1476,7 @@ namespace client
                 break;
             case coBools:
                 if (rhs_value.type() != expr::TYPE_BOOL)
-                    rhs_value.throw_exception(_u8L("Right side is not a boolean expression"));
+                    rhs_value.throw_exception(L("Right side is not a boolean expression"));
                 static_cast<ConfigOptionBools*>(opt)->values.assign(count, rhs_value.b());
                 break;
             default: assert(false);
@@ -1502,10 +1502,10 @@ namespace client
             if (ctx->skipping()) {
             } else if (opt.opt->is_vector()) {
                 if (! opt.has_index())
-                    ctx->throw_exception(_u8L("Referencing a vector variable when scalar is expected"), opt.it_range);
+                    ctx->throw_exception(L("Referencing a vector variable when scalar is expected"), opt.it_range);
                 const ConfigOptionVectorBase *vec = static_cast<const ConfigOptionVectorBase*>(opt.opt);
                 if (vec->empty())
-                    ctx->throw_exception(_u8L("Indexing an empty vector variable"), opt.it_range);
+                    ctx->throw_exception(L("Indexing an empty vector variable"), opt.it_range);
                 output.set_b(static_cast<const ConfigOptionVectorBase*>(opt.opt)->is_nil(opt.index >= int(vec->size()) ? 0 : size_t(opt.index)));
             } else {
                 assert(opt.opt->is_scalar());
@@ -1529,19 +1529,19 @@ namespace client
             if (! ctx->skipping()) {
                 t_config_option_key key(std::string(it_range.begin(), it_range.end()));
                 if (const ConfigOption* opt = ctx->resolve_symbol(key); opt)
-                    ctx->throw_exception(_u8L("Symbol is already defined in read-only system dictionary"), it_range);
+                    ctx->throw_exception(L("Symbol is already defined in read-only system dictionary"), it_range);
                 if (ctx->config_outputs && ctx->config_outputs->optptr(key))
-                    ctx->throw_exception(_u8L("Symbol is already defined as system output variable"), it_range);
+                    ctx->throw_exception(L("Symbol is already defined as system output variable"), it_range);
                 bool has_global_dictionary = ctx->context_data != nullptr && ctx->context_data->global_config;
                 if (global_variable) {
                     if (! has_global_dictionary)
-                        ctx->throw_exception(_u8L("Global variables are not available in this context"), it_range);
+                        ctx->throw_exception(L("Global variables are not available in this context"), it_range);
                     if (ctx->config_local.optptr(key))
-                        ctx->throw_exception(_u8L("Variable name already defined in local scope"), it_range);
+                        ctx->throw_exception(L("Variable name already defined in local scope"), it_range);
                     out.opt = ctx->context_data->global_config->optptr(key);
                 } else {
                     if (has_global_dictionary && ctx->context_data->global_config->optptr(key))
-                        ctx->throw_exception(_u8L("Variable name already defined in global scope"), it_range);
+                        ctx->throw_exception(L("Variable name already defined in global scope"), it_range);
                     out.opt = ctx->config_local.optptr(key);
                 }
                 out.name     = std::move(key);
@@ -1577,7 +1577,7 @@ namespace client
             if (ctx->skipping()) {
             } else if (lhs.opt) {
                 if (lhs.opt->is_vector())
-                    ctx->throw_exception(_u8L("Cannot assign a scalar value to a vector variable."), rhs.it_range);
+                    ctx->throw_exception(L("Cannot assign a scalar value to a vector variable."), rhs.it_range);
                 OptWithPos lhs_opt{ lhs.opt, lhs.it_range, true };
                 scalar_variable_assign_scalar(ctx, lhs_opt, rhs);
             } else {
@@ -1603,7 +1603,7 @@ namespace client
             if (ctx->skipping()) {
             } else if (lhs.opt) {
                 if (lhs.opt->is_scalar())
-                    ctx->throw_exception(_u8L("Cannot assign a vector value to a scalar variable."), rhs_value.it_range);
+                    ctx->throw_exception(L("Cannot assign a vector value to a scalar variable."), rhs_value.it_range);
                 OptWithPos lhs_opt{ lhs.opt, lhs.it_range, true };
                 vector_variable_assign_expr_with_count(ctx, lhs_opt, rhs_count, rhs_value);
             } else {
@@ -1629,7 +1629,7 @@ namespace client
             if (! ctx->skipping()) {
                 check_writable(ctx, lhs);
                 if (lhs.opt->is_scalar())
-                    ctx->throw_exception(_u8L("Cannot assign a vector value to a scalar variable."), rhs_value.it_range);
+                    ctx->throw_exception(L("Cannot assign a vector value to a scalar variable."), rhs_value.it_range);
                 vector_variable_assign_expr_with_count(ctx, lhs, rhs_count, rhs_value);
             }
         }
@@ -1658,13 +1658,13 @@ namespace client
                     // scalar_var = () 
                     // or
                     // scalar_var = ( scalar, scalar, ... )
-                    ctx->throw_exception(_u8L("Cannot assign a vector value to a scalar variable."), lhs.it_range);
+                    ctx->throw_exception(L("Cannot assign a vector value to a scalar variable."), lhs.it_range);
             }
 
             auto check_numeric_vector = [](const std::vector<expr> &il) {
                 for (auto &i : il)
                     if (! i.numeric_type())
-                        i.throw_exception(_u8L("Right side is not a numeric expression"));
+                        i.throw_exception(L("Right side is not a numeric expression"));
             };
 
             ConfigOption *opt = const_cast<ConfigOption*>(lhs.opt);
@@ -1683,7 +1683,7 @@ namespace client
             case coBools:
                 for (auto &i : il)
                     if (i.type() != expr::TYPE_BOOL)
-                        i.throw_exception(_u8L("Right side is not a boolean expression"));
+                        i.throw_exception(L("Right side is not a boolean expression"));
                 fill_vector_from_initializer_list<ConfigOptionBools>(opt, il, [](auto &v){ return v.b(); });
                 break;
             default: assert(false);
@@ -1705,7 +1705,7 @@ namespace client
                 vector_variable_assign_initializer_list(ctx, lhs_opt, il);
             } else {
                 if (il.empty())
-                    ctx->throw_exception(_u8L("Cannot create vector variable from an empty initializer list, because its type cannot be deduced."), lhs.it_range);
+                    ctx->throw_exception(L("Cannot create vector variable from an empty initializer list, because its type cannot be deduced."), lhs.it_range);
                 // Allocate a new vector variable.
                 // First guesstimate type of the output vector.
                 size_t num_bool = 0;
@@ -1726,7 +1726,7 @@ namespace client
                     opt_new = std::make_unique<ConfigOptionStrings>();
                 else if (num_bool > 0) {
                     if (num_double + num_int > 0)
-                        ctx->throw_exception(_u8L("Right side is not valid: Mixing numeric and boolean types."), IteratorRange{ il.front().it_range.begin(), il.back().it_range.end() });
+                        ctx->throw_exception(L("Right side is not valid: Mixing numeric and boolean types."), IteratorRange{ il.front().it_range.begin(), il.back().it_range.end() });
                     opt_new = std::make_unique<ConfigOptionBools>();
                 } else {
                     // Output is numeric.
@@ -1758,22 +1758,22 @@ namespace client
             check_writable(ctx, lhs);
             assert(lhs.opt->is_vector());
             if (rhs.has_index() || ! rhs.opt->is_vector())
-                ctx->throw_exception(_u8L("Cannot assign scalar to a vector"), lhs.it_range);
+                ctx->throw_exception(L("Cannot assign scalar to a vector"), lhs.it_range);
             if (rhs.opt->is_nil())
-                ctx->throw_exception(_u8L("Some elements of the right hand side vector variable of optional values are undefined (nil)"), rhs.it_range);
+                ctx->throw_exception(L("Some elements of the right hand side vector variable of optional values are undefined (nil)"), rhs.it_range);
             if (lhs.opt->type() != rhs.opt->type()) {
                 // Vector types are not compatible.
                 switch (lhs.opt->type()) {
                 case coFloats:
-                    ctx->throw_exception(_u8L("Left hand side is a float vector, while the right hand side is not."), lhs.it_range);
+                    ctx->throw_exception(L("Left hand side is a float vector, while the right hand side is not."), lhs.it_range);
                 case coInts:
-                    ctx->throw_exception(_u8L("Left hand side is an int vector, while the right hand side is not."), lhs.it_range);
+                    ctx->throw_exception(L("Left hand side is an int vector, while the right hand side is not."), lhs.it_range);
                 case coStrings:
-                    ctx->throw_exception(_u8L("Left hand side is a string vector, while the right hand side is not."), lhs.it_range);
+                    ctx->throw_exception(L("Left hand side is a string vector, while the right hand side is not."), lhs.it_range);
                 case coBools:
-                    ctx->throw_exception(_u8L("Left hand side is a bool vector, while the right hand side is not."), lhs.it_range);
+                    ctx->throw_exception(L("Left hand side is a bool vector, while the right hand side is not."), lhs.it_range);
                 default:
-                    ctx->throw_exception(_u8L("Left hand side / right hand side vectors are not compatible."), lhs.it_range);
+                    ctx->throw_exception(L("Left hand side / right hand side vectors are not compatible."), lhs.it_range);
                 }
             }
             const_cast<ConfigOption*>(lhs.opt)->set(rhs.opt);
@@ -1798,7 +1798,7 @@ namespace client
                     // Stop parsing, let the other rules resolve this case.
                     return false;
                 if (rhs.opt->is_nil())
-                    ctx->throw_exception(_u8L("Some elements of the right hand side vector variable of optional values are undefined (nil)"), rhs.it_range);
+                    ctx->throw_exception(L("Some elements of the right hand side vector variable of optional values are undefined (nil)"), rhs.it_range);
                 // Clone the vector variable.
                 std::unique_ptr<ConfigOption> opt_new;
                 if (one_of(rhs.opt->type(), { coFloats, coInts, coStrings, coBools }))
@@ -1806,7 +1806,7 @@ namespace client
                 else if (rhs.opt->type() == coPercents)
                     opt_new = std::make_unique<ConfigOptionFloats>(static_cast<const ConfigOptionPercents*>(rhs.opt)->values);
                 else
-                    ctx->throw_exception(_u8L("Duplicating this type of vector variable is not supported"), rhs.it_range);
+                    ctx->throw_exception(L("Duplicating this type of vector variable is not supported"), rhs.it_range);
                 const_cast<MyContext*>(ctx)->store_new_variable(lhs.name, std::move(opt_new), global_variable);
             }
             // Continue parsing.
@@ -1824,7 +1824,7 @@ namespace client
         {
             if (! ctx->skipping()) {
                 if (opt.has_index() || ! opt.opt->is_vector())
-                    ctx->throw_exception(_u8L("parameter of empty() is not a vector variable"), opt.it_range);
+                    ctx->throw_exception(L("parameter of empty() is not a vector variable"), opt.it_range);
                 out.set_b(static_cast<const ConfigOptionVectorBase*>(opt.opt)->size() == 0);
             }
             out.it_range = opt.it_range;
@@ -1834,7 +1834,7 @@ namespace client
         {
             if (! ctx->skipping()) {
                 if (opt.has_index() || ! opt.opt->is_vector())
-                    ctx->throw_exception(_u8L("parameter of size() is not a vector variable"), opt.it_range);
+                    ctx->throw_exception(L("parameter of size() is not a vector variable"), opt.it_range);
                 out.set_i(int(static_cast<const ConfigOptionVectorBase*>(opt.opt)->size()));
             }
             out.it_range = opt.it_range;
@@ -1846,7 +1846,7 @@ namespace client
         {
             if (expr_index.type() != expr::TYPE_EMPTY) {
                 if (expr_index.type() != expr::TYPE_INT)
-                    expr_index.throw_exception(_u8L("Non-integer index is not allowed to address a vector variable."));
+                    expr_index.throw_exception(L("Non-integer index is not allowed to address a vector variable."));
                 output = expr_index.i();
             }
         }
@@ -1857,7 +1857,7 @@ namespace client
                 return;
 
             if (ctx->context_data == nullptr)
-                ctx->throw_exception(_u8L("Random number generator not available in this context."),
+                ctx->throw_exception(L("Random number generator not available in this context."),
                     IteratorRange(param1.it_range.begin(), param2.it_range.end()));
             expr::random(param1, param2, ctx->context_data->rng);
         }
@@ -1909,17 +1909,17 @@ namespace client
             if (! info.tag.empty() && info.tag.front() == '*') {
                 // The gat contains an explanatory string.
                 // TRN Custom G-code error. %1% is the line number, %2% the reason.
-                msg += Slic3r::format(_u8L("Parsing error at line %1%: %2%"), line_nr, Slic3r::I18N::translate(info.tag.substr(1)));
+                msg += Slic3r::format(L("Parsing error at line %1%: %2%"), line_nr, Slic3r::I18N::translate(info.tag.substr(1)));
             } else {
                 auto it = tag_to_error_message.find(info.tag);
                 if (it == tag_to_error_message.end()) {
                     // A generic error report based on the nonterminal or terminal symbol name.
                     // TRN Custom G-code error. %1% is the line number, %2% the name of a grammar rule.
-                    msg += Slic3r::format(_u8L("Parsing error at line %1%. Expecting tag %2%"), line_nr, info.tag);
+                    msg += Slic3r::format(L("Parsing error at line %1%. Expecting tag %2%"), line_nr, info.tag);
                 } else {
                     // Use the human readable error message.
                     // TRN Custom G-code error. %1% is the line number, %2% the reason.
-                    msg += Slic3r::format(_u8L("Parsing error at line %1%. %2%"), line_nr, Slic3r::I18N::translate(it->second));
+                    msg += Slic3r::format(L("Parsing error at line %1%. %2%"), line_nr, Slic3r::I18N::translate(it->second));
                 }
             }
             msg += '\n';
@@ -1950,15 +1950,15 @@ namespace client
         static void init(const expr &x) {
             if (x.type() != expr::TYPE_EMPTY) {
                 if (!x.numeric_type())
-                    x.throw_exception(_u8L("Interpolation value must be a number."));
+                    x.throw_exception(L("Interpolation value must be a number."));
             }
         }
         static void add_pair(const expr &x, const expr &y, InterpolateTableContext &table) {
             if (x.type() != expr::TYPE_EMPTY) {
                 if (! x.numeric_type())
-                    x.throw_exception(_u8L("X value of a table point must be a number."));
+                    x.throw_exception(L("X value of a table point must be a number."));
                 if (! y.numeric_type())
-                    y.throw_exception(_u8L("Y value of a table point must be a number."));
+                    y.throw_exception(L("Y value of a table point must be a number."));
                 table.table.push_back({ x.as_d(), x.it_range, y.as_d() });
             }
         }
@@ -1975,7 +1975,7 @@ namespace client
                 double x1 = table.table[i].x;
                 if (x0 > x1)
                     boost::throw_exception(qi::expectation_failure(
-                        table.table[i - 1].it_range_x.begin(), table.table[i].it_range_x.end(), spirit::info(std::string("*") + _u8L("X coordinates of the table must be increasing"))));
+                        table.table[i - 1].it_range_x.begin(), table.table[i].it_range_x.end(), spirit::info(std::string("*") + L("X coordinates of the table must be increasing"))));
                 if (! evaluated && x >= x0 && x <= x1) {
                     double y0 = table.table[i - 1].y;
                     double y1 = table.table[i].y;
@@ -1998,7 +1998,7 @@ namespace client
                     out.set_d(table.table.back().y);
                 else
                     // The value is really outside the table range.
-                    expr_x.throw_exception(_u8L("Interpolation value is outside the table range"));
+                    expr_x.throw_exception(L("Interpolation value is outside the table range"));
             }
         }
     };
@@ -2012,30 +2012,30 @@ namespace client
 
     // Table to translate symbol tag to a human readable error message.
     std::map<std::string, std::string> MyContext::tag_to_error_message = {
-        { "eoi",                        _u8L("Unknown syntax error") },
-        { "start",                      _u8L("Unknown syntax error") },
-        { "text",                       _u8L("Invalid text.") },
-        { "text_block",                 _u8L("Invalid text block.") },
-        { "macro",                      _u8L("Invalid macro.") },
-        { "repeat",                     _u8L("Unknown syntax error") },
-        { "if_else_output",             _u8L("Not an {if}{else}{endif} macro.") },
-        { "switch_output",              _u8L("Not a {switch} macro.") },
-        { "legacy_variable_expansion",  _u8L("Expecting a legacy variable expansion format") },
-        { "identifier",                 _u8L("Expecting an identifier.") },
-        { "conditional_expression",     _u8L("Expecting a conditional expression.") },
-        { "logical_or_expression",      _u8L("Expecting a boolean expression.") },
-        { "logical_and_expression",     _u8L("Expecting a boolean expression.") },
-        { "equality_expression",        _u8L("Expecting an expression.") },
-        { "bool_expr_eval",             _u8L("Expecting a boolean expression.")},
-        { "relational_expression",      _u8L("Expecting an expression.") },
-        { "additive_expression",        _u8L("Expecting an expression.") },
-        { "multiplicative_expression",  _u8L("Expecting an expression.") },
-        { "unary_expression",           _u8L("Expecting an expression.") },
-        { "optional_parameter",         _u8L("Expecting a closing brace or an optional parameter.") },
-        { "one_of_list",                _u8L("Expecting a list of string patterns (simple text or regexp)") },
-        { "variable_reference",         _u8L("Expecting a variable reference.")},
-        { "variable",                   _u8L("Expecting a variable name.")},
-        { "regular_expression",         _u8L("Expecting a regular expression.")}
+        { "eoi",                        L("Unknown syntax error") },
+        { "start",                      L("Unknown syntax error") },
+        { "text",                       L("Invalid text.") },
+        { "text_block",                 L("Invalid text block.") },
+        { "macro",                      L("Invalid macro.") },
+        { "repeat",                     L("Unknown syntax error") },
+        { "if_else_output",             L("Not an {if}{else}{endif} macro.") },
+        { "switch_output",              L("Not a {switch} macro.") },
+        { "legacy_variable_expansion",  L("Expecting a legacy variable expansion format") },
+        { "identifier",                 L("Expecting an identifier.") },
+        { "conditional_expression",     L("Expecting a conditional expression.") },
+        { "logical_or_expression",      L("Expecting a boolean expression.") },
+        { "logical_and_expression",     L("Expecting a boolean expression.") },
+        { "equality_expression",        L("Expecting an expression.") },
+        { "bool_expr_eval",             L("Expecting a boolean expression.")},
+        { "relational_expression",      L("Expecting an expression.") },
+        { "additive_expression",        L("Expecting an expression.") },
+        { "multiplicative_expression",  L("Expecting an expression.") },
+        { "unary_expression",           L("Expecting an expression.") },
+        { "optional_parameter",         L("Expecting a closing brace or an optional parameter.") },
+        { "one_of_list",                L("Expecting a list of string patterns (simple text or regexp)") },
+        { "variable_reference",         L("Expecting a variable reference.")},
+        { "variable",                   L("Expecting a variable name.")},
+        { "regular_expression",         L("Expecting a regular expression.")}
     };
 
     // For debugging the boost::spirit parsers. Print out the string enclosed in it_range.
@@ -2104,7 +2104,7 @@ namespace client
             first = it;
             return true;
         err:
-            MyContext::throw_exception(_u8L("Invalid utf8 sequence"), IteratorRange(first, last));
+            MyContext::throw_exception(L("Invalid utf8 sequence"), IteratorRange(first, last));
             return false;
         }
 
@@ -2130,7 +2130,7 @@ namespace client
                 return false;
             char c = *first;
             if (it - first > 1 || c < 0)
-                MyContext::throw_exception(_u8L("Non-ASCII7 characters are only allowed inside text blocks and string literals, not inside code blocks."), IteratorRange(first, it));
+                MyContext::throw_exception(L("Non-ASCII7 characters are only allowed inside text blocks and string literals, not inside code blocks."), IteratorRange(first, it));
             if (c == '\r' || c == '\n' || c == '\t' || c == ' ') {
                 // Skip the whitespaces
                 ++ first;
@@ -2189,7 +2189,7 @@ namespace client
                         if (*it == '\\') {
                             if (++ it == end ||
                                 (*it != 'r' && *it != 'n' && *it != '"' && *it != '\\'))
-                                ctx->throw_exception(_u8L("Invalid escape sequence"), {std::prev(it), std::next(it) });
+                                ctx->throw_exception(L("Invalid escape sequence"), {std::prev(it), std::next(it) });
                             ++ len;
                             ++ it;
                         } else {

@@ -702,7 +702,7 @@ bool ConfigBase::set_deserialize_raw(const t_config_option_key &opt_key_src, con
         ConfigSubstitution config_substitution;
         config_substitution.opt_def   = optdef;
         config_substitution.old_value = value;
-        config_substitution.new_value = ConfigOptionUniqueP_u8L(opt->clone());
+        config_substitution.new_value = ConfigOptionUniquePtr(opt->clone());
         substitutions_ctxt.substitutions.emplace_back(std::move(config_substitution));
     }
     return success;

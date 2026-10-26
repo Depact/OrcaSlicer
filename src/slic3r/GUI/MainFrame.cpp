@@ -421,9 +421,9 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
 
 #ifdef __WXMSW__
     if (HWND hWnd = GetHandle(); hWnd != nullptr) {
-        LONG_PTR style = GetWindowLongP_u8L(hWnd, GWL_STYLE);
+        LONG_PTR style = GetWindowLongPtr(hWnd, GWL_STYLE);
         if ((style & WS_CAPTION) != 0) {
-            SetWindowLongP_u8L(hWnd, GWL_STYLE, style & ~WS_CAPTION);
+            SetWindowLongPtr(hWnd, GWL_STYLE, style & ~WS_CAPTION);
             SetWindowPos(hWnd, nullptr, 0, 0, 0, 0,
                          SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
         }
@@ -657,7 +657,7 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
         HWND      hWnd = GetHandle();
         RECT      borderThickness;
         SetRectEmpty(&borderThickness);
-        AdjustWindowRectEx(&borderThickness, GetWindowLongP_u8L(hWnd, GWL_STYLE), FALSE, 0);
+        AdjustWindowRectEx(&borderThickness, GetWindowLongPtr(hWnd, GWL_STYLE), FALSE, 0);
         const auto max_size = size + wxSize{-borderThickness.left + borderThickness.right, -borderThickness.top + borderThickness.bottom};
         const auto current_size = GetSize();
         SetSize({std::min(max_size.x, current_size.x), std::min(max_size.y, current_size.y)});
@@ -990,7 +990,7 @@ static void AdjustWorkingAreaForAutoHide(const HWND hWnd, MINMAXINFO* mmi)
 
     RECT borderThickness;
     SetRectEmpty(&borderThickness);
-    AdjustWindowRectEx(&borderThickness, GetWindowLongP_u8L(hWnd, GWL_STYLE) & ~WS_CAPTION, FALSE, 0);
+    AdjustWindowRectEx(&borderThickness, GetWindowLongPtr(hWnd, GWL_STYLE) & ~WS_CAPTION, FALSE, 0);
 
     // Determine taskbar position
     SHAppBarMessage(ABM_GETTASKBARPOS, &abd);
@@ -1051,7 +1051,7 @@ WXLRESULT MainFrame::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam
             // Use & ~WS_CAPTION to get only the border thickness, not the caption height.
             // wxWidgets 3.3 adds WS_CAPTION when wxMINIMIZE_BOX/wxMAXIMIZE_BOX/wxCLOSE_BOX is set,
             // but we use a custom titlebar so we must exclude the caption from NC area calculations.
-            AdjustWindowRectEx(&borderThickness, GetWindowLongP_u8L(hWnd, GWL_STYLE) & ~WS_CAPTION, FALSE, NULL);
+            AdjustWindowRectEx(&borderThickness, GetWindowLongPtr(hWnd, GWL_STYLE) & ~WS_CAPTION, FALSE, NULL);
             borderThickness.left *= -1;
             borderThickness.top *= -1;
             if (wPos.showCmd != SW_SHOWMAXIMIZED) {
@@ -1080,7 +1080,7 @@ WXLRESULT MainFrame::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lParam
         if (m_topbar->GetScreenRect().GetBottom() >= mouse_pos.y) {
             RECT borderThickness;
             SetRectEmpty(&borderThickness);
-            AdjustWindowRectEx(&borderThickness, GetWindowLongP_u8L(hWnd, GWL_STYLE) & ~WS_CAPTION, FALSE, NULL);
+            AdjustWindowRectEx(&borderThickness, GetWindowLongPtr(hWnd, GWL_STYLE) & ~WS_CAPTION, FALSE, NULL);
             borderThickness.left *= -1;
             borderThickness.top *= -1;
             wxPoint client_pos = this->ScreenToClient(mouse_pos);

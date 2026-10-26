@@ -808,7 +808,7 @@ namespace NppDarkMode
 
             if (wcscmp(className, UPDOWN_CLASS) == 0)
             {
-                auto nButtonStyle = ::GetWindowLongP_u8L(hwnd, GWL_STYLE) & 0xF;
+                auto nButtonStyle = ::GetWindowLongPtr(hwnd, GWL_STYLE) & 0xF;
                 if (nButtonStyle == BS_AUTO3STATE && p.subclass)
                 {
                     subclassButtonControl(hwnd);

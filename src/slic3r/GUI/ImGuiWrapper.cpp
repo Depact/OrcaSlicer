@@ -1713,7 +1713,7 @@ bool begin_menu(const char *label, bool enabled)
             // FIXME-DPI: Values should be derived from a master "scale" factor.
             ImRect next_window_rect = child_menu_window->Rect();
             ImVec2 ta               = g.IO.MousePos - g.IO.MouseDelta;
-            ImVec2 tb               = (window->Pos.x < child_menu_window->Pos.x) ? next_window_rect.GetTL() : next_window_rect.Get_u8L();
+            ImVec2 tb               = (window->Pos.x < child_menu_window->Pos.x) ? next_window_rect.GetTL() : next_window_rect.GetTR();
             ImVec2 tc               = (window->Pos.x < child_menu_window->Pos.x) ? next_window_rect.GetBL() : next_window_rect.GetBR();
             float  extra            = ImClamp(ImFabs(ta.x - tb.x) * 0.30f, 5.0f, 30.0f); // add a bit of extra slack.
             ta.x += (window->Pos.x < child_menu_window->Pos.x) ? -0.5f : +0.5f;          // to avoid numerical issues

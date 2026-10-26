@@ -2029,7 +2029,7 @@ OctreePtr build_octree(
     BoundingBox3Base<Vec3f>     bbox(triangle_mesh.vertices);
     Vec3d                       cube_center      = bbox.center().cast<double>();
     std::vector<CubeProperties> cubes_properties = make_cubes_properties(double(bbox.size().maxCoeff()), line_spacing);
-    auto                        octree           = OctreeP_u8L(new Octree(cube_center, cubes_properties));
+    auto                        octree           = OctreePtr(new Octree(cube_center, cubes_properties));
 
     if (cubes_properties.size() > 1) {
         Octree *octree_ptr = octree.get();
