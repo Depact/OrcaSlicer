@@ -282,7 +282,7 @@ console.print(Rule(char="\u2501", style="green"))
     # --- 6. Ccache statistics ---
     Show-CcacheStats -Ccache $ccache -NoMetrics:$NoMetrics
 
-    $total = (Get-Date) - $started
+    $total = $timing.ConfigureTime + $timing.BuildTime
     Write-Host ""
     $python = Get-Command py -ErrorAction SilentlyContinue
     if ($python) {
