@@ -284,18 +284,18 @@ console.print(Rule(char="\u2501", style="green"))
 
     $total = (Get-Date) - $started
     Write-Host ""
-    if ($UnityTestLibslic3r) {
-        Write-Host "  Unity build test PASSED (libslic3r)" -ForegroundColor Green
-    } else {
-        Write-Host "  Build complete!" -ForegroundColor Green
-    }
-    Write-Host ""
     $python = Get-Command py -ErrorAction SilentlyContinue
     if ($python) {
         & $python "$RepoRoot\scripts\build_units\rich_utils.py" rule green
     } else {
         Write-Host "=========================================="
     }
+    if ($UnityTestLibslic3r) {
+        Write-Host "  Unity build test PASSED (libslic3r)" -ForegroundColor Green
+    } else {
+        Write-Host "  Build complete!" -ForegroundColor Green
+    }
+    Write-Host ""
     $fmt = { param($t) $h = [math]::Floor($t.TotalHours); $m = [math]::Floor($t.TotalMinutes) % 60; $s = [math]::Round($t.Seconds); if ($h) { "{0}h {1:00}m {2:00}s" -f $h, $m, $s } elseif ($m) { "{0}m {1:00}s" -f $m, $s } else { "{0}s" -f $s } }
     $configureStr = & $fmt $timing.ConfigureTime
     $buildStr     = & $fmt $timing.BuildTime
