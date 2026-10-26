@@ -169,7 +169,7 @@ def render_rich(rows: list[dict], title: str, height: int, ascii_only: bool) -> 
             info["duration"], block,
         ))
         charts.append(render_chart(
-            "RAM GB", info["ram"], 0.0, max(1.0, peak(info["ram"]) * 1.05),
+            "RAM GB", info["ram"], 0.0, max(0.1, peak(info["ram"]) * 1.05),
             height, width, "bright_blue", "{:.1f} GB", info["start"], info["end"],
             info["duration"], block,
         ))
@@ -297,7 +297,7 @@ def render_combined_stacked_chart(stack, height, width, start, end, duration, as
         cpu_series.append((label, color, ascii_char, bucket_avg(stack[key], cpu_bars)))
     cpu_totals = [sum(values[index] for _label, _color, _char, values in cpu_series)
                   for index in range(cpu_bars)]
-    cpu_high = max(1.0, peak(cpu_totals) if cpu_totals else 1.0)
+    cpu_high = max(0.1, peak(cpu_totals) if cpu_totals else 0.1)
     cpu_span = cpu_high
 
     # RAM chart
@@ -307,7 +307,7 @@ def render_combined_stacked_chart(stack, height, width, start, end, duration, as
         ram_series.append((label, color, ascii_char, bucket_avg(stack[key], ram_bars)))
     ram_totals = [sum(values[index] for _label, _color, _char, values in ram_series)
                   for index in range(ram_bars)]
-    ram_high = max(1.0, peak(ram_totals) if ram_totals else 1.0)
+    ram_high = max(0.1, peak(ram_totals) if ram_totals else 0.1)
     ram_span = ram_high
 
     lines = []
