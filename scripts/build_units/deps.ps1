@@ -54,7 +54,7 @@ function Check-Dependencies {
             Write-Host "  -> WARNING: No Boost libraries found in deps. This may indicate a Build failure or partial installation. " -ForegroundColor Yellow
             Write-Host "     OrcaSlicer requires Boost to build. Try rebuilding dependencies or install Boost system-wide." -ForegroundColor Yellow
         }
-        Write-Host "  -> Dependencies found at $depsPrefix (manifest matches)" -ForegroundColor Green
+        Write-Host "  -> Dependencies found at $depsPrefix (manifest matches)" -ForegroundColor Gray
     }
 }
 
