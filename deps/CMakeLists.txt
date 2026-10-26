@@ -352,7 +352,6 @@ if(FLATPAK)
     find_package(EXPAT)
     find_package(CURL)
     find_package(JPEG)
-    find_package(Freetype)
     find_package(OpenSSL 1.1...<3.2)
     find_package(CURL)
 endif()
@@ -442,12 +441,6 @@ if (NOT FLATPAK)
     set(WXWIDGETS_PKG "dep_wxWidgets")
 endif()
 
-set(FREETYPE_PKG "")
-if(NOT FREETYPE_FOUND)
-    include(FREETYPE/FREETYPE.cmake)
-    set(FREETYPE_PKG "dep_FREETYPE")
-endif()
-
 execute_process(
     COMMAND ${GIT_EXECUTABLE} rev-parse --is-inside-work-tree
     RESULT_VARIABLE REV_PARSE_RESULT
@@ -483,7 +476,6 @@ set(_dep_list
     dep_CGAL
     dep_GLFW
     dep_OCCT
-    ${FREETYPE_PKG}
     ${PNG_PKG}
     ${ZLIB_PKG}
     ${EXPAT_PKG}
