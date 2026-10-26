@@ -172,7 +172,7 @@ def render_rich(rows: list[dict], title: str, height: int, ascii_only: bool) -> 
 
     console.print(f"[bold]{title}[/bold]")
     if charts:
-        console.print(Columns(charts, equal=True, expand=True, padding=0))
+        console.print(Columns(charts, equal=True, expand=False, padding=(0, 0)))
     if not info["has_cpu"]:
         console.print("[yellow]CPU and core samples are missing from this CSV; "
                       "it was written by an older sampler.[/yellow]")
