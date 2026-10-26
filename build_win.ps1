@@ -285,14 +285,28 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
         Write-Host "  Build complete!" -ForegroundColor Green
     }
     $fmt = { param($t) $h = [math]::Floor($t.TotalHours); $m = [math]::Floor($t.TotalMinutes) % 60; $s = [math]::Round($t.Seconds); if ($h) { "{0}h {1:00}m {2:00}s" -f $h, $m, $s } elseif ($m) { "{0}m {1:00}s" -f $m, $s } else { "{0}s" -f $s } }
+    # Timing breakdown using Rich Tree widget
     $configureStr = & $fmt $timing.ConfigureTime
     $buildStr     = & $fmt $timing.BuildTime
     $totalStr     = & $fmt $total
-    Write-Host ("  Configure: {0}" -f $configureStr) -ForegroundColor Green
-    Write-Host ("  Build:     {0}" -f $buildStr) -ForegroundColor Green
-    Write-Host ("  Total:     {0}" -f $totalStr) -ForegroundColor Green
-    if ($timing.BuildLog) {
-        Write-Host "  Build log: $($timing.BuildLog)" -ForegroundColor Green
+    $python = Get-Command py -ErrorAction SilentlyContinue
+    if (-not $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
+    if ($python) {
+        & $python -c "
+from rich.console import Console
+from rich.tree import Tree
+import sys
+console = Console()
+tree = Tree('Build timing', style='default')
+tree.add(f'Configure: {sys.argv[1]}')
+tree.add(f'Build:     {sys.argv[2]}')
+tree.add(f'Total:     {sys.argv[3]}')
+console.print(tree)
+" $configureStr $buildStr $totalStr
+    } else {
+        Write-Host ("  Configure: {0}" -f $configureStr)
+        Write-Host ("  Build:     {0}" -f $buildStr)
+        Write-Host ("  Total:     {0}" -f $totalStr)
     }
     Write-Host "==========================================" -ForegroundColor Green
 } catch {

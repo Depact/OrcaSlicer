@@ -16,9 +16,6 @@ function Configure-Build {
     )
     Write-Host ""
 
-    $configureLog = New-BuildLogPath "configure"
-    $buildLog = New-BuildLogPath "build"
-
     $configureStarted = Get-Date
     # Remove CMakeCache.txt to force fresh configure (avoids "variables changed" error on preset/compiler change)
     $cmakeCache = Join-Path $BuildDir "CMakeCache.txt"
@@ -36,7 +33,7 @@ function Configure-Build {
     
     $ts = Get-TimeStamp
     Write-Host "[$ts] >>> $cmake $($configureArgs -join ' ')"
-    Invoke-BuildStep -Label "CMake configure" -LogPath $configureLog -Command $Cmake -Arguments $configureArgs
+    Invoke-BuildStep -Label "CMake configure" -Command $Cmake -Arguments $configureArgs
     $configureTime = (Get-Date) - $configureStarted
 
     Write-Host ""
@@ -45,12 +42,11 @@ function Configure-Build {
     $buildArgs = @("--build", $BuildDir, "--config", $Config, "--target", $Target)
     if ($MaxJobs -gt 0) { $buildArgs += @("--", "-j", "$MaxJobs") }
     Write-Host "[$ts] >>> $cmake $($buildArgs -join ' ')"
-    Invoke-BuildStep -Label "Build" -LogPath $buildLog -Command $Cmake -Arguments $buildArgs
+    Invoke-BuildStep -Label "Build" -Command $Cmake -Arguments $buildArgs
     $buildTime = (Get-Date) - $buildStarted
 
     return @{
         ConfigureTime = $configureTime
         BuildTime     = $buildTime
-        BuildLog      = $buildLog
     }
 }

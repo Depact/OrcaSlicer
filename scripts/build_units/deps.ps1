@@ -37,12 +37,10 @@ function Check-Dependencies {
 
     if ($needsRebuild) {
         Write-Host "  -> Building dependencies for clang-cl + Ninja..." -ForegroundColor Yellow
-        $depsConfigureLog = New-BuildLogPath "deps-configure"
-        Invoke-BuildStep -Label "Dependency configuration" -LogPath $depsConfigureLog -Command $Cmake -Arguments @(
+        Invoke-BuildStep -Label "Dependency configuration" -Command $Cmake -Arguments @(
             "-S", "deps", "-B", $DepsBuildDir, "-G", "Ninja Multi-Config",
             "-DCMAKE_C_COMPILER=$ClangCl", "-DCMAKE_CXX_COMPILER=$ClangCl")
-        $depsBuildLog = New-BuildLogPath "deps-build"
-        Invoke-BuildStep -Label "Dependency build" -LogPath $depsBuildLog -Command $Cmake -Arguments @(
+        Invoke-BuildStep -Label "Dependency build" -Command $Cmake -Arguments @(
             "--build", $DepsBuildDir, "--config", $Config, "--target", "deps", "--")
         $currentHash | Set-Content $depsManifest -Encoding ASCII
         Write-Host "  -> Dependencies built successfully" -ForegroundColor Green

@@ -32,8 +32,7 @@ function Invoke-BuildStep {
             $lastLine[0] = $raw
             # Color real errors red (not CMake's [ERR] trace messages), normal output gray
             $isRealError = $raw -match '(?i)(error:|fatal:|FAILED:|^error\s|^fatal\s|^\s*error\s)'
-            $line = if ($isRealError) { Write-Host $raw -ForegroundColor Red; $raw } else { Write-Host $raw -ForegroundColor DarkGray; $raw }
-            $line | Tee-Object -FilePath $LogPath -Append
+            if ($isRealError) { Write-Host $raw -ForegroundColor Red } else { Write-Host $raw -ForegroundColor DarkGray }
         }
         $exitCode = $LASTEXITCODE
         $exceptionCaught = $null
@@ -46,15 +45,12 @@ function Invoke-BuildStep {
 
     if ($exceptionCaught) {
         Write-Host "--- $Label threw $($exceptionCaught.GetType().Name): $($exceptionCaught.Exception.Message) ---" -ForegroundColor Red
-        throw "$Label failed due to exception ($($exceptionCaught.GetType().Name)): $($exceptionCaught.Exception.Message). Log: $LogPath"
+        throw "$Label failed due to exception ($($exceptionCaught.GetType().Name)): $($exceptionCaught.Exception.Message)"
     }
     if ($exitCode -ne 0) {
         Write-Host ""
-        Write-Host "--- $Label failed (exit $exitCode); last 60 log lines ---" -ForegroundColor Red
-        Get-Content $LogPath -Tail 60 -ErrorAction SilentlyContinue |
-            ForEach-Object { Write-Host $_ -ForegroundColor Red }
-        Write-Host "--- full log: $LogPath ---" -ForegroundColor Red
-        throw "$Label failed with exit code $exitCode. Log: $LogPath"
+        Write-Host "--- $Label failed (exit $exitCode) ---" -ForegroundColor Red
+        throw "$Label failed with exit code $exitCode"
     }
 }
 
