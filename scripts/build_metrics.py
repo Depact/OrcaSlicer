@@ -136,7 +136,7 @@ def summary(rows: list[dict]) -> dict | None:
 def render_rich(rows: list[dict], title: str, height: int, ascii_only: bool) -> None:
     from rich import box
     from rich.console import Console
-    from rich.table import Table
+    from rich.columns import Columns
 
     info = summary(rows)
     if info is None:
@@ -149,56 +149,33 @@ def render_rich(rows: list[dict], title: str, height: int, ascii_only: bool) -> 
         ascii_only = "utf" not in encoding and encoding not in ("cp65001",)
     block = "#" if ascii_only else "█"
 
-    cpu_text = (f"{avg(info['cpu']):.0f}% / {peak(info['cpu']):.0f}%"
-                if info["has_cpu"] else "-")
-    core_text = (f"{avg(info['cores']):.1f} / {peak(info['cores']):.0f}"
-                 if info["has_cpu"] else "-")
-
-    table = Table(box=box.SIMPLE, show_header=False, pad_edge=False)
-    table.add_column(style="dim", no_wrap=True)
-    table.add_column(style="bold")
-    table.add_column(style="dim", no_wrap=True)
-    table.add_column(style="bold")
-    table.add_row("Start", info["start"].strftime("%Y-%m-%d %H:%M:%S"),
-                  "End", info["end"].strftime("%Y-%m-%d %H:%M:%S"))
-    table.add_row("Duration", format_duration(info["duration"]),
-                  "Samples", str(info["samples"]))
-    table.add_row("Build CPU avg / peak", cpu_text,
-                  "Build cores avg / peak", core_text)
-    table.add_row("Build RAM avg / peak",
-                  f"{avg(info['ram']):.1f} / {peak(info['ram']):.1f} GB", "", "")
-
-    console.print(f"[bold]{title}[/bold]")
-    console.print(table)
-    if info["stack"]:
-        peaks = ", ".join(
-            f"{label} {peak(info['stack'][key]):.1f}"
-            for key, label, _color, _char in STACKS
-        )
-        console.print(f"[dim]Peak cores by tool: {peaks}[/dim]")
-
+    charts = []
     if info["has_cpu"]:
-        console.print(render_chart(
+        charts.append(render_chart(
             "Build CPU", info["cpu"], 0.0, 100.0, height, width,
             "bright_red", "{:.0f}%", info["start"], info["end"],
             info["duration"], block,
         ))
     if info["stack"]:
-        console.print(render_stacked_chart(
+        charts.append(render_stacked_chart(
             info["stack"], height, width, info["start"], info["end"],
-            info["duration"], ascii_only,
+            info["duration"], ascii_only, info["ram"],
         ))
     elif info["has_cpu"]:
-        console.print(render_chart(
+        charts.append(render_chart(
             "Build cores", info["cores"], 0.0, max(1.0, peak(info["cores"])),
             height, width, "bright_yellow", "{:.0f}", info["start"], info["end"],
             info["duration"], block,
         ))
-    console.print(render_chart(
+    charts.append(render_chart(
         "Build RAM", info["ram"], 0.0, max(1.0, peak(info["ram"]) * 1.05),
         height, width, "bright_blue", "{:.1f} GB", info["start"], info["end"],
         info["duration"], block,
     ))
+
+    console.print(f"[bold]{title}[/bold]")
+    if charts:
+        console.print(Columns(charts, equal=True, expand=True))
     if not info["has_cpu"]:
         console.print("[yellow]CPU and core samples are missing from this CSV; "
                       "it was written by an older sampler.[/yellow]")
@@ -260,7 +237,7 @@ def render_chart(label, values, low, high, height, width, color, fmt,
                  box=box.ASCII if block == "#" else box.ROUNDED)
 
 
-def render_stacked_chart(stack, height, width, start, end, duration, ascii_only):
+def render_stacked_chart(stack, height, width, start, end, duration, ascii_only, ram_values=None):
     from rich import box
     from rich.console import Group
     from rich.panel import Panel
@@ -308,6 +285,11 @@ def render_stacked_chart(stack, height, width, start, end, duration, ascii_only)
     for _key, label, color, ascii_char in STACKS:
         legend.append("█ " if not ascii_only else f"{ascii_char} ", style=color)
         legend.append(f"{label}  ", style="dim")
+    if ram_values:
+        peak_ram = peak(ram_values)
+        avg_ram = avg(ram_values)
+        legend.append(f" | RAM Peak: {peak_ram:.1f}GB (Avg: {avg_ram:.1f}GB)", style="bright_blue")
+
     lines.append(legend)
     lines.extend(footer_lines(start, end, duration, bars * 2 - 1,
                               "#" if ascii_only else "█"))
@@ -321,28 +303,12 @@ def render_plain(rows: list[dict], title: str) -> None:
     if info is None:
         raise ValueError("CSV has no usable build RAM column")
     print(title)
-    print(f"  Start    {info['start'].strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"  End      {info['end'].strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"  Duration {format_duration(info['duration'])}  ({info['samples']} samples)")
-    if info["has_cpu"]:
-        print(f"  Build CPU   avg {avg(info['cpu']):.0f}%  peak {peak(info['cpu']):.0f}%")
-        print(f"  Build cores avg {avg(info['cores']):.1f}  peak {peak(info['cores']):.0f}")
-    print(f"  Build RAM   avg {avg(info['ram']):.1f} GB  peak {peak(info['ram']):.1f} GB")
-    if info["stack"]:
-        for key, label, _color, _char in STACKS:
-            print(f"  {label:<10} peak cores {peak(info['stack'][key]):.1f}")
-    print()
-    charts = []
-    if info["has_cpu"]:
-        charts.append(("Build CPU", info["cpu"], 100.0))
-        charts.append(("Build cores", info["cores"], max(1.0, peak(info["cores"]))))
-    charts.append(("Build RAM", info["ram"], max(1.0, peak(info["ram"]))))
-    for label, values, scale in charts:
-        print(label)
-        for value in bucket_max(values, 72):
-            print("#" * max(0, int(value / scale * 60)))
-    print()
-    print(f"  {info['start'].strftime('%H:%M:%S')}  duration {format_duration(info['duration'])}  {info['end'].strftime('%H:%M:%S')}")
+    for value in bucket_max(info["cpu"], 72):
+        print("#" * max(0, int(value / 100.0 * 60)))
+    for value in bucket_max(info["cores"], 72):
+        print("#" * max(0, int(value / max(1.0, peak(info["cores"])) * 60)))
+    for value in bucket_max(info["ram"], 72):
+        print("#" * max(0, int(value / max(1.0, peak(info["ram"])) * 60)))
 
 
 def main() -> int:

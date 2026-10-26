@@ -1,0 +1,393 @@
+[
+  {
+    "string": "Acceleration",
+    "L_files": [
+      "src\\slic3r\\GUI\\Tab.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GCodeViewer.cpp",
+      "src\\slic3r\\GUI\\GCodeViewer.cpp"
+    ]
+  },
+  {
+    "string": "Add Primitive",
+    "L_files": [
+      "src\\slic3r\\GUI\\NativeCommands.cpp",
+      "src\\slic3r\\GUI\\NativeCommands.cpp",
+      "src\\slic3r\\GUI\\NativeCommands.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GUI_ObjectList.cpp"
+    ]
+  },
+  {
+    "string": "Add instance",
+    "L_files": [
+      "src\\slic3r\\GUI\\Shortcuts.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GLCanvas3D.cpp"
+    ]
+  },
+  {
+    "string": "Arrange all objects",
+    "L_files": [
+      "src\\slic3r\\GUI\\Shortcuts.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GLCanvas3D.cpp"
+    ]
+  },
+  {
+    "string": "Arrange objects on selected plates",
+    "L_files": [
+      "src\\slic3r\\GUI\\Shortcuts.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GLCanvas3D.cpp"
+    ]
+  },
+  {
+    "string": "Auto orient all objects on current plate",
+    "L_files": [
+      "src\\slic3r\\GUI\\Shortcuts.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GLCanvas3D.cpp"
+    ]
+  },
+  {
+    "string": "Auto orient all/selected objects",
+    "L_files": [
+      "src\\slic3r\\GUI\\Shortcuts.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GLCanvas3D.cpp"
+    ]
+  },
+  {
+    "string": "Bottom surface",
+    "L_files": [
+      "src\\libslic3r\\PrintConfig.cpp"
+    ],
+    "u8L_files": [
+      "src\\libslic3r\\ExtrusionEntity.cpp",
+      "src\\slic3r\\GUI\\GCodeViewer.cpp"
+    ]
+  },
+  {
+    "string": "Color Painting",
+    "L_files": [
+      "src\\slic3r\\GUI\\ObjectDataViewModel.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\Gizmos\\GLGizmoMmuSegmentation.cpp"
+    ]
+  },
+  {
+    "string": "Custom G-code",
+    "L_files": [
+      "src\\libslic3r\\GCode.cpp",
+      "src\\libslic3r\\PrintConfig.cpp",
+      "src\\slic3r\\GUI\\Tab.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GCodeViewer.cpp",
+      "src\\slic3r\\GUI\\GCodeViewer.cpp",
+      "src\\slic3r\\GUI\\IMSlider.cpp",
+      "src\\slic3r\\GUI\\IMSlider.cpp"
+    ]
+  },
+  {
+    "string": "Delete All Objects",
+    "L_files": [
+      "src\\slic3r\\GUI\\NativeCommands.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\Plater.cpp"
+    ]
+  },
+  {
+    "string": "Face the camera",
+    "L_files": [
+      "src\\slic3r\\GUI\\SurfaceDrag.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\Gizmos\\GLGizmoSVG.cpp"
+    ]
+  },
+  {
+    "string": "HTTPS CA File",
+    "L_files": [
+      "src\\libslic3r\\PrintConfig.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\PhysicalPrinterDialog.cpp"
+    ]
+  },
+  {
+    "string": "Internal solid infill",
+    "L_files": [
+      "src\\libslic3r\\PrintConfig.cpp",
+      "src\\libslic3r\\PrintConfig.cpp",
+      "src\\libslic3r\\PrintConfig.cpp",
+      "src\\libslic3r\\PrintConfig.cpp"
+    ],
+    "u8L_files": [
+      "src\\libslic3r\\ExtrusionEntity.cpp",
+      "src\\slic3r\\GUI\\GCodeViewer.cpp"
+    ]
+  },
+  {
+    "string": "Jump to layer",
+    "L_files": [
+      "src\\slic3r\\GUI\\Shortcuts.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\IMSlider.cpp",
+      "src\\slic3r\\GUI\\IMSlider.cpp",
+      "src\\slic3r\\GUI\\IMSlider.cpp"
+    ]
+  },
+  {
+    "string": "Left nozzle",
+    "L_files": [
+      "src\\slic3r\\GUI\\DeviceCore\\DevConfigUtil.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GCodeViewer.cpp"
+    ]
+  },
+  {
+    "string": "New Project",
+    "L_files": [
+      "src\\slic3r\\GUI\\Shortcuts.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\WebViewDialog.cpp"
+    ]
+  },
+  {
+    "string": "Open Project",
+    "L_files": [
+      "src\\slic3r\\GUI\\Shortcuts.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\WebViewDialog.cpp"
+    ]
+  },
+  {
+    "string": "Paint-on fuzzy skin",
+    "L_files": [
+      "src\\slic3r\\GUI\\ObjectDataViewModel.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\Gizmos\\GLGizmoFuzzySkin.cpp"
+    ]
+  },
+  {
+    "string": "Prime tower",
+    "L_files": [
+      "src\\slic3r\\GUI\\Tab.cpp"
+    ],
+    "u8L_files": [
+      "src\\libslic3r\\ExtrusionEntity.cpp",
+      "src\\slic3r\\GUI\\GCodeViewer.cpp"
+    ]
+  },
+  {
+    "string": "Remove instance",
+    "L_files": [
+      "src\\slic3r\\GUI\\Shortcuts.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GLCanvas3D.cpp"
+    ]
+  },
+  {
+    "string": "Reset rotation",
+    "L_files": [
+      "src\\slic3r\\GUI\\Gizmos\\GizmoObjectManipulation.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\Gizmos\\GLGizmoSVG.cpp"
+    ]
+  },
+  {
+    "string": "Right nozzle",
+    "L_files": [
+      "src\\slic3r\\GUI\\DeviceCore\\DevConfigUtil.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GCodeViewer.cpp"
+    ]
+  },
+  {
+    "string": "Running post-processing scripts",
+    "L_files": [
+      "src\\slic3r\\GUI\\BackgroundSlicingProcess.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\BackgroundSlicingProcess.cpp"
+    ]
+  },
+  {
+    "string": "Seam Blocked",
+    "L_files": [
+      "src\\slic3r\\GUI\\GUI_Factories.cpp"
+    ],
+    "u8L_files": [
+      "src\\libslic3r\\GCode\\SeamPlacer.cpp",
+      "src\\libslic3r\\GCode\\SeamPlacer.cpp",
+      "src\\libslic3r\\GCode\\SeamPlacer.cpp"
+    ]
+  },
+  {
+    "string": "Seam Center",
+    "L_files": [
+      "src\\slic3r\\GUI\\GUI_Factories.cpp"
+    ],
+    "u8L_files": [
+      "src\\libslic3r\\GCode\\SeamPlacer.cpp"
+    ]
+  },
+  {
+    "string": "Seam Enforced",
+    "L_files": [
+      "src\\slic3r\\GUI\\GUI_Factories.cpp"
+    ],
+    "u8L_files": [
+      "src\\libslic3r\\GCode\\SeamPlacer.cpp"
+    ]
+  },
+  {
+    "string": "Seam Neutral",
+    "L_files": [
+      "src\\slic3r\\GUI\\GUI_Factories.cpp"
+    ],
+    "u8L_files": [
+      "src\\libslic3r\\GCode\\SeamPlacer.cpp"
+    ]
+  },
+  {
+    "string": "Show in folder",
+    "L_files": [
+      "src\\slic3r\\GUI\\PluginsDialog.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\PresetBundleDialog.cpp"
+    ]
+  },
+  {
+    "string": "Sparse infill",
+    "L_files": [
+      "src\\libslic3r\\PrintConfig.cpp",
+      "src\\libslic3r\\PrintConfig.cpp",
+      "src\\libslic3r\\PrintConfig.cpp"
+    ],
+    "u8L_files": [
+      "src\\libslic3r\\ExtrusionEntity.cpp",
+      "src\\slic3r\\GUI\\GCodeViewer.cpp"
+    ]
+  },
+  {
+    "string": "Split to Objects",
+    "L_files": [
+      "src\\slic3r\\GUI\\NativeCommands.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\Plater.cpp"
+    ]
+  },
+  {
+    "string": "Split to parts",
+    "L_files": [
+      "src\\slic3r\\GUI\\GLCanvas3D.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GUI_ObjectList.cpp"
+    ]
+  },
+  {
+    "string": "Support Painting",
+    "L_files": [
+      "src\\slic3r\\GUI\\ObjectDataViewModel.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\Gizmos\\GLGizmoFdmSupports.cpp"
+    ]
+  },
+  {
+    "string": "Support interface",
+    "L_files": [
+      "src\\libslic3r\\PrintConfig.cpp"
+    ],
+    "u8L_files": [
+      "src\\libslic3r\\ExtrusionEntity.cpp",
+      "src\\slic3r\\GUI\\GCodeViewer.cpp"
+    ]
+  },
+  {
+    "string": "Temperature",
+    "L_files": [
+      "src\\libslic3r\\PrintConfig.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GCodeViewer.cpp",
+      "src\\slic3r\\GUI\\GCodeViewer.cpp",
+      "src\\slic3r\\GUI\\GCodeViewer.cpp"
+    ]
+  },
+  {
+    "string": "Top surface",
+    "L_files": [
+      "src\\libslic3r\\PrintConfig.cpp",
+      "src\\libslic3r\\PrintConfig.cpp",
+      "src\\libslic3r\\PrintConfig.cpp",
+      "src\\libslic3r\\PrintConfig.cpp",
+      "src\\libslic3r\\PrintConfig.cpp"
+    ],
+    "u8L_files": [
+      "src\\libslic3r\\ExtrusionEntity.cpp",
+      "src\\slic3r\\GUI\\GCodeViewer.cpp"
+    ]
+  },
+  {
+    "string": "Used filament",
+    "L_files": [
+      "src\\libslic3r\\PrintConfig.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GCodeViewer.cpp"
+    ]
+  },
+  {
+    "string": "Z contouring",
+    "L_files": [
+      "src\\slic3r\\GUI\\Tab.cpp"
+    ],
+    "u8L_files": [
+      "src\\libslic3r\\PrintObject.cpp"
+    ]
+  },
+  {
+    "string": "left nozzle",
+    "L_files": [
+      "src\\slic3r\\GUI\\DeviceCore\\DevConfigUtil.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GLCanvas3D.cpp",
+      "src\\slic3r\\GUI\\GLCanvas3D.cpp"
+    ]
+  },
+  {
+    "string": "right nozzle",
+    "L_files": [
+      "src\\slic3r\\GUI\\DeviceCore\\DevConfigUtil.cpp"
+    ],
+    "u8L_files": [
+      "src\\slic3r\\GUI\\GLCanvas3D.cpp",
+      "src\\slic3r\\GUI\\GLCanvas3D.cpp"
+    ]
+  }
+]

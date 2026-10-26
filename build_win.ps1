@@ -44,6 +44,7 @@
 .PARAMETER MetricsInterval
     Seconds between reported resource samples. Defaults to 15. The sampler
     itself polls every 2 seconds so short compiler processes are included.
+    For cached runs (x64-clang-cache), defaults to 3 seconds.
 
 .PARAMETER MaxJobs
     Max parallel Ninja jobs. Passed as -j to Ninja via CMake. Defaults to
@@ -99,10 +100,17 @@ try {
     function Get-TimeStamp {
         $span = (Get-Date) - $global:BuildStarted
         $h = [math]::Floor($span.TotalHours); $m = [math]::Floor($span.TotalMinutes) % 60; $s = [math]::Round($span.Seconds)
-        return "[{0}h{1}m{2}s]" -f $h, $m, $s
+        return "{0}h{1}m{2}s" -f $h, $m, $s
+    }
+
+    function Write-Step {
+        param([string]$Text)
+        $ts = Get-TimeStamp
+        Write-Host "[$ts] $Text" -ForegroundColor Green
     }
 
     # --- 1. Locate Visual Studio and the toolchain ---
+    Write-Step "[1/5] Locating Visual Studio and tools..."
     Write-Host "==========================================" -ForegroundColor Cyan
     if ($UnityTest) {
         Write-Host "  OrcaSlicer Unity Build Test (clang-cl + Ninja)" -ForegroundColor Cyan
@@ -111,7 +119,6 @@ try {
     }
     Write-Host "==========================================" -ForegroundColor Cyan
 
-    Write-Host "$(Get-TimeStamp) [1/5] Locating Visual Studio and tools..." -ForegroundColor Gray
     $vsInstall = Find-VsInstall
     if (-not $vsInstall) {
         throw "Visual Studio 2022 or newer with the C++ toolset was not found. Install the 'Desktop development with C++' workload."
@@ -158,6 +165,7 @@ try {
     if ($ccache) { Write-Host "  -> ccache:   $ccache" -ForegroundColor Gray }
 
     # --- 2. Capture the Visual Studio environment ---
+    Write-Step "[2/5] Setting up the Visual Studio environment..."
     Capture-VsEnvironment -VsInstall $vsInstall
 
     # Put the chosen tools first: VsDevCmd may otherwise expose a different clang.
@@ -181,10 +189,11 @@ try {
     }
 
     # --- 3. Ensure dependencies are built for clang-cl ---
+    Write-Step "[3/5] Checking dependencies..."
     Check-Dependencies -Cmake $cmake -ClangCl $clangCl -Config $Config
 
     # --- 4. Choose the preset and target ---
-    Write-Host "$(Get-TimeStamp) [4/5] Determining build configuration..." -ForegroundColor Gray
+    Write-Step "[4/5] Determining build configuration..."
     if ($UnityTest) {
         $Preset = "x64-clang-cache"
         if (-not $Target) { $Target = "libslic3r" }
@@ -203,13 +212,18 @@ try {
         throw "ccache is required for the x64-clang-cache preset. Install it, add it to PATH, or set ORCA_CCACHE."
     }
 
+    # Use 3s sampling for cached runs (x64-clang-cache), 15s for clean builds
+    if ($Preset -eq "x64-clang-cache") {
+        $MetricsInterval = 3
+    }
+
     if ($Clean -and (Test-Path $buildDir)) {
         Write-Host "  -> Removing $buildDir" -ForegroundColor Yellow
         Remove-Item $buildDir -Recurse -Force
     }
 
     # --- 5. Configure and build ---
-    Write-Host "$(Get-TimeStamp) [5/5] Configuring and building..." -ForegroundColor Gray
+    Write-Step "[5/5] Configuring and building..."
     $timing = Configure-Build -Cmake $cmake -Preset $Preset -BuildDir $buildDir -Config $Config -Target $Target -UnityTest:$UnityTest -MaxJobs $MaxJobs
 
     # --- 6. Ccache statistics ---
