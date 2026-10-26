@@ -94,7 +94,7 @@ try {
     function Show-BuildMetrics {
         param([string]$CsvPath, [string]$Preset, [string]$Config)
         if (-not $CsvPath -or -not (Test-Path $CsvPath)) { return }
-        $renderer = Join-Path $RepoRoot "scripts\build_metrics.py"
+        $renderer = Join-Path $RepoRoot "scripts\\build_win_steps\build_metrics.py"
         $python = Get-Python
         if (-not $python -or -not (Test-Path $renderer)) {
             Write-Status "metrics" "Saved to $CsvPath (install Python with rich for the chart)." "Yellow"
