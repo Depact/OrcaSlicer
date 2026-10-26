@@ -259,7 +259,7 @@ import sys
 console = Console()
 console.print(Rule("Dependencies packed successfully", style="green"))
 console.print("Archive: " + sys.argv[1], style="green")
-console.print(Rule(char="━", style="green"))
+console.print(Rule(char="\u2501", style="green"))
 ' $zipPath
             } else {
                 Write-Host "==========================================" -ForegroundColor Green
@@ -298,7 +298,7 @@ console.print(Rule(char="━", style="green"))
 from rich.console import Console
 from rich.rule import Rule
 console = Console()
-console.print(Rule(char="━", style="green"))
+console.print(Rule(char="\u2501", style="green"))
 ' 
     } else {
         Write-Host "=========================================="
