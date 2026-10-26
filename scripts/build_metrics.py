@@ -150,18 +150,19 @@ def render_rich(rows: list[dict], title: str, height: int, ascii_only: bool) -> 
     block = "#" if ascii_only else "█"
 
     charts = []
-    if info["has_cpu"]:
+    if info["stack"]:
+        # Combined chart showing CPU% and RAM broken down by process
+        charts.append(render_combined_stacked_chart(
+            info["stack"], height, width, info["start"], info["end"],
+            info["duration"], ascii_only, info["cpu"], info["ram"],
+        ))
+    elif info["has_cpu"]:
+        # Fall back to separate charts if no process breakdown
         charts.append(render_chart(
             "Build CPU", info["cpu"], 0.0, 100.0, height, width,
             "bright_red", "{:.0f}%", info["start"], info["end"],
             info["duration"], block,
         ))
-    if info["stack"]:
-        charts.append(render_stacked_chart(
-            info["stack"], height, width, info["start"], info["end"],
-            info["duration"], ascii_only, info["ram"],
-        ))
-    elif info["has_cpu"]:
         charts.append(render_chart(
             "Build cores", info["cores"], 0.0, max(1.0, peak(info["cores"])),
             height, width, "bright_yellow", "{:.0f}", info["start"], info["end"],
@@ -279,6 +280,116 @@ def render_stacked_chart(stack, height, width, start, end, duration, ascii_only,
                               "#" if ascii_only else "█"))
 
     return Panel(Group(*lines), title="Build cores by tool", border_style="dim",
+                 padding=(0, 0), box=box.ASCII if ascii_only else box.ROUNDED)
+
+
+def render_combined_stacked_chart(stack, height, width, start, end, duration, ascii_only, cpu_values=None, ram_values=None):
+    from rich import box
+    from rich.console import Group
+    from rich.panel import Panel
+    from rich.text import Text
+
+    # Calculate bars for each chart (split height)
+    cpu_height = height // 2
+    ram_height = height - cpu_height
+    
+    # CPU chart
+    first_len = len(next(iter(stack.values())))
+    cpu_bars = max(1, min(width // 2, first_len))
+    cpu_series = []
+    for key, label, color, ascii_char in STACKS:
+        cpu_series.append((label, color, ascii_char, bucket_avg(stack[key], cpu_bars)))
+    cpu_totals = [sum(values[index] for _label, _color, _char, values in cpu_series)
+                  for index in range(cpu_bars)]
+    cpu_high = max(1.0, peak(cpu_totals) if cpu_totals else 1.0)
+    cpu_span = cpu_high
+
+    # RAM chart
+    ram_bars = max(1, min(width // 2, first_len))
+    ram_series = []
+    for key, label, color, ascii_char in STACKS:
+        ram_series.append((label, color, ascii_char, bucket_avg(stack[key], ram_bars)))
+    ram_totals = [sum(values[index] for _label, _color, _char, values in ram_series)
+                  for index in range(ram_bars)]
+    ram_high = max(1.0, peak(ram_totals) if ram_totals else 1.0)
+    ram_span = ram_high
+
+    lines = []
+    
+    # CPU section
+    for row in range(cpu_height - 1, -1, -1):
+        threshold = (row / cpu_height) * cpu_span
+        line = Text()
+        line.append(f"{cpu_high * (row + 1) / cpu_height:>8.0f} ", style="dim")
+        for index in range(cpu_bars):
+            cumulative = 0.0
+            chosen = None
+            for label, color, ascii_char, values in cpu_series:
+                cumulative += values[index]
+                if threshold < cumulative:
+                    chosen = (color, ascii_char)
+                    break
+            if chosen is None:
+                line.append(" ")
+            elif ascii_only:
+                line.append(chosen[1], style=chosen[0])
+            else:
+                line.append("█", style=chosen[0])
+        lines.append(line)
+
+    # CPU baseline
+    cpu_baseline = Text()
+    cpu_baseline.append(f"   0 ", style="dim")
+    cpu_baseline.append(("-" if ascii_only else "─") * (cpu_bars * 2 - 1), style="dim")
+    lines.append(cpu_baseline)
+
+    # CPU legend
+    cpu_legend = Text()
+    for _key, label, color, ascii_char in STACKS:
+        cpu_legend.append("█ " if not ascii_only else f"{ascii_char} ", style=color)
+        cpu_legend.append(f"{label}  ", style="dim")
+    lines.append(cpu_legend)
+
+    # RAM section
+    for row in range(ram_height - 1, -1, -1):
+        threshold = (row / ram_height) * ram_span
+        line = Text()
+        line.append(f"{ram_high * (row + 1) / ram_height:>8.0f} ", style="dim")
+        for index in range(ram_bars):
+            cumulative = 0.0
+            chosen = None
+            for label, color, ascii_char, values in ram_series:
+                cumulative += values[index]
+                if threshold < cumulative:
+                    chosen = (color, ascii_char)
+                    break
+            if chosen is None:
+                line.append(" ")
+            elif ascii_only:
+                line.append(chosen[1], style=chosen[0])
+            else:
+                line.append("█", style=chosen[0])
+        lines.append(line)
+
+    # RAM baseline
+    ram_baseline = Text()
+    ram_baseline.append(f"   0 ", style="dim")
+    ram_baseline.append(("-" if ascii_only else "─") * (ram_bars * 2 - 1), style="dim")
+    lines.append(ram_baseline)
+
+    # RAM legend
+    ram_legend = Text()
+    for _key, label, color, ascii_char in STACKS:
+        ram_legend.append("█ " if not ascii_only else f"{ascii_char} ", style=color)
+        ram_legend.append(f"{label}  ", style="dim")
+    lines.append(ram_legend)
+
+    # Combined footer
+    total_bars = max(cpu_bars, ram_bars)
+    lines.extend(footer_lines(start, end, duration, total_bars * 2 - 1,
+                              "#" if ascii_only else "█"))
+
+    return Panel(Group(*lines), title="CPU% and RAM by tool", border_style="dim",
                  padding=(0, 0), box=box.ASCII if ascii_only else box.ROUNDED)
 
 
