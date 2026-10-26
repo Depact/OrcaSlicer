@@ -20,6 +20,12 @@ on:
         required: false
         type: string
         default: msvc
+      preset:
+        required: false
+        type: string
+      flags:
+        required: false
+        type: string
       build-deps-only:
         required: false
         type: boolean
@@ -189,4 +195,6 @@ jobs:
       os: ${{ inputs.os }}
       arch: ${{ inputs.arch }}
       compiler: ${{ inputs.compiler }}
+      preset: ${{ inputs.preset }}
+      flags: ${{ inputs.flags }}
     secrets: inherit
