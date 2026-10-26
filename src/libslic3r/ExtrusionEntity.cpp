@@ -672,70 +672,93 @@ double ExtrusionLoopSloped::slope_path_length() {
 std::string ExtrusionEntity::role_to_string(ExtrusionRole role)
 {
     switch (role) {
-        case erNone                         : return L("Undefined");
-        case erPerimeter                    : return L("Inner wall");
-        case erExternalPerimeter            : return L("Outer wall");
-        case erOverhangPerimeter            : return L("Overhang wall");
-        case erInternalInfill               : return L("Sparse infill");
-        case erSolidInfill                  : return L("Internal solid infill");
-        case erTopSolidInfill               : return L("Top surface");
-        case erBottomSurface                : return L("Bottom surface");
-        case erIroning                      : return L("Ironing");
-        case erBridgeInfill                 : return L("Bridge");
-        case erInternalBridgeInfill         : return L("Internal Bridge");
-        case erGapFill                      : return L("Gap infill");
-        case erSkirt                        : return L("Skirt");
-        case erBrim                         : return L("Brim");
-        case erSupportMaterial              : return L("Support");
-        case erSupportMaterialInterface     : return L("Support interface");
-        case erSupportTransition            : return L("Support transition");
-        case erWipeTower                    : return L("Prime tower");
-        case erCustom                       : return L("Custom");
-        case erMixed                        : return L("Multiple");
+        case erNone                         : return _u8L("Undefined");
+        case erPerimeter                    : return _u8L("Inner wall");
+        case erExternalPerimeter            : return _u8L("Outer wall");
+        case erOverhangPerimeter            : return _u8L("Overhang wall");
+        case erInternalInfill               : return _u8L("Sparse infill");
+        case erSolidInfill                  : return _u8L("Internal solid infill");
+        case erTopSolidInfill               : return _u8L("Top surface");
+        case erBottomSurface                : return _u8L("Bottom surface");
+        case erIroning                      : return _u8L("Ironing");
+        case erBridgeInfill                 : return _u8L("Bridge");
+        case erInternalBridgeInfill         : return _u8L("Internal Bridge");
+        case erGapFill                      : return _u8L("Gap infill");
+        case erSkirt                        : return _u8L("Skirt");
+        case erBrim                         : return _u8L("Brim");
+        case erSupportMaterial              : return _u8L("Support");
+        case erSupportMaterialInterface     : return _u8L("Support interface");
+        case erSupportTransition            : return _u8L("Support transition");
+        case erWipeTower                    : return _u8L("Prime tower");
+        case erCustom                       : return _u8L("Custom");
+        case erMixed                        : return _u8L("Multiple");
         default                             : assert(false);
     }
     return "";
 }
 
+// Canonical English strings for role comparisons (avoid L() macro in unity builds).
+namespace {
+    constexpr const char* ROLE_INNER_WALL         = "Inner wall";
+    constexpr const char* ROLE_OUTER_WALL         = "Outer wall";
+    constexpr const char* ROLE_OVERHANG_WALL      = "Overhang wall";
+    constexpr const char* ROLE_SPARSE_INFILL      = "Sparse infill";
+    constexpr const char* ROLE_INTERNAL_SOLID     = "Internal solid infill";
+    constexpr const char* ROLE_TOP_SURFACE        = "Top surface";
+    constexpr const char* ROLE_BOTTOM_SURFACE     = "Bottom surface";
+    constexpr const char* ROLE_IRONING            = "Ironing";
+    constexpr const char* ROLE_BRIDGE             = "Bridge";
+    constexpr const char* ROLE_INTERNAL_BRIDGE    = "Internal Bridge";
+    constexpr const char* ROLE_GAP_INFILL         = "Gap infill";
+    constexpr const char* ROLE_SKIRT              = "Skirt";
+    constexpr const char* ROLE_BRIM               = "Brim";
+    constexpr const char* ROLE_SUPPORT            = "Support";
+    constexpr const char* ROLE_SUPPORT_INTERFACE  = "Support interface";
+    constexpr const char* ROLE_SUPPORT_TRANSITION = "Support transition";
+    constexpr const char* ROLE_PRIME_TOWER        = "Prime tower";
+    constexpr const char* ROLE_CUSTOM             = "Custom";
+    constexpr const char* ROLE_MULTIPLE           = "Multiple";
+}
+
 ExtrusionRole ExtrusionEntity::string_to_role(const std::string_view role)
 {
-    if (role == L("Inner wall"))
+    if (role == ROLE_INNER_WALL)
         return erPerimeter;
-    else if (role == L("Outer wall"))
+    else if (role == ROLE_OUTER_WALL)
         return erExternalPerimeter;
-    else if (role == L("Overhang wall"))
+    else if (role == ROLE_OVERHANG_WALL)
         return erOverhangPerimeter;
-    else if (role == L("Sparse infill"))
+    else if (role == ROLE_SPARSE_INFILL)
         return erInternalInfill;
-    else if (role == L("Internal solid infill"))
+    else if (role == ROLE_INTERNAL_SOLID)
         return erSolidInfill;
-    else if (role == L("Top surface"))
+    else if (role == ROLE_TOP_SURFACE)
         return erTopSolidInfill;
-    else if (role == L("Bottom surface"))
+    else if (role == ROLE_BOTTOM_SURFACE)
         return erBottomSurface;
-    else if (role == L("Ironing"))
+    else if (role == ROLE_IRONING)
         return erIroning;
-    else if (role == L("Bridge"))
+    else if (role == ROLE_BRIDGE)
         return erBridgeInfill;
-    else if (role == L("Internal Bridge"))
+    else if (role == ROLE_INTERNAL_BRIDGE)
         return erInternalBridgeInfill;
-    else if (role == L("Gap infill"))
+    else if (role == ROLE_GAP_INFILL)
         return erGapFill;
-    else if (role == ("Skirt"))
+    else if (role == "Skirt")
         return erSkirt;
-    else if (role == ("Brim"))
+    else if (role == "Brim")
         return erBrim;
-    else if (role == L("Support"))
+    else if (role == ROLE_SUPPORT)
         return erSupportMaterial;
-    else if (role == L("Support interface"))
+    else if (role == ROLE_SUPPORT_INTERFACE)
         return erSupportMaterialInterface;
-    else if (role == L("Support transition"))
+    else if (role == ROLE_SUPPORT_TRANSITION)
         return erSupportTransition;
-    else if (role == L("Prime tower"))
+    else if (role == ROLE_PRIME_TOWER)
         return erWipeTower;
-    else if (role == L("Custom"))
+    else if (role == ROLE_CUSTOM)
         return erCustom;
-    else if (role == L("Multiple"))
+    else if (role == ROLE_MULTIPLE)
         return erMixed;
     else
         return erNone;
