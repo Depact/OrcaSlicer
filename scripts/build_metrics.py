@@ -159,25 +159,24 @@ def render_rich(rows: list[dict], title: str, height: int, ascii_only: bool) -> 
     elif info["has_cpu"]:
         # Fall back to separate charts if no process breakdown
         charts.append(render_chart(
-            "Build CPU", info["cpu"], 0.0, 100.0, height, width,
+            "CPU %", info["cpu"], 0.0, 100.0, height, width,
             "bright_red", "{:.0f}%", info["start"], info["end"],
             info["duration"], block,
         ))
         charts.append(render_chart(
-            "Build cores", info["cores"], 0.0, max(1.0, peak(info["cores"])),
+            "Cores", info["cores"], 0.0, max(1.0, peak(info["cores"])),
             height, width, "bright_yellow", "{:.0f}", info["start"], info["end"],
             info["duration"], block,
         ))
     charts.append(render_chart(
-        "Build RAM", info["ram"], 0.0, max(1.0, peak(info["ram"]) * 1.05),
+        "RAM GB", info["ram"], 0.0, max(1.0, peak(info["ram"]) * 1.05),
         height, width, "bright_blue", "{:.1f} GB", info["start"], info["end"],
         info["duration"], block,
     ))
 
     console.print(f"[bold]{title}[/bold]")
     if charts:
-        for chart in charts:
-            console.print(chart)
+        console.print(Columns(charts, equal=True, expand=True, padding=0))
     if not info["has_cpu"]:
         console.print("[yellow]CPU and core samples are missing from this CSV; "
                       "it was written by an older sampler.[/yellow]")
