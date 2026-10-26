@@ -20,7 +20,7 @@ def rule_step(ts, text):
 def rule_separator(char="\u2501", style="green"):
     """Render a full-width divider line."""
     console = Console()
-    console.print(Rule(char=char, style=style))
+    console.print(Rule(characters=char, style=style))
 
 
 def tree_total(total_str, configure_str, build_str):

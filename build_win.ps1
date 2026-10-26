@@ -304,16 +304,7 @@ console.print(Rule(char="\u2501", style="green"))
     $python = Get-Command py -ErrorAction SilentlyContinue
     if (-not $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
     if ($python) {
-        & $python -c '
-from rich.console import Console
-from rich.tree import Tree
-import sys
-console = Console()
-tree = Tree("Total: " + sys.argv[3], style="default")
-tree.add("Configure: " + sys.argv[1])
-tree.add("Build:     " + sys.argv[2])
-console.print(tree)
-' $configureStr $buildStr $totalStr
+        & $python "$RepoRoot\scripts\build_units\rich_utils.py" tree $totalStr $configureStr $buildStr
     } else {
         Write-Host ("  Total:     {0}" -f $totalStr)
         Write-Host ("  Configure: {0}" -f $configureStr)
