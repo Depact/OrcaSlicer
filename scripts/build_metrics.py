@@ -184,21 +184,13 @@ def render_rich(rows: list[dict], title: str, height: int, ascii_only: bool) -> 
 def footer_lines(start, end, duration, chart_width, block):
     from rich.text import Text
 
-    left = start.strftime("%H:%M:%S")
-    right = end.strftime("%H:%M:%S")
     middle = f"duration {format_duration(duration)}"
     footer_width = 9 + chart_width
-    gap = footer_width - len(left) - len(right) - len(middle)
-    if gap >= 2:
-        footer = Text()
-        footer.append(left, style="dim")
-        footer.append(" " * (gap // 2))
-        footer.append(middle, style="bold")
-        footer.append(" " * (gap - gap // 2))
-        footer.append(right, style="dim")
-        return [footer]
-    return [Text.assemble((left, "dim"), ("  ", ""), (middle, "bold")),
-            Text(right, style="dim")]
+    footer = Text()
+    footer.append(" " * ((footer_width - len(middle)) // 2))
+    footer.append(middle, style="bold")
+    footer.append(" " * (footer_width - len(middle) - (footer_width - len(middle)) // 2))
+    return [footer]
 
 
 def axis_line(low, high, height, fmt, width, block):
@@ -285,10 +277,6 @@ def render_stacked_chart(stack, height, width, start, end, duration, ascii_only,
     for _key, label, color, ascii_char in STACKS:
         legend.append("█ " if not ascii_only else f"{ascii_char} ", style=color)
         legend.append(f"{label}  ", style="dim")
-    if ram_values:
-        peak_ram = peak(ram_values)
-        avg_ram = avg(ram_values)
-        legend.append(f" | RAM Peak: {peak_ram:.1f}GB (Avg: {avg_ram:.1f}GB)", style="bright_blue")
 
     lines.append(legend)
     lines.extend(footer_lines(start, end, duration, bars * 2 - 1,
