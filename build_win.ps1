@@ -250,10 +250,23 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
             $zipPath = Pack-Dependencies -DepsBuildDir $depsBuildDir -OutputPath (Join-Path $RepoRoot "deps\OrcaSlicer_dep.zip")
             Write-Host "  -> Dependency archive: $zipPath"
             Write-Host ""
-            Write-Host "==========================================" -ForegroundColor Green
-            Write-Host "  Dependencies packed successfully!" -ForegroundColor Green
-            Write-Host "  Archive: $zipPath"
-            Write-Host "==========================================" -ForegroundColor Green
+            $python = Get-Command py -ErrorAction SilentlyContinue
+            if ($python) {
+                & $python -c "
+from rich.console import Console
+from rich.rule import Rule
+import sys
+console = Console()
+console.print(Rule('Dependencies packed successfully', style='green'))
+console.print('Archive: ' + sys.argv[1], style='green')
+console.print(Rule(style='green'))
+" $zipPath
+            } else {
+                Write-Host "==========================================" -ForegroundColor Green
+                Write-Host "  Dependencies packed successfully!" -ForegroundColor Green
+                Write-Host "  Archive: $zipPath"
+                Write-Host "==========================================" -ForegroundColor Green
+            }
             exit 0
         }
     }
@@ -279,14 +292,13 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
 
     $total = (Get-Date) - $started
     Write-Host ""
-    Write-Host "=========================================="
     if ($UnityTestLibslic3r) {
         Write-Host "  Unity build test PASSED (libslic3r)" -ForegroundColor Green
     } else {
         Write-Host "  Build complete!" -ForegroundColor Green
     }
     $fmt = { param($t) $h = [math]::Floor($t.TotalHours); $m = [math]::Floor($t.TotalMinutes) % 60; $s = [math]::Round($t.Seconds); if ($h) { "{0}h {1:00}m {2:00}s" -f $h, $m, $s } elseif ($m) { "{0}m {1:00}s" -f $m, $s } else { "{0}s" -f $s } }
-    # Timing breakdown using Rich Tree widget
+    # Timing breakdown using Rich Tree widget (Total is parent)
     $configureStr = & $fmt $timing.ConfigureTime
     $buildStr     = & $fmt $timing.BuildTime
     $totalStr     = & $fmt $total
@@ -298,18 +310,27 @@ from rich.console import Console
 from rich.tree import Tree
 import sys
 console = Console()
-tree = Tree('Build timing', style='default')
+tree = Tree('Total: ' + sys.argv[3], style='default')
 tree.add(f'Configure: {sys.argv[1]}')
 tree.add(f'Build:     {sys.argv[2]}')
-tree.add(f'Total:     {sys.argv[3]}')
 console.print(tree)
 " $configureStr $buildStr $totalStr
     } else {
+        Write-Host ("  Total:     {0}" -f $totalStr)
         Write-Host ("  Configure: {0}" -f $configureStr)
         Write-Host ("  Build:     {0}" -f $buildStr)
-        Write-Host ("  Total:     {0}" -f $totalStr)
     }
-    Write-Host "=========================================="
+    $python = Get-Command py -ErrorAction SilentlyContinue
+    if ($python) {
+        & $python -c "
+from rich.console import Console
+from rich.rule import Rule
+console = Console()
+console.print(Rule(style='green'))
+" 
+    } else {
+        Write-Host "=========================================="
+    }
 } catch {
     Write-Host ""
     Write-Host "BUILD FAILED: $($_.Exception.Message)" -ForegroundColor Red
