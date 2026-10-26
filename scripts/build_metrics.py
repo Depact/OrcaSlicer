@@ -220,8 +220,6 @@ def render_chart(label, values, low, high, height, width, color, fmt,
         line.append(f"{fmt.format(low + (row + 1) / height * span):>8} ", style="dim")
         for index, value in enumerate(sampled):
             line.append(block if value >= threshold else " ", style=color)
-            if index + 1 < len(sampled):
-                line.append(" ")
         lines.append(line)
     lines.append(axis_line(low, high, height, fmt, chart_width, block))
     lines.extend(footer_lines(start, end, duration, chart_width, block))
@@ -242,7 +240,7 @@ def render_stacked_chart(stack, height, width, start, end, duration, ascii_only,
         series.append((label, color, ascii_char, bucket_avg(stack[key], bars)))
     totals = [sum(values[index] for _label, _color, _char, values in series)
               for index in range(bars)]
-    high = max(1.0, peak(totals) * 1.05)
+    high = max(1.0, peak(totals))
     span = high
 
     lines = []
@@ -264,12 +262,10 @@ def render_stacked_chart(stack, height, width, start, end, duration, ascii_only,
                 line.append(chosen[1], style=chosen[0])
             else:
                 line.append("█", style=chosen[0])
-            if index + 1 < bars:
-                line.append(" ")
         lines.append(line)
 
     baseline = Text()
-    baseline.append(f"{0:>8.0f} ", style="dim")
+    baseline.append(f"   0 ", style="dim")
     baseline.append(("-" if ascii_only else "─") * (bars * 2 - 1), style="dim")
     lines.append(baseline)
 
