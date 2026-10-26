@@ -106,10 +106,9 @@ try {
     function Write-Step {
         param([string]$Text)
         $ts = Get-TimeStamp
-        $scriptPath = Join-Path $RepoRoot "scripts\build_metrics.py"
         $python = Get-Command py -ErrorAction SilentlyContinue
         if (-not $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
-        if ($python -and (Test-Path $scriptPath)) {
+        if ($python) {
             & $python -c "
 from rich.console import Console
 from rich.rule import Rule
@@ -124,8 +123,22 @@ console.print(Rule(f'[{ts}] {text}', style='cyan'))
         }
     }
 
+    function Ensure-RichInstalled {
+        $python = Get-Command py -ErrorAction SilentlyContinue
+        if (-not $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
+        if ($python) {
+            try {
+                & $python -c "import rich" -ErrorAction Stop
+            } catch {
+                Write-Host "  -> Installing 'rich' for enhanced output..." -ForegroundColor Yellow
+                & $python -m pip install rich -q
+            }
+        }
+    }
+
     # --- 1. Locate Visual Studio and the toolchain ---
     Write-Step "[1/5] Locating Visual Studio and tools..."
+    Ensure-RichInstalled
     Write-Host "==========================================" -ForegroundColor Cyan
     if ($UnityTest) {
         Write-Host "  OrcaSlicer Unity Build Test (clang-cl + Ninja)" -ForegroundColor Cyan
