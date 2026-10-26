@@ -297,6 +297,17 @@ console.print(Rule(style='green'))
     } else {
         Write-Host "  Build complete!" -ForegroundColor Green
     }
+    $python = Get-Command py -ErrorAction SilentlyContinue
+    if ($python) {
+        & $python -c "
+from rich.console import Console
+from rich.rule import Rule
+console = Console()
+console.print(Rule(char='━', style='green'))
+" 
+    } else {
+        Write-Host "=========================================="
+    }
     $fmt = { param($t) $h = [math]::Floor($t.TotalHours); $m = [math]::Floor($t.TotalMinutes) % 60; $s = [math]::Round($t.Seconds); if ($h) { "{0}h {1:00}m {2:00}s" -f $h, $m, $s } elseif ($m) { "{0}m {1:00}s" -f $m, $s } else { "{0}s" -f $s } }
     # Timing breakdown using Rich Tree widget (Total is parent)
     $configureStr = & $fmt $timing.ConfigureTime
@@ -319,17 +330,6 @@ console.print(tree)
         Write-Host ("  Total:     {0}" -f $totalStr)
         Write-Host ("  Configure: {0}" -f $configureStr)
         Write-Host ("  Build:     {0}" -f $buildStr)
-    }
-    $python = Get-Command py -ErrorAction SilentlyContinue
-    if ($python) {
-        & $python -c "
-from rich.console import Console
-from rich.rule import Rule
-console = Console()
-console.print(Rule(style='green'))
-" 
-    } else {
-        Write-Host "=========================================="
     }
 } catch {
     Write-Host ""
