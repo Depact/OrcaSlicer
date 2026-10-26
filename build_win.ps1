@@ -116,7 +116,7 @@ import sys
 ts = sys.argv[1]
 text = sys.argv[2]
 console = Console()
-console.print(Rule(f'[{ts}] {text}', style='cyan'))
+console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
 " $ts $Text
         } else {
             Write-Host "[$ts] $Text"
@@ -139,13 +139,6 @@ console.print(Rule(f'[{ts}] {text}', style='cyan'))
     # --- 1. Locate Visual Studio and the toolchain ---
     Write-Step "[1/5] Locating Visual Studio and tools..."
     Ensure-RichInstalled
-    Write-Host "==========================================" -ForegroundColor Cyan
-    if ($UnityTest) {
-        Write-Host "  OrcaSlicer Unity Build Test (clang-cl + Ninja)" -ForegroundColor Cyan
-    } else {
-        Write-Host "  OrcaSlicer Build (clang-cl + Ninja)" -ForegroundColor Cyan
-    }
-    Write-Host "==========================================" -ForegroundColor Cyan
 
     $vsInstall = Find-VsInstall
     if (-not $vsInstall) {
