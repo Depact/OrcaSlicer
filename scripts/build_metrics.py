@@ -186,24 +186,30 @@ def render_rich(rows: list[dict], title: str, height: int, ascii_only: bool) -> 
     charts = []
     if info["has_cpu"]:
         # CPU% chart - total line + per-process breakdown stacked below
-        charts.append(render_chart(
+        chart = render_chart(
             "CPU%", info["cpu"], 0.0, 100.0, height, width,
             "bright_red", "{:.0f}%", info["start"], info["end"],
             info["duration"], block,
             stack=info["cpu_stack"], stacks=CPU_STACKS,
-        ))
+        )
+        if chart is not None:
+            charts.append(chart)
         # Cores by tool - stacked cores
-        charts.append(render_stacked_chart(
+        chart = render_stacked_chart(
             info["stack"], STACKS, height, width, info["start"], info["end"],
             info["duration"], ascii_only,
-        ))
+        )
+        if chart is not None:
+            charts.append(chart)
         # RAM chart - per-process stacked + total line below
-        charts.append(render_chart(
+        chart = render_chart(
             "RAM GB", info["ram"], 0.0, max(0.1, peak(info["ram"]) * 1.05),
             height, width, "bright_blue", "{:.1f} GB", info["start"], info["end"],
             info["duration"], block,
             stack=info["ram_stack"], stacks=RAM_STACKS,
-        ))
+        )
+        if chart is not None:
+            charts.append(chart)
 
     console.print(f"[bold]{title}[/bold]")
     if charts:
@@ -239,6 +245,10 @@ def render_chart(label, values, low, high, height, width, color, fmt,
     from rich.panel import Panel
     from rich.text import Text
 
+    # Skip charts with all-zero values
+    if not values or peak(values) <= 0:
+        return None
+
     bars = max(1, width // 2)
     sampled = bucket_max(values, bars)
     chart_width = max(1, len(sampled) * 2 - 1)
@@ -260,7 +270,10 @@ def render_chart(label, values, low, high, height, width, color, fmt,
         stack_bars = max(1, min(width // 2, first_len))
         series = []
         for key, label, color, ascii_char in stacks:
-            series.append((label, color, ascii_char, bucket_avg(stack[key], stack_bars)))
+            if peak(stack[key]) > 0:
+                series.append((label, color, ascii_char, bucket_avg(stack[key], stack_bars)))
+        if not series:
+            return None
         totals = [sum(values[index] for _label, _color, _char, values in series)
                   for index in range(stack_bars)]
         stack_high = max(0.1, peak(totals))
@@ -290,7 +303,7 @@ def render_chart(label, values, low, high, height, width, color, fmt,
         baseline.append(("-" if ascii_only else "─") * (stack_bars * 2 - 1), style="dim")
         lines.append(baseline)
         legend = Text()
-        for _key, label, color, ascii_char in stacks:
+        for _key, label, color, ascii_char in series:
             legend.append("█ " if not ascii_only else f"{ascii_char} ", style=color)
             legend.append(f"{label}  ", style="dim")
         lines.append(legend)
@@ -309,7 +322,10 @@ def render_stacked_chart(stack, stacks, height, width, start, end, duration, asc
     bars = max(1, min(width // 2, first_len))
     series = []
     for key, label, color, ascii_char in stacks:
-        series.append((label, color, ascii_char, bucket_avg(stack[key], bars)))
+        if peak(stack[key]) > 0:
+            series.append((label, color, ascii_char, bucket_avg(stack[key], bars)))
+    if not series:
+        return None
     totals = [sum(values[index] for _label, _color, _char, values in series)
               for index in range(bars)]
     high = max(0.1, peak(totals))
@@ -342,7 +358,7 @@ def render_stacked_chart(stack, stacks, height, width, start, end, duration, asc
     lines.append(baseline)
 
     legend = Text()
-    for _key, label, color, ascii_char in stacks:
+    for _key, label, color, ascii_char in series:
         legend.append("█ " if not ascii_only else f"{ascii_char} ", style=color)
         legend.append(f"{label}  ", style="dim")
 
