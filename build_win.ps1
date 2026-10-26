@@ -106,7 +106,22 @@ try {
     function Write-Step {
         param([string]$Text)
         $ts = Get-TimeStamp
-        Write-Host "[$ts] $Text"
+        $scriptPath = Join-Path $RepoRoot "scripts\build_metrics.py"
+        $python = Get-Command py -ErrorAction SilentlyContinue
+        if (-not $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
+        if ($python -and (Test-Path $scriptPath)) {
+            & $python -c "
+from rich.console import Console
+from rich.rule import Rule
+import sys
+ts = sys.argv[1]
+text = sys.argv[2]
+console = Console()
+console.print(Rule(f'[{ts}] {text}', style='cyan'))
+" $ts $Text
+        } else {
+            Write-Host "[$ts] $Text"
+        }
     }
 
     # --- 1. Locate Visual Studio and the toolchain ---
