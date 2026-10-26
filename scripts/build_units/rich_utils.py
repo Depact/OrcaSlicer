@@ -17,10 +17,10 @@ def rule_step(ts, text):
     console.print(Rule(f"[{ts}] {text}", style="cyan", align="left"))
 
 
-def rule_separator(char="\u2501", style="green"):
+def rule_separator(style="green"):
     """Render a full-width divider line."""
     console = Console()
-    console.print(Rule(characters=char, style=style))
+    console.print(Rule(characters="\u2501", style=style))
 
 
 def tree_total(total_str, configure_str, build_str):
@@ -37,6 +37,6 @@ if __name__ == "__main__":
     if cmd == "step":
         rule_step(sys.argv[2], sys.argv[3])
     elif cmd == "rule":
-        rule_separator(char=sys.argv[2], style=sys.argv[3])
+        rule_separator(style=sys.argv[2])
     elif cmd == "tree":
         tree_total(sys.argv[2], sys.argv[3], sys.argv[4])
