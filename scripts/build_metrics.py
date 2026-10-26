@@ -150,29 +150,20 @@ def render_rich(rows: list[dict], title: str, height: int, ascii_only: bool) -> 
     block = "#" if ascii_only else "█"
 
     charts = []
-    if info["stack"]:
-        # Combined chart shows CPU% and RAM broken down by tool
-        charts.append(render_combined_stacked_chart(
-            info["stack"], height, width, info["start"], info["end"],
-            info["duration"], ascii_only, info["cpu"], info["ram"],
-        ))
-        charts.append(render_chart(
-            "RAM GB", info["ram"], 0.0, max(0.1, peak(info["ram"]) * 1.05),
-            height, width, "bright_blue", "{:.1f} GB", info["start"], info["end"],
-            info["duration"], block,
-        ))
-    elif info["has_cpu"]:
-        # Fall back to separate charts if no process breakdown
+    if info["has_cpu"]:
+        # CPU % chart - shows build intensity
         charts.append(render_chart(
             "CPU %", info["cpu"], 0.0, 100.0, height, width,
             "bright_red", "{:.0f}%", info["start"], info["end"],
             info["duration"], block,
         ))
+        # Cores chart - total cores used by build
         charts.append(render_chart(
             "Cores", info["cores"], 0.0, max(1.0, peak(info["cores"])),
             height, width, "bright_yellow", "{:.0f}", info["start"], info["end"],
             info["duration"], block,
         ))
+        # RAM chart - total RAM used by build
         charts.append(render_chart(
             "RAM GB", info["ram"], 0.0, max(0.1, peak(info["ram"]) * 1.05),
             height, width, "bright_blue", "{:.1f} GB", info["start"], info["end"],
