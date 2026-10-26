@@ -66,6 +66,8 @@ param(
     [switch]$Clean,
     [switch]$UnityTestLibslic3r,
     [switch]$NoMetrics,
+    [switch]$PackDeps,
+    [switch]$SkipDeps,
     [ValidateRange(1, 10)]
     [int]$MetricsInterval = 15,
     [ValidateRange(1, 64)]
@@ -209,10 +211,6 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
         }
     }
 
-    # --- 3. Ensure dependencies are built for clang-cl ---
-    Write-Step "[3/5] Checking dependencies..."
-    Check-Dependencies -Cmake $cmake -ClangCl $clangCl -Config $Config
-
     # --- 4. Choose the preset and target ---
     Write-Step "[4/5] Determining build configuration..."
     if ($UnityTestLibslic3r) {
@@ -238,6 +236,27 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
         $MetricsInterval = 3
     }
 
+    # --- 3. Ensure dependencies are built for clang-cl ---
+    if ($SkipDeps) {
+        Write-Step "[3/5] Skipping dependencies (--skip-deps)"
+    } else {
+        Write-Step "[3/5] Checking dependencies..."
+        $depsBuildDir = if ($Preset -eq "x64-clang-cache") { "deps/build-clang-cache" } else { "deps/build-clang" }
+        Check-Dependencies -Cmake $cmake -ClangCl $clangCl -Config $Config -DepsBuildDir $depsBuildDir
+
+        if ($PackDeps) {
+            Write-Step "[3.5/5] Packing dependencies..."
+            $zipPath = Pack-Dependencies -DepsBuildDir $depsBuildDir -OutputPath (Join-Path $RepoRoot "deps\OrcaSlicer_dep.zip")
+            Write-Host "  -> Dependency archive: $zipPath" -ForegroundColor Green
+            Write-Host ""
+            Write-Host "==========================================" -ForegroundColor Green
+            Write-Host "  Dependencies packed successfully!" -ForegroundColor Green
+            Write-Host "  Archive: $zipPath" -ForegroundColor Green
+            Write-Host "==========================================" -ForegroundColor Green
+            exit 0
+        }
+    }
+
     if ($Clean -and (Test-Path $buildDir)) {
         Write-Host "  -> Removing $buildDir" -ForegroundColor Yellow
         Remove-Item $buildDir -Recurse -Force
@@ -245,7 +264,14 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
 
     # --- 5. Configure and build ---
     Write-Step "[5/5] Configuring and building..."
-    $timing = Configure-Build -Cmake $cmake -Preset $Preset -BuildDir $buildDir -Config $Config -Target $Target -UnityTest:$UnityTestLibslic3r -MaxJobs $MaxJobs
+    $generator = "Ninja Multi-Config"
+    $compiler = $null
+    if ($Preset -eq "x64-clang" -or $Preset -eq "x64-clang-cache" -or $Preset -eq "x64-clang-debug") {
+        $compiler = $clangCl
+    }
+    $cmakeArgs = @()
+    if ($Preset -eq "x64-clang-cache") { $cmakeArgs += "-DSLIC3R_UNITY_BUILD=ON" }
+    $timing = Configure-Build -Cmake $cmake -BuildDir $buildDir -Config $Config -Target $Target -UnityTest:$UnityTestLibslic3r -MaxJobs $MaxJobs -Generator $generator -Compiler $compiler -CMakeArgs $cmakeArgs
 
     # --- 6. Ccache statistics ---
     Show-CcacheStats -Ccache $ccache -NoMetrics:$NoMetrics

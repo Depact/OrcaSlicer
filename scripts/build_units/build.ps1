@@ -5,12 +5,14 @@
 function Configure-Build {
     param(
         [string]$Cmake,
-        [string]$Preset,
         [string]$BuildDir,
         [string]$Config,
         [string]$Target,
         [switch]$UnityTestLibslic3r,
-        [int]$MaxJobs
+        [int]$MaxJobs,
+        [string]$Generator = "Ninja Multi-Config",
+        [string]$Compiler,
+        [string[]]$CMakeArgs
     )
     Write-Host ""
 
@@ -18,8 +20,20 @@ function Configure-Build {
     $buildLog = New-BuildLogPath "build"
 
     $configureStarted = Get-Date
-    $configureArgs = @("--preset", $Preset)
+    # Remove CMakeCache.txt to force fresh configure (avoids "variables changed" error on preset/compiler change)
+    $cmakeCache = Join-Path $BuildDir "CMakeCache.txt"
+    if (Test-Path $cmakeCache) {
+        Remove-Item $cmakeCache -Force -ErrorAction SilentlyContinue
+    }
+    $configureArgs = @("-S", (Get-Location).Path, "-B", $BuildDir, "-G", $Generator)
+    if ($Compiler) {
+        $configureArgs += "-DCMAKE_C_COMPILER=$Compiler"
+        $configureArgs += "-DCMAKE_CXX_COMPILER=$Compiler"
+    }
     if ($UnityTestLibslic3r) { $configureArgs += "-DSLIC3R_UNITY_BUILD=ON" }
+    if ($CMakeArgs) { $configureArgs += $CMakeArgs }
+    $configureArgs += "-DCMAKE_BUILD_TYPE=$Config"
+    
     $ts = Get-TimeStamp
     Write-Host "[$ts] >>> $cmake $($configureArgs -join ' ')"
     Invoke-BuildStep -Label "CMake configure" -LogPath $configureLog -Command $Cmake -Arguments $configureArgs
