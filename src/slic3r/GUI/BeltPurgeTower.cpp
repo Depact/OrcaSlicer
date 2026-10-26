@@ -414,7 +414,7 @@ bool ensure_belt_purge_tower(Model &model, PartPlateList &partplate_list, Object
         }
 
         ModelObject *new_object = model.add_object();
-        new_object->name        = _u8L("Belt Purge Tower");
+        new_object->name        = TR("Belt Purge Tower");
         new_object->add_instance();
         ModelVolume *new_volume = new_object->add_volume(std::move(prism_mesh));
         new_volume->name        = new_object->name;

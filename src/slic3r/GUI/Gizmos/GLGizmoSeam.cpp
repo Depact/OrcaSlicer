@@ -78,7 +78,7 @@ GLGizmoSeam::GLGizmoSeam(GLCanvas3D& parent, const std::string& icon_filename, u
 
 std::string GLGizmoSeam::on_get_name() const
 {
-    return _u8L("Seam painting");
+    return TR("Seam painting");
 }
 
 

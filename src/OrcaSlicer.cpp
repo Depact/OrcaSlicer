@@ -4835,7 +4835,7 @@ int CLI::run(int argc, char **argv)
             }
             Model m;
             ModelObject* new_object = m.add_object();
-            new_object->name = _u8L("Assembly");
+            new_object->name = TR("Assembly");
             new_object->add_instance();
             int idx = 0;
             for (auto& model : m_models)

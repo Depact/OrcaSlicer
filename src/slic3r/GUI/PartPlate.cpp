@@ -2062,21 +2062,21 @@ void PartPlate::render_icons(bool bottom, bool only_name, int hover_id)
         if (!only_name) {
             if (hover_id == 1) {
                 render_icon_texture(m_del_icon.model, m_partplate_list->m_del_hovered_texture);
-                set_hover_tooltip(_u8L("Remove current plate (if not last one)"));
+                set_hover_tooltip(TR("Remove current plate (if not last one)"));
             }
             else
                 render_icon_texture(m_del_icon.model, m_partplate_list->m_del_texture);
 
             if (hover_id == 2) {
                 render_icon_texture(m_orient_icon.model, m_partplate_list->m_orient_hovered_texture);
-                set_hover_tooltip(_u8L("Auto orient objects on current plate"));
+                set_hover_tooltip(TR("Auto orient objects on current plate"));
             }
             else
                 render_icon_texture(m_orient_icon.model, m_partplate_list->m_orient_texture);
 
             if (hover_id == 3) {
                 render_icon_texture(m_arrange_icon.model, m_partplate_list->m_arrange_hovered_texture);
-                set_hover_tooltip(_u8L("Arrange objects on current plate"));
+                set_hover_tooltip(TR("Arrange objects on current plate"));
             }
             else
                 render_icon_texture(m_arrange_icon.model, m_partplate_list->m_arrange_texture);
@@ -2085,12 +2085,12 @@ void PartPlate::render_icons(bool bottom, bool only_name, int hover_id)
                 if (this->is_locked()) {
                     render_icon_texture(m_lock_icon.model,
                                         m_partplate_list->m_locked_hovered_texture);
-                    set_hover_tooltip(_u8L("Unlock current plate"));
+                    set_hover_tooltip(TR("Unlock current plate"));
                 }
                 else {
                     render_icon_texture(m_lock_icon.model,
                                         m_partplate_list->m_lockopen_hovered_texture);
-                    set_hover_tooltip(_u8L("Lock current plate"));
+                    set_hover_tooltip(TR("Lock current plate"));
                 }
             } else {
                 if (this->is_locked())
@@ -2104,21 +2104,21 @@ void PartPlate::render_icons(bool bottom, bool only_name, int hover_id)
             if (dual_bbl) {
                 if (hover_id == PLATE_FILAMENT_MAP_ID){
                     render_icon_texture(m_plate_filament_map_icon.model, m_partplate_list->m_plate_set_filament_map_hovered_texture);
-                    set_hover_tooltip(_u8L("Filament grouping"));
+                    set_hover_tooltip(TR("Filament grouping"));
                 } else
                     render_icon_texture(m_plate_filament_map_icon.model, m_partplate_list->m_plate_set_filament_map_texture);
             }
 
 			if (hover_id == 6) {
                 render_icon_texture(m_plate_name_edit_icon.model, m_partplate_list->m_plate_name_edit_hovered_texture);
-                set_hover_tooltip(_u8L("Edit current plate name"));
+                set_hover_tooltip(TR("Edit current plate name"));
 			}
 			else
                 render_icon_texture(m_plate_name_edit_icon.model, m_partplate_list->m_plate_name_edit_texture);
 
 			if (hover_id == 7) {
                 render_icon_texture(m_move_front_icon.model, m_partplate_list->m_move_front_hovered_texture);
-                set_hover_tooltip(_u8L("Move plate to the front"));
+                set_hover_tooltip(TR("Move plate to the front"));
             } else
                 render_icon_texture(m_move_front_icon.model, m_partplate_list->m_move_front_texture);
 
@@ -2147,7 +2147,7 @@ void PartPlate::render_icons(bool bottom, bool only_name, int hover_id)
                         // still tells the user what this plate will print as.
                         std::string cur = get_imex_mode();
                         const std::string effective = get_effective_imex_mode();
-                        if (cur == kImexPrimaryMode) cur = _u8L("Primary");
+                        if (cur == kImexPrimaryMode) cur = TR("Primary");
                         // One format string, not two catalog fragments concatenated around a
                         // runtime value: translators need to move the mode name within the
                         // sentence, and the space-padded fragments were untranslatable alone.
@@ -2159,13 +2159,13 @@ void PartPlate::render_icons(bool bottom, bool only_name, int hover_id)
                         if (effective != get_imex_mode()) {
                             try {
                                 // TRN Plate icon tooltip. %1% is the plate's IDEX/IQEX mode, %2% the mode its process preset sets.
-                                hover_tip = (boost::format(_u8L("IDEX/IQEX mode: %1% (process preset: %2%) (left-click to cycle, right-click for menu)")) % cur % effective).str();
+                                hover_tip = (boost::format(TR("IDEX/IQEX mode: %1% (process preset: %2%) (left-click to cycle, right-click for menu)")) % cur % effective).str();
                             } catch (const std::exception&) {
                                 hover_tip = (boost::format("IDEX/IQEX mode: %1% (process preset: %2%) (left-click to cycle, right-click for menu)") % cur % effective).str();
                             }
                         } else {
                             try {
-                                hover_tip = (boost::format(_u8L("IDEX/IQEX mode: %1% (left-click to cycle, right-click for menu)")) % cur).str();
+                                hover_tip = (boost::format(TR("IDEX/IQEX mode: %1% (left-click to cycle, right-click for menu)")) % cur).str();
                             } catch (const std::exception&) {
                                 hover_tip = (boost::format("IDEX/IQEX mode: %1% (left-click to cycle, right-click for menu)") % cur).str();
                             }
@@ -2180,7 +2180,7 @@ void PartPlate::render_icons(bool bottom, bool only_name, int hover_id)
                         // records one string, and the mode name carries the click affordances.
                         if (hover_id == (int)PLATE_IMEX_MODE_ID)
                             hover_tip += (hover_tip.empty() ? "" : "\n\n") +
-                                         _u8L("Warning: this plate uses a parallel IDEX/IQEX mode with multi-material objects. Proceed with caution — verify your G-code handles this combination correctly.");
+                                         TR("Warning: this plate uses a parallel IDEX/IQEX mode with multi-material objects. Proceed with caution — verify your G-code handles this combination correctly.");
                     }
                     if (!hover_tip.empty())
                         set_hover_tooltip(hover_tip);
@@ -2195,7 +2195,7 @@ void PartPlate::render_icons(bool bottom, bool only_name, int hover_id)
                     else
                         render_icon_texture(m_plate_settings_icon.model, m_partplate_list->m_plate_settings_changed_hovered_texture);
 
-                    set_hover_tooltip(_u8L("Customize current plate"));
+                    set_hover_tooltip(TR("Customize current plate"));
                 } else {
                     if (!has_plate_settings)
                         render_icon_texture(m_plate_settings_icon.model, m_partplate_list->m_plate_settings_texture);
@@ -3072,7 +3072,7 @@ bool PartPlate::check_single_extruder_mixed_filament_risk(const DynamicPrintConf
         return idx < is_mixed_opt->values.size() && is_mixed_opt->values[idx];
     };
 
-    const std::string mixed_warn_msg = _u8L("Printing mixed-color filament on a single-extruder printer requires frequent filament changes and flushing, "
+    const std::string mixed_warn_msg = TR("Printing mixed-color filament on a single-extruder printer requires frequent filament changes and flushing, "
                                             "which may significantly increase waste and the risk of nozzle / waste-chute clogging.");
 
     for (int obj_idx = 0; obj_idx < (int)m_model->objects.size(); ++obj_idx) {
@@ -3232,7 +3232,7 @@ bool PartPlate::check_compatible_of_nozzle_and_filament(const DynamicPrintConfig
         std::ostringstream oss;
         oss << std::fixed << std::setprecision(1) << nozzle_diameter;
         // TRN %1% is the nozzle diameter, %2% the nozzle volume type, for example "Standard" or "High Flow".
-        return Slic3r::format(_u8L("%1%mm %2% nozzle"), oss.str(), _u8L(get_nozzle_volume_type_string(volume_type)));
+        return Slic3r::format(TR("%1%mm %2% nozzle"), oss.str(), TR(get_nozzle_volume_type_string(volume_type)));
     };
 
     auto get_incompatible_filament_msg = [](const std::set<std::string> &incompatible_selected_filaments) -> std::string {
@@ -3268,7 +3268,7 @@ bool PartPlate::check_compatible_of_nozzle_and_filament(const DynamicPrintConfig
                                 get_nozzle_msg(nozzle_diameter, volume_type),
                                 get_incompatible_filament_msg(incompatible_selected));
     } else {
-        std::string warning_msg = _u8L("It is not recommended to use the following nozzle and filament combinations:\n");
+        std::string warning_msg = TR("It is not recommended to use the following nozzle and filament combinations:\n");
         for (auto &elem : incompatible_selected_map) {
             NozzleVolumeType volume_type           = elem.first;
             auto             incompatible_selected = elem.second;
@@ -4674,7 +4674,7 @@ void PartPlate::update_slice_context(BackgroundSlicingProcess & process)
 		//BBS: GUI refactor: add plate info befor message
 		if (status.message_type == Slic3r::PrintStateBase::SlicingDefaultNotification) {
 			// TRN Slicing progress. %1% is the plate number, %2% the current slicing step.
-			event->status.text = Slic3r::format(_u8L("Slicing plate %1%: %2%"), m_plate_index + 1, event->status.text);
+			event->status.text = Slic3r::format(TR("Slicing plate %1%: %2%"), m_plate_index + 1, event->status.text);
 		}
 		wxQueueEvent(m_plater, event);
 	};

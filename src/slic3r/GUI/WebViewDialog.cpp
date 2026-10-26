@@ -71,20 +71,20 @@ static const int kLeftNavWidth = 263;
 static json home_page_strings()
 {
     return {
-        {"login", _u8L("Login")},
+        {"login", TR("Login")},
         // TRN Short badge on a recent project that was published (a published 3MF). Keep it about three letters long.
-        {"published_badge", _u8L("PUB")},
-        {"not_signed_in", _u8L("Not signed in")},
-        {"plugin_not_detected", _u8L("Bambu Network plug-in not detected. Click <a>here</a> to install it.")},
-        {"log_out", _u8L("Log Out")},
-        {"recent", _u8L("Recent")},
-        {"new_project", _u8L("New Project")},
-        {"create_new_project", _u8L("Create new project")},
-        {"open_project", _u8L("Open Project")},
-        {"recently_opened", _u8L("Recently opened")},
-        {"clear_all", _u8L("Clear all")},
-        {"remove", _u8L("Remove")},
-        {"open_containing_folder", _u8L("Open Containing Folder")},
+        {"published_badge", TR("PUB")},
+        {"not_signed_in", TR("Not signed in")},
+        {"plugin_not_detected", TR("Bambu Network plug-in not detected. Click <a>here</a> to install it.")},
+        {"log_out", TR("Log Out")},
+        {"recent", TR("Recent")},
+        {"new_project", TR("New Project")},
+        {"create_new_project", TR("Create new project")},
+        {"open_project", TR("Open Project")},
+        {"recently_opened", TR("Recently opened")},
+        {"clear_all", TR("Clear all")},
+        {"remove", TR("Remove")},
+        {"open_containing_folder", TR("Open Containing Folder")},
     };
 }
 

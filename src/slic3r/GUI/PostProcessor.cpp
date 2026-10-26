@@ -126,7 +126,7 @@ static DWORD execute_process_winapi(const std::wstring& command_line)
                           CREATE_UNICODE_ENVIRONMENT /* | CREATE_NEW_CONSOLE */ /* dwCreationFlags */, (LPVOID) envstr.c_str(),
                           nullptr /* lpCurrentDirectory */, &startup_info, &process_info)) {
         const int error = int(::GetLastError());
-        throw Slic3r::RuntimeError(Slic3r::format(_u8L("Failed starting the script %1%, Win32 error: %2%"), boost::nowide::narrow(command_line), error));
+        throw Slic3r::RuntimeError(Slic3r::format(TR("Failed starting the script %1%, Win32 error: %2%"), boost::nowide::narrow(command_line), error));
     }
     ::WaitForSingleObject(process_info.hProcess, INFINITE);
     ULONG rc = 0;
@@ -146,14 +146,14 @@ static int run_script(const std::string& script, const std::string& gcode, std::
     LPWSTR* szArglist = CommandLineToArgvW(boost::nowide::widen(script).c_str(), &nArgs);
     if (szArglist == nullptr || nArgs <= 0) {
         // CommandLineToArgvW failed. Maybe the command line escapment is invalid?
-        throw Slic3r::RuntimeError(Slic3r::format(_u8L("Post processing script %1% on file %2% failed. CommandLineToArgvW() refused to parse the command line path."),
+        throw Slic3r::RuntimeError(Slic3r::format(TR("Post processing script %1% on file %2% failed. CommandLineToArgvW() refused to parse the command line path."),
                                                   script, gcode));
     }
 
     std::wstring command_line;
     std::wstring command = szArglist[0];
     if (!boost::filesystem::exists(boost::filesystem::path(command)))
-        throw Slic3r::RuntimeError(Slic3r::format(_u8L("The configured post-processing script does not exist: %1%"), boost::nowide::narrow(command)));
+        throw Slic3r::RuntimeError(Slic3r::format(TR("The configured post-processing script does not exist: %1%"), boost::nowide::narrow(command)));
     if (boost::iends_with(command, L".pl")) {
         // This is a perl script. Run it through the perl interpreter.
         // The current process may be slic3r.exe or slic3r-console.exe.
@@ -164,7 +164,7 @@ static int run_script(const std::string& script, const std::string& gcode, std::
         boost::filesystem::path path_perl = path_exe.parent_path() / "perl" / "perl.exe";
         if (!boost::filesystem::exists(path_perl)) {
             LocalFree(szArglist);
-            throw Slic3r::RuntimeError(Slic3r::format(_u8L("Perl interpreter %1% does not exist."), path_perl.string()));
+            throw Slic3r::RuntimeError(Slic3r::format(TR("Perl interpreter %1% does not exist."), path_perl.string()));
         }
         // Replace it with the current perl interpreter.
         quote_argv_winapi(boost::nowide::widen(path_perl.string()), command_line);
@@ -299,14 +299,14 @@ static void run_post_process_plugins(const ConfigOptionStrings& capabilities,
             exec_result = cap->execute(ctx);
         } catch (const std::exception& ex) {
             const std::string msg =
-                (boost::format(_u8L("Post-processing plugin %1% raised an exception.\nError: %2%")) % ref.capability_name % ex.what()).str();
+                (boost::format(TR("Post-processing plugin %1% raised an exception.\nError: %2%")) % ref.capability_name % ex.what()).str();
             BOOST_LOG_TRIVIAL(error) << msg;
             throw Slic3r::RuntimeError(msg);
         }
 
         if (exec_result.status == PluginResult::RecoverableError || exec_result.status == PluginResult::FatalError) {
             const std::string msg =
-                (boost::format(_u8L("Post-processing plugin %1% failed.\nError: %2%")) % ref.capability_name % exec_result.message).str();
+                (boost::format(TR("Post-processing plugin %1% failed.\nError: %2%")) % ref.capability_name % exec_result.message).str();
             BOOST_LOG_TRIVIAL(error) << msg;
             throw Slic3r::RuntimeError(msg);
         }
@@ -375,7 +375,7 @@ bool run_post_process_scripts(
         std::string error_message;
         if (copy_file(src_path, path, error_message, false) != SUCCESS)
             throw Slic3r::RuntimeError(
-                Slic3r::format(_u8L("Failed making a temporary copy of G-code file %1% before running a post-processing script: %2%"), src_path,
+                Slic3r::format(TR("Failed making a temporary copy of G-code file %1% before running a post-processing script: %2%"), src_path,
                                error_message));
     } else {
         // Don't make a copy of the G-code before running the post-processing script.
@@ -395,7 +395,7 @@ bool run_post_process_scripts(
 
     auto gcode_file = boost::filesystem::path(path);
     if (!boost::filesystem::exists(gcode_file))
-        throw Slic3r::RuntimeError(_u8L("Post-processor can't find exported G-code file"));
+        throw Slic3r::RuntimeError(TR("Post-processor can't find exported G-code file"));
 
     // Store print configuration into environment variables.
     config.setenv_();
@@ -436,11 +436,11 @@ bool run_post_process_scripts(
                     const int result = run_script(script, gcode_file.string(), std_err);
                     if (result != 0) {
                         const std::string msg = std_err.empty() ?
-                                                    (boost::format(_u8L("Post-processing script %1% on file %2% failed.\nError code: %3%")) %
+                                                    (boost::format(TR("Post-processing script %1% on file %2% failed.\nError code: %3%")) %
                                                      script % path % result)
                                                         .str() :
                                                     (boost::format(
-                                                         _u8L("Post-processing script %1% on file %2% failed.\nError code: %3%\nOutput:\n%4%")) %
+                                                         TR("Post-processing script %1% on file %2% failed.\nError code: %3%\nOutput:\n%4%")) %
                                                      script % path % result % std_err)
                                                         .str();
                         BOOST_LOG_TRIVIAL(error) << msg;
@@ -481,11 +481,11 @@ bool run_post_process_scripts(
                         new_output_name = outpath.string();
                     } else {
                         if (!op.is_absolute() || !op.has_filename())
-                            throw Slic3r::RuntimeError(_u8L("Unable to parse desired new path from output name file"));
+                            throw Slic3r::RuntimeError(TR("Unable to parse desired new path from output name file"));
                     }
                     if (!fs::exists(fs::path(new_output_name).parent_path()))
                         throw Slic3r::RuntimeError(
-                            Slic3r::format(_u8L("Output directory does not exist: %1%"), fs::path(new_output_name).parent_path().string()));
+                            Slic3r::format(TR("Output directory does not exist: %1%"), fs::path(new_output_name).parent_path().string()));
                 }
 
                 BOOST_LOG_TRIVIAL(trace) << "Post-processing script changed the file name from " << output_name << " to "
@@ -493,7 +493,7 @@ bool run_post_process_scripts(
                 output_name = new_output_name;
             } catch (const std::exception& err) {
                 throw Slic3r::RuntimeError("run_post_process_scripts: " +
-                                           Slic3r::format(_u8L("Failed reading a file %1% carrying the final name / path of a G-code file: %2%"),
+                                           Slic3r::format(TR("Failed reading a file %1% carrying the final name / path of a G-code file: %2%"),
                                                           path_output_name, err.what()));
             }
             remove_output_name_file();

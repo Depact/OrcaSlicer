@@ -856,16 +856,16 @@ void IMSlider::show_tooltip(const TickCode& tick){
     case CustomGCode::ColorChange:
         break;
     case CustomGCode::PausePrint:
-        show_tooltip(time_str + _u8L("Pause:") + " \"" + gcode(PausePrint) + "\"");
+        show_tooltip(time_str + TR("Pause:") + " \"" + gcode(PausePrint) + "\"");
         break;
     case CustomGCode::ToolChange:
-        show_tooltip(time_str + _u8L("Change Filament"));
+        show_tooltip(time_str + TR("Change Filament"));
         break;
     case CustomGCode::Template:
-        show_tooltip(time_str + _u8L("Custom Template:") + " \"" + gcode(Template) + "\"");
+        show_tooltip(time_str + TR("Custom Template:") + " \"" + gcode(Template) + "\"");
         break;
     case CustomGCode::Custom:
-        show_tooltip(time_str + _u8L("Custom G-code:") + " \"" + tick.extra + "\"");
+        show_tooltip(time_str + TR("Custom G-code:") + " \"" + tick.extra + "\"");
         break;
     default:
         break;
@@ -1332,7 +1332,7 @@ bool IMSlider::render(int canvas_width, int canvas_height)
 void IMSlider::render_input_custom_gcode(std::string custom_gcode)
 {
     if (m_show_custom_gcode_window)
-        ImGui::OpenPopup((_u8L("Custom G-code")).c_str());
+        ImGui::OpenPopup((TR("Custom G-code")).c_str());
 
     ImGuiWrapper& imgui = *wxGetApp().imgui();
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -1352,9 +1352,9 @@ void IMSlider::render_input_custom_gcode(std::string custom_gcode)
         | ImGuiWindowFlags_NoResize
         | ImGuiWindowFlags_NoScrollbar
         | ImGuiWindowFlags_NoScrollWithMouse;
-    if (ImGui::BeginPopupModal((_u8L("Custom G-code")).c_str(), NULL, windows_flag))
+    if (ImGui::BeginPopupModal((TR("Custom G-code")).c_str(), NULL, windows_flag))
     {
-        imgui.text(_u8L("Enter Custom G-code used on current layer:"));
+        imgui.text(TR("Enter Custom G-code used on current layer:"));
         if (ImGui::IsMouseClicked(0)) {
             set_focus = false;
         }
@@ -1414,7 +1414,7 @@ void IMSlider::do_go_to_layer(size_t layer_number) {
 void IMSlider::render_go_to_layer_dialog()
 {
     if (m_show_go_to_layer_dialog)
-        ImGui::OpenPopup((_u8L("Jump to layer")).c_str());
+        ImGui::OpenPopup((TR("Jump to layer")).c_str());
 
     ImGuiWrapper& imgui = *wxGetApp().imgui();
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
@@ -1434,9 +1434,9 @@ void IMSlider::render_go_to_layer_dialog()
         | ImGuiWindowFlags_NoResize
         | ImGuiWindowFlags_NoScrollbar
         | ImGuiWindowFlags_NoScrollWithMouse;
-    if (ImGui::BeginPopupModal((_u8L("Jump to layer")).c_str(), NULL, windows_flag))
+    if (ImGui::BeginPopupModal((TR("Jump to layer")).c_str(), NULL, windows_flag))
     {
-        imgui.text(_u8L("Please enter the layer number.") + " (" + std::to_string(m_min_value + 1) + " - " + std::to_string(m_max_value + 1) + "):");
+        imgui.text(TR("Please enter the layer number.") + " (" + std::to_string(m_min_value + 1) + " - " + std::to_string(m_max_value + 1) + "):");
         if (ImGui::IsMouseClicked(0)) {
             set_focus = false;
         }
@@ -1530,25 +1530,25 @@ void IMSlider::render_add_menu()
         bool menu_item_enable = m_draw_mode != dmSequentialFffPrint;
         bool hovered = false;
         {
-            if (menu_item_with_icon(_u8L("Add Pause").c_str(), "", ImVec2(0, 0), 0, false, menu_item_enable, &hovered)) {
+            if (menu_item_with_icon(TR("Add Pause").c_str(), "", ImVec2(0, 0), 0, false, menu_item_enable, &hovered)) {
                 add_code_as_tick(PausePrint);
             }
-            if (hovered) { show_tooltip(_u8L("Insert a pause command at the beginning of this layer.")); }
+            if (hovered) { show_tooltip(TR("Insert a pause command at the beginning of this layer.")); }
 
 
-            if (menu_item_with_icon(_u8L("Add Custom G-code").c_str(), "", ImVec2(0, 0), 0, false, menu_item_enable, &hovered)) {
+            if (menu_item_with_icon(TR("Add Custom G-code").c_str(), "", ImVec2(0, 0), 0, false, menu_item_enable, &hovered)) {
                 m_show_custom_gcode_window = true;
             }
-            if (hovered) { show_tooltip(_u8L("Insert custom G-code at the beginning of this layer.")); }
+            if (hovered) { show_tooltip(TR("Insert custom G-code at the beginning of this layer.")); }
 
             if (!gcode(Template).empty()) {
-                if (menu_item_with_icon(_u8L("Add Custom Template").c_str(), "", ImVec2(0, 0), 0, false, menu_item_enable, &hovered)) {
+                if (menu_item_with_icon(TR("Add Custom Template").c_str(), "", ImVec2(0, 0), 0, false, menu_item_enable, &hovered)) {
                     add_code_as_tick(Template);
                 }
-                if (hovered) { show_tooltip(_u8L("Insert template custom G-code at the beginning of this layer.")); }
+                if (hovered) { show_tooltip(TR("Insert template custom G-code at the beginning of this layer.")); }
             }
 
-            if (menu_item_with_icon(_u8L("Jump to layer").c_str(), "")) {
+            if (menu_item_with_icon(TR("Jump to layer").c_str(), "")) {
                 m_show_go_to_layer_dialog = true;
             }
         }
@@ -1556,16 +1556,16 @@ void IMSlider::render_add_menu()
         //BBS render this menu item only when extruder_num > 1
         if (extruder_num > 1) {
             if (!m_can_change_color) {
-                begin_menu(_u8L("Change Filament").c_str(), false);
+                begin_menu(TR("Change Filament").c_str(), false);
             }
-            else if (begin_menu(_u8L("Change Filament").c_str())) {
+            else if (begin_menu(TR("Change Filament").c_str())) {
                 for (int i = 0; i < extruder_num; i++) {
                     ColorRGBA rgba     = decode_color_to_float_array(m_extruder_colors[i]);
                     ImU32                icon_clr = ImGuiWrapper::to_ImU32(rgba);
                     if (rgba.a() == 0)
                         icon_clr = 0;
                     if (menu_item_with_icon(into_u8(wxString::Format(_L("Filament %d"), i + 1)).c_str(), "", ImVec2(14, 14) * m_scale, icon_clr, false, true, &hovered)) add_code_as_tick(ToolChange, i + 1);
-                    if (hovered) { show_tooltip(_u8L("Change filament at the beginning of this layer.")); }
+                    if (hovered) { show_tooltip(TR("Change filament at the beginning of this layer.")); }
                 }
                 end_menu();
             }
@@ -1585,22 +1585,22 @@ void IMSlider::render_edit_menu(const TickCode& tick)
         switch (tick.type)
         {
         case CustomGCode::PausePrint:
-            if (menu_item_with_icon(_u8L("Delete Pause").c_str(), "")) {
+            if (menu_item_with_icon(TR("Delete Pause").c_str(), "")) {
                 delete_tick(tick);
             }
             break;
         case CustomGCode::Template:
             if (!gcode(Template).empty()) {
-                if (menu_item_with_icon(_u8L("Delete Custom Template").c_str(), "")) {
+                if (menu_item_with_icon(TR("Delete Custom Template").c_str(), "")) {
                     delete_tick(tick);
                 }
             }
             break;
         case CustomGCode::Custom:
-            if (menu_item_with_icon(_u8L("Edit Custom G-code").c_str(), "")) {
+            if (menu_item_with_icon(TR("Edit Custom G-code").c_str(), "")) {
                 m_show_custom_gcode_window = true;
             }
-            if (menu_item_with_icon(_u8L("Delete Custom G-code").c_str(), "")) {
+            if (menu_item_with_icon(TR("Delete Custom G-code").c_str(), "")) {
                 delete_tick(tick);
             }
             break;
@@ -1608,9 +1608,9 @@ void IMSlider::render_edit_menu(const TickCode& tick)
             int extruder_num = m_extruder_colors.size();
             if (extruder_num > 1) {
                 if (!m_can_change_color) {
-                    begin_menu(_u8L("Change Filament").c_str(), false);
+                    begin_menu(TR("Change Filament").c_str(), false);
                 }
-                else if (begin_menu(_u8L("Change Filament").c_str())) {
+                else if (begin_menu(TR("Change Filament").c_str())) {
                     for (int i = 0; i < extruder_num; i++) {
                         ColorRGBA rgba = decode_color_to_float_array(m_extruder_colors[i]);
                         ImU32     icon_clr = ImGuiWrapper::to_ImU32(rgba);
@@ -1618,7 +1618,7 @@ void IMSlider::render_edit_menu(const TickCode& tick)
                     }
                     end_menu();
                 }
-                if (menu_item_with_icon(_u8L("Delete Filament Change").c_str(), "")) {
+                if (menu_item_with_icon(TR("Delete Filament Change").c_str(), "")) {
                     delete_tick(tick);
                 }
             }

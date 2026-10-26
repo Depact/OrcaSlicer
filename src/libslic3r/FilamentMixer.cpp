@@ -635,36 +635,36 @@ bool try_parse_mixed_components_strict(const std::string &str,
 {
     components.clear();
     if (str.empty()) {
-        err = _u8L("empty component list");
+        err = TR("empty component list");
         return false;
     }
     std::istringstream ss(str);
     std::string token;
     while (std::getline(ss, token, ',')) {
         if (token.empty()) {
-            err = _u8L("empty component index");
+            err = TR("empty component index");
             return false;
         }
         try {
             const long val = std::stol(token);
             if (val < 1) {
-                err = format(_u8L("component index must be >= 1 (got %1%)"), token);
+                err = format(TR("component index must be >= 1 (got %1%)"), token);
                 return false;
             }
             components.push_back(static_cast<unsigned int>(val));
         } catch (...) {
-            err = format(_u8L("invalid component index \"%1%\""), token);
+            err = format(TR("invalid component index \"%1%\""), token);
             return false;
         }
     }
     if (components.size() < 2) {
-        err = format(_u8L("at least 2 components required (got %1%)"), components.size());
+        err = format(TR("at least 2 components required (got %1%)"), components.size());
         return false;
     }
     std::set<unsigned int> seen;
     for (unsigned int c : components) {
         if (!seen.insert(c).second) {
-            err = format(_u8L("duplicate component index %1%"), c);
+            err = format(TR("duplicate component index %1%"), c);
             return false;
         }
     }
@@ -684,24 +684,24 @@ bool try_parse_mixed_ratios_strict(const std::string &str,
     std::string token;
     while (std::getline(ss, token, ',')) {
         if (token.empty()) {
-            err = _u8L("empty ratio value");
+            err = TR("empty ratio value");
             return false;
         }
         try {
             const double val = std::stod(token);
             if (!(val > 0.0)) {
-                err = format(_u8L("ratio must be positive (got %1%)"), token);
+                err = format(TR("ratio must be positive (got %1%)"), token);
                 return false;
             }
             ratios.push_back(val);
         } catch (...) {
-            err = format(_u8L("invalid ratio \"%1%\""), token);
+            err = format(TR("invalid ratio \"%1%\""), token);
             return false;
         }
     }
     if (ratios.size() != n_components) {
         // TRN %1% is the expected number of ratios, %2% the number found.
-        err = format(_u8L("the ratio count must match the component count: expected %1%, got %2%"), n_components, ratios.size());
+        err = format(TR("the ratio count must match the component count: expected %1%, got %2%"), n_components, ratios.size());
         return false;
     }
     return true;
@@ -715,11 +715,11 @@ bool validate_gradient_range_strict(const std::string &str, std::string &err)
     CNumericLocalesSetter c_locale_setter;
     float v0 = 0.f, v1 = 0.f;
     if (std::sscanf(str.c_str(), "%f,%f", &v0, &v1) != 2) {
-        err = _u8L("expected two comma-separated floats, e.g. \"0.10,0.90\"");
+        err = TR("expected two comma-separated floats, e.g. \"0.10,0.90\"");
         return false;
     }
     if (!(v0 > 0.f && v0 < 1.f && v1 > 0.f && v1 < 1.f)) {
-        err = _u8L("start and end ratios must be in (0, 1)");
+        err = TR("start and end ratios must be in (0, 1)");
         return false;
     }
     return true;
@@ -773,7 +773,7 @@ static void check_mixed_array_size_required(std::map<std::string, std::string> &
 {
     if (actual_size != expected_size) {
         append_error(errors, opt_key,
-            format(_u8L("array size %1% does not match filament slot count %2%"), actual_size, expected_size));
+            format(TR("array size %1% does not match filament slot count %2%"), actual_size, expected_size));
     }
 }
 
@@ -790,7 +790,7 @@ std::map<std::string, std::string> validate_mixed_filament_params(
     if (has_mixed_sub_params_specified(comp_strs, ratio_strs, gradient_flags)
         && !has_any_mixed_filament(is_mixed)) {
         append_error(errors, "filament_is_mixed",
-            _u8L("must be set when mixed filament parameters are specified"));
+            TR("must be set when mixed filament parameters are specified"));
         return errors;
     }
 
@@ -830,26 +830,26 @@ std::map<std::string, std::string> validate_mixed_filament_params(
         std::string comp_err;
         if (!try_parse_mixed_components_strict(comp_str, components, comp_err)) {
             // TRN Mixed filament validation error. %1% is the filament slot number, %2% the reason.
-            append_error(errors, "filament_mixed_components", format(_u8L("slot %1%: %2%"), slot, comp_err));
+            append_error(errors, "filament_mixed_components", format(TR("slot %1%: %2%"), slot, comp_err));
             continue;
         }
 
         for (unsigned int c : components) {
             if (c > num_physical) {
                 append_error(errors, "filament_mixed_components",
-                       format(_u8L("slot %1%: component %2% out of range (max physical filament index is %3%)"),
+                       format(TR("slot %1%: component %2% out of range (max physical filament index is %3%)"),
                               slot, c, num_physical));
                 break;
             }
             if (c == i + 1) {
                 append_error(errors, "filament_mixed_components",
-                       format(_u8L("slot %1%: cannot reference itself as a component"), slot));
+                       format(TR("slot %1%: cannot reference itself as a component"), slot));
                 break;
             }
             const size_t idx0 = static_cast<size_t>(c - 1);
             if (idx0 < is_mixed.size() && is_mixed[idx0]) {
                 append_error(errors, "filament_mixed_components",
-                       format(_u8L("slot %1%: component %2% references a mixed filament slot"), slot, c));
+                       format(TR("slot %1%: component %2% references a mixed filament slot"), slot, c));
                 break;
             }
         }
@@ -857,27 +857,27 @@ std::map<std::string, std::string> validate_mixed_filament_params(
         std::string ratio_err;
         const std::string ratio_str = i < ratio_strs.size() ? ratio_strs[i] : "";
         if (!try_parse_mixed_ratios_strict(ratio_str, components.size(), ratio_err))
-            append_error(errors, "filament_mixed_sublayer_ratios", format(_u8L("slot %1%: %2%"), slot, ratio_err));
+            append_error(errors, "filament_mixed_sublayer_ratios", format(TR("slot %1%: %2%"), slot, ratio_err));
 
         const bool gradient_on = i < gradient_flags.size() && gradient_flags[i];
         if (gradient_on) {
             if (components.size() != 2) {
                 append_error(errors, "filament_mixed_gradient",
-                       format(_u8L("slot %1%: gradient requires exactly 2 components"), slot));
+                       format(TR("slot %1%: gradient requires exactly 2 components"), slot));
             }
 
             if (gradient_specified) {
                 std::string range_err;
                 const std::string range_str = i < gradient_range_strs.size() ? gradient_range_strs[i] : "";
                 if (!validate_gradient_range_strict(range_str, range_err))
-                    append_error(errors, "filament_mixed_gradient_range", format(_u8L("slot %1%: %2%"), slot, range_err));
+                    append_error(errors, "filament_mixed_gradient_range", format(TR("slot %1%: %2%"), slot, range_err));
             }
 
             if (curve_specified) {
                 const std::string curve_str = i < gradient_curve_strs.size() ? gradient_curve_strs[i] : "";
                 if (!curve_str.empty() && parse_gradient_curve(curve_str).empty())
                     append_error(errors, "filament_mixed_gradient_curve",
-                           format(_u8L("slot %1%: invalid curve (need at least 2 valid control points)"), slot));
+                           format(TR("slot %1%: invalid curve (need at least 2 valid control points)"), slot));
             }
         }
     }

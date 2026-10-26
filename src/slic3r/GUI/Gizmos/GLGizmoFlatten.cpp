@@ -90,7 +90,7 @@ CommonGizmosDataID GLGizmoFlatten::on_get_requirements() const
 
 std::string GLGizmoFlatten::on_get_name() const
 {
-    return _u8L("Lay on Face");
+    return TR("Lay on Face");
 }
 
 bool GLGizmoFlatten::on_is_activable() const

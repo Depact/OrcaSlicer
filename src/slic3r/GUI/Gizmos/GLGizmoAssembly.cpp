@@ -41,13 +41,13 @@ std::string GLGizmoAssembly::on_get_name() const
 {
     if (!on_is_activable() && m_state == EState::Off) {
         if (wxGetApp().plater()->canvas3D()->get_canvas_type() == GLCanvas3D::ECanvasType::CanvasAssembleView) {
-            return _u8L_CONTEXT("Assemble", "Assembly tool") + ":\n" + _u8L("Please confirm explosion ratio = 1 and select at least two volumes.");
+            return TR_CONTEXT("Assemble", "Assembly tool") + ":\n" + TR("Please confirm explosion ratio = 1 and select at least two volumes.");
         }
         else {
-            return _u8L_CONTEXT("Assemble", "Assembly tool") + ":\n" + _u8L("Please select at least two volumes.");
+            return TR_CONTEXT("Assemble", "Assembly tool") + ":\n" + TR("Please select at least two volumes.");
         }
     } else {
-        return _u8L_CONTEXT("Assemble", "Assembly tool");
+        return TR_CONTEXT("Assemble", "Assembly tool");
     }
 }
 
@@ -181,11 +181,11 @@ bool GLGizmoAssembly::render_assembly_mode_combo(double label_width, float item_
 {
     ImGui::AlignTextToFramePadding();
     int                      selection_idx = int(m_assembly_mode);
-    std::vector<std::string> modes         = {_u8L("Face and face assembly"), _u8L("Point and point assembly")};
+    std::vector<std::string> modes         = {TR("Face and face assembly"), TR("Point and point assembly")};
     bool                     is_changed    = false;
 
     ImGuiWrapper::push_combo_style(m_parent.get_scale());
-    if (render_combo(_u8L("Mode"), modes, selection_idx, label_width, item_width)) {
+    if (render_combo(TR("Mode"), modes, selection_idx, label_width, item_width)) {
         is_changed = true;
         switch_to_mode((AssemblyMode) selection_idx);
     }

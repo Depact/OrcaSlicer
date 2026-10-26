@@ -57,7 +57,7 @@ SavePresetDialog::Item::Item(Preset::Type type, const std::string &suffix, wxBox
     m_presets = tab->get_presets();
 
     const Preset &sel_preset  = m_presets->get_selected_preset();
-    std::string   preset_name = sel_preset.is_default ? _u8L("Untitled") : sel_preset.is_system ? (boost::format(("%1% - %2%")) % sel_preset.name % suffix).str() : sel_preset.is_from_bundle() && !sel_preset.alias.empty() ? sel_preset.alias : sel_preset.name;
+    std::string   preset_name = sel_preset.is_default ? TR("Untitled") : sel_preset.is_system ? (boost::format(("%1% - %2%")) % sel_preset.name % suffix).str() : sel_preset.is_from_bundle() && !sel_preset.alias.empty() ? sel_preset.alias : sel_preset.name;
 
     // if name contains extension
     if (boost::iends_with(preset_name, ".ini")) {
@@ -230,9 +230,9 @@ void SavePresetDialog::Item::update()
 
     if (m_valid_type == Valid && existing && m_preset_name != m_presets->get_selected_preset_name()) {
         if (existing->is_compatible)
-            info_line = from_u8((boost::format(_u8L("Preset \"%1%\" already exists.")) % m_preset_name).str());
+            info_line = from_u8((boost::format(TR("Preset \"%1%\" already exists.")) % m_preset_name).str());
         else
-            info_line = from_u8((boost::format(_u8L("Preset \"%1%\" already exists and is incompatible with the current printer.")) % m_preset_name).str());
+            info_line = from_u8((boost::format(TR("Preset \"%1%\" already exists and is incompatible with the current printer.")) % m_preset_name).str());
         info_line += "\n" + _L("Please note that saving will overwrite the current preset.");
         m_valid_type = Warning;
     }
@@ -335,7 +335,7 @@ void SavePresetDialog::build(std::vector<Preset::Type> types, std::string suffix
     SetBackgroundColour(SAVE_PRESET_DIALOG_DEF_COLOUR);
     SetFont(wxGetApp().normal_font());
 
-    if (suffix.empty()) suffix = _u8L_CONTEXT(L_CONTEXT("Copy", "PresetName"), "PresetName");
+    if (suffix.empty()) suffix = TR_CONTEXT(L_CONTEXT("Copy", "PresetName"), "PresetName");
 
     wxBoxSizer *m_Sizer_main = new wxBoxSizer(wxVERTICAL);
 
@@ -418,7 +418,7 @@ void SavePresetDialog::add_info_for_edit_ph_printer(wxBoxSizer *sizer)
     m_ph_printer_name                   = printers.get_selected_printer_name();
     m_old_preset_name                   = printers.get_selected_printer_preset_name();
 
-    wxString msg_text = from_u8((boost::format(_u8L("Printer \"%1%\" is selected with preset \"%2%\"")) %
+    wxString msg_text = from_u8((boost::format(TR("Printer \"%1%\" is selected with preset \"%2%\"")) %
                                  m_ph_printer_name % m_old_preset_name)
                                     .str());
     m_label           = new wxStaticText(this, wxID_ANY, msg_text);

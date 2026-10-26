@@ -110,7 +110,7 @@ wxString UltiMaker::get_test_ok_msg () const
 wxString UltiMaker::get_test_failed_msg (wxString &msg) const
 {
     return GUI::from_u8((boost::format("%s: %s")
-                    % _u8L("Could not connect to UltiMaker")
+                    % TR("Could not connect to UltiMaker")
                     % std::string(msg.ToUTF8())).str());
 }
 
@@ -330,7 +330,7 @@ std::string UltiMaker::test_auth() const {
 
 		if (auth_stat == "waiting") { 
 			BOOST_LOG_TRIVIAL(info) << boost::format("%1%: Auth credentials are waiting for user approval at the physical machine.") % name;
-			return _u8L("Authentication credentials are waiting for approval. Please approve access via the dialog box on the printer's screen.");
+			return TR("Authentication credentials are waiting for approval. Please approve access via the dialog box on the printer's screen.");
 
 		} else if (auth_stat == "authorized" && is_authorized()) {
 			BOOST_LOG_TRIVIAL(info) << boost::format("%1%: Auth credentials are valid. Returning OK") % name;
@@ -338,12 +338,12 @@ std::string UltiMaker::test_auth() const {
 
 		} else {
 			BOOST_LOG_TRIVIAL(warning) << boost::format("%1%: Auth credentials are INVALID. auth_status returned %2%") % name % auth_stat;
-			return _u8L("Invalid authentication credentials");
+			return TR("Invalid authentication credentials");
 		}
 
 	} else { // Auth credentials do not exist
 		BOOST_LOG_TRIVIAL(info) << boost::format("%1%: Auth credentials do NOT already exist. Returning error string.") % name;
-		return _u8L("Error: No authentication credentials found!");
+		return TR("Error: No authentication credentials found!");
 	}
 
 }
@@ -483,7 +483,7 @@ bool UltiMaker::upload(PrintHostUpload upload_data, ProgressFn prorgess_fn, Erro
 			int err_code = dsf ? (status == 201 ? 0 : 1) : get_err_code_from_body(body);
 			if (err_code != 0) {
 				BOOST_LOG_TRIVIAL(error) << boost::format("UltiMaker: Request completed but error code was received: %1%") % err_code;
-				error_fn(format_error(body, _u8L("Unknown error occurred"), 0));
+				error_fn(format_error(body, TR("Unknown error occurred"), 0));
 				res = false;
 			} else if (upload_data.post_action == PrintHostPostUploadAction::StartPrint) {
 				wxString errormsg;
@@ -546,13 +546,13 @@ UltiMaker::ConnectionType UltiMaker::connect(wxString &msg) const
 					res = ConnectionType::rrf;
 					break;
 				case 1:
-					msg = format_error(body, _u8L("Wrong password"), 0);
+					msg = format_error(body, TR("Wrong password"), 0);
 					break;
 				case 2:
-					msg = format_error(body, _u8L("Could not get resources to create a new connection"), 0);
+					msg = format_error(body, TR("Could not get resources to create a new connection"), 0);
 					break;
 				default:
-					msg = format_error(body, _u8L("Unknown error occurred"), 0);
+					msg = format_error(body, TR("Unknown error occurred"), 0);
 					break;
 			}
 

@@ -187,10 +187,10 @@ bool validate_local_api_response(const std::string& response_body, wxString& err
             message = parsed["msg"].get<std::string>();
 
         if (message.empty())
-            message = _u8L("Request failed");
+            message = TR("Request failed");
 
         // TRN %1% is the error code returned by the printer, %2% its error message.
-        error_msg = GUI::from_u8((boost::format(_u8L("Flashforge local API error %1%: %2%")) % result_code % message).str());
+        error_msg = GUI::from_u8((boost::format(TR("Flashforge local API error %1%: %2%")) % result_code % message).str());
         return false;
     }
 

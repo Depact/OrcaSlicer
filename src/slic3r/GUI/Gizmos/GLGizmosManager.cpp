@@ -483,7 +483,7 @@ bool GLGizmosManager::check_gizmos_closed_except(EType type) const
         wxGetApp().plater()->get_notification_manager()->push_notification(
                     NotificationType::CustomSupportsAndSeamRemovedAfterRepair,
                     NotificationManager::NotificationLevel::PrintInfoNotificationLevel,
-                    _u8L("Error: Please close all toolbar menus first"));
+                    TR("Error: Please close all toolbar menus first"));
         return false;
     }
     return true;

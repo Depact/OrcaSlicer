@@ -61,7 +61,7 @@ std::string PresetHints::cooling_description(const Preset &preset)
             	out += GUI::format(_L("except for the first layer."));
         }
     } else
-       out += cooling ? _u8L("During the other layers, fan will be turned off.") : _u8L("Fan will be turned off.");
+       out += cooling ? TR("During the other layers, fan will be turned off.") : TR("Fan will be turned off.");
     */
     return out;
 }

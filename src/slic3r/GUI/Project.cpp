@@ -71,22 +71,22 @@ wxDEFINE_EVENT(EVT_PROJECT_RELOAD, wxCommandEvent);
 static json project_page_strings()
 {
     return {
-        {"no_model_info", _u8L("No model information")},
-        {"edit_project_info", _u8L("Edit Project Info")},
-        {"model_information", _u8L("Model Information")},
-        {"accessories", _u8L("Accessories")},
-        {"profile_information", _u8L("Profile Information")},
-        {"model_name", _u8L("Model name")},
-        {"created_by", _u8L("Created by")},
-        {"remixed_by", _u8L("Remixed by")},
-        {"shared_by", _u8L("Shared by")},
-        {"model_description", _u8L("Model description")},
-        {"bom", _u8L("BOM")},
-        {"assembly_guide", _u8L("Assembly Guide")},
-        {"other", _u8L("Other")},
-        {"profile_name", _u8L("Profile name")},
-        {"profile_author", _u8L("Profile Author")},
-        {"profile_description", _u8L("Profile description")},
+        {"no_model_info", TR("No model information")},
+        {"edit_project_info", TR("Edit Project Info")},
+        {"model_information", TR("Model Information")},
+        {"accessories", TR("Accessories")},
+        {"profile_information", TR("Profile Information")},
+        {"model_name", TR("Model name")},
+        {"created_by", TR("Created by")},
+        {"remixed_by", TR("Remixed by")},
+        {"shared_by", TR("Shared by")},
+        {"model_description", TR("Model description")},
+        {"bom", TR("BOM")},
+        {"assembly_guide", TR("Assembly Guide")},
+        {"other", TR("Other")},
+        {"profile_name", TR("Profile name")},
+        {"profile_author", TR("Profile Author")},
+        {"profile_description", TR("Profile description")},
     };
 }
 

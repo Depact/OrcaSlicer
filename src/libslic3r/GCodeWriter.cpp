@@ -537,7 +537,7 @@ std::string GCodeWriter::set_accel_and_jerk(unsigned int acceleration, double je
 {
     // Only Klipper supports setting acceleration and jerk at the same time. Throw an error if we try to do this on other flavours.
     if(FLAVOR_IS_NOT(gcfKlipper))
-        throw std::runtime_error(_u8L("set_accel_and_jerk() is only supported by Klipper"));
+        throw std::runtime_error(TR("set_accel_and_jerk() is only supported by Klipper"));
 
     // Clamp the acceleration to the allowed maximum.
     if (EXTRUDER_LIMIT(m_max_acceleration) > 0 && acceleration > EXTRUDER_LIMIT(m_max_acceleration))
@@ -708,10 +708,10 @@ std::string GCodeWriter::set_input_shaping(char axis, float damp, float freq, st
         break;
     }
     case gcfMarlinLegacy: {
-        throw std::runtime_error(_u8L("Input shaping is not supported by Marlin < 2.1.2.\nCheck your firmware version and update your G-code flavor to ´Marlin 2´."));
+        throw std::runtime_error(TR("Input shaping is not supported by Marlin < 2.1.2.\nCheck your firmware version and update your G-code flavor to ´Marlin 2´."));
     }
     default:
-        throw std::runtime_error(_u8L("Input shaping is only supported by Klipper, RepRapFirmware and Marlin 2."));
+        throw std::runtime_error(TR("Input shaping is only supported by Klipper, RepRapFirmware and Marlin 2."));
     }
     if (!gcode.str().empty()) {
         if (GCodeWriter::full_gcode_comment) {

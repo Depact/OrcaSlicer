@@ -74,19 +74,19 @@ std::vector<TopoDS_Shape> GeometryEngine::read_step_solids(const std::string& pa
     try {
         STEPControl_Reader reader;
         if (reader.ReadFile(path.c_str()) != IFSelect_RetDone) {
-            err = _u8L("cannot read STEP file");
+            err = TR("cannot read STEP file");
             return out;
         }
         reader.TransferRoots();
         const TopoDS_Shape shape = reader.OneShape();
-        if (shape.IsNull()) { err = _u8L("STEP file has no geometry"); return out; }
+        if (shape.IsNull()) { err = TR("STEP file has no geometry"); return out; }
         // One body per top-level solid; fall back to the whole shape (shells/faces) if none.
         for (TopExp_Explorer ex(shape, TopAbs_SOLID); ex.More(); ex.Next())
             out.push_back(ex.Current());
         if (out.empty())
             out.push_back(shape);
     } catch (const Standard_Failure& e) {
-        err = *e.what() ? e.what() : _u8L("OCCT failed to read STEP");
+        err = *e.what() ? e.what() : TR("OCCT failed to read STEP");
         out.clear();
     }
     return out;
@@ -116,7 +116,7 @@ TopoDS_Shape GeometryEngine::mesh_to_brep(const indexed_triangle_set& its,
     if (tolerance <= 0.0)
         throw std::runtime_error("mesh_to_brep: tolerance must be > 0");
     if (its.indices.empty())
-        throw std::runtime_error(_u8L("mesh_to_brep: mesh has no triangles"));
+        throw std::runtime_error(TR("mesh_to_brep: mesh has no triangles"));
 
     // 1. Tolerance-quantized vertex dedup. A merged vertex keeps the exact coordinates of the
     //    first input occurrence — vertices are grouped by a cell, never snapped onto its grid.
@@ -151,7 +151,7 @@ TopoDS_Shape GeometryEngine::mesh_to_brep(const indexed_triangle_set& its,
     }
     stats.kept_tris = int(tris.size());
     if (tris.empty())
-        throw std::runtime_error(_u8L("mesh_to_brep: every triangle was rejected as degenerate "
+        throw std::runtime_error(TR("mesh_to_brep: every triangle was rejected as degenerate "
                                       "(try a smaller tolerance)"));
 
     // 3. One face per triangle, sharing vertices and edges through the caches.
@@ -325,10 +325,10 @@ std::vector<TopoDS_Edge> GeometryEngine::collect_edges(const TopoDS_Shape& solid
 // handing the solid back unchanged, which recompute then reported as a success.
 TopoDS_Shape GeometryEngine::apply_fillet(const TopoDS_Shape& solid, double radius, FaceGroup faces)
 {
-    if (radius <= 0.001) throw std::runtime_error(_u8L("the fillet radius must be greater than 0"));
+    if (radius <= 0.001) throw std::runtime_error(TR("the fillet radius must be greater than 0"));
 
     std::vector<TopoDS_Edge> edges = collect_edges(solid, faces);
-    if (edges.empty()) throw std::runtime_error(_u8L("no edges to fillet in that group"));
+    if (edges.empty()) throw std::runtime_error(TR("no edges to fillet in that group"));
 
     BRepFilletAPI_MakeFillet fillet(solid);
     for (const auto& edge : edges)
@@ -338,23 +338,23 @@ TopoDS_Shape GeometryEngine::apply_fillet(const TopoDS_Shape& solid, double radi
     // A too-large radius (e.g. >= half the smallest spanned dimension) makes the
     // operation degenerate; OCCT leaves IsDone() false. Report it instead of
     // silently returning the unfilleted solid (which reads as a false success).
-    if (!fillet.IsDone()) throw std::runtime_error(_u8L("fillet radius too large for this geometry"));
+    if (!fillet.IsDone()) throw std::runtime_error(TR("fillet radius too large for this geometry"));
     return fillet.Shape();
 }
 
 TopoDS_Shape GeometryEngine::apply_chamfer(const TopoDS_Shape& solid, double distance, FaceGroup faces)
 {
-    if (distance <= 0.001) throw std::runtime_error(_u8L("the chamfer distance must be greater than 0"));
+    if (distance <= 0.001) throw std::runtime_error(TR("the chamfer distance must be greater than 0"));
 
     std::vector<TopoDS_Edge> edges = collect_edges(solid, faces);
-    if (edges.empty()) throw std::runtime_error(_u8L("no edges to chamfer in that group"));
+    if (edges.empty()) throw std::runtime_error(TR("no edges to chamfer in that group"));
 
     BRepFilletAPI_MakeChamfer chamfer(solid);
     for (const auto& edge : edges)
         chamfer.Add(distance, edge); // symmetric chamfer
     chamfer.Build();
 
-    if (!chamfer.IsDone()) throw std::runtime_error(_u8L("chamfer distance too large for this geometry"));
+    if (!chamfer.IsDone()) throw std::runtime_error(TR("chamfer distance too large for this geometry"));
     return chamfer.Shape();
 }
 
@@ -370,7 +370,7 @@ TopoDS_Shape GeometryEngine::apply_chamfer(const TopoDS_Shape& solid, double dis
 
 TopoDS_Shape GeometryEngine::apply_fillet(const TopoDS_Shape& solid, double radius, const std::vector<int>& edge_ids)
 {
-    if (radius <= 0.001) throw std::runtime_error(_u8L("the fillet radius must be greater than 0"));
+    if (radius <= 0.001) throw std::runtime_error(TR("the fillet radius must be greater than 0"));
     if (edge_ids.empty()) throw std::runtime_error("apply_fillet: no edge picked");
 
     BRepFilletAPI_MakeFillet mk(solid);
@@ -381,13 +381,13 @@ TopoDS_Shape GeometryEngine::apply_fillet(const TopoDS_Shape& solid, double radi
     }
     mk.Build();
 
-    if (!mk.IsDone()) throw std::runtime_error(_u8L("apply_fillet: OCCT fillet failed"));
+    if (!mk.IsDone()) throw std::runtime_error(TR("apply_fillet: OCCT fillet failed"));
     return mk.Shape();
 }
 
 TopoDS_Shape GeometryEngine::apply_chamfer(const TopoDS_Shape& solid, double distance, const std::vector<int>& edge_ids)
 {
-    if (distance <= 0.001) throw std::runtime_error(_u8L("the chamfer distance must be greater than 0"));
+    if (distance <= 0.001) throw std::runtime_error(TR("the chamfer distance must be greater than 0"));
     if (edge_ids.empty()) throw std::runtime_error("apply_chamfer: no edge picked");
 
     BRepFilletAPI_MakeChamfer mk(solid);
@@ -398,7 +398,7 @@ TopoDS_Shape GeometryEngine::apply_chamfer(const TopoDS_Shape& solid, double dis
     }
     mk.Build();
 
-    if (!mk.IsDone()) throw std::runtime_error(_u8L("apply_chamfer: OCCT chamfer failed"));
+    if (!mk.IsDone()) throw std::runtime_error(TR("apply_chamfer: OCCT chamfer failed"));
     return mk.Shape();
 }
 

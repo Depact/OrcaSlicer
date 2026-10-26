@@ -84,7 +84,7 @@ static InteriorPtr generate_interior_verbose(const TriangleMesh & mesh,
     float  in_range = 1.1f * float(offset + D);
 
     if (ctl.stopcondition()) return {};
-    else ctl.statuscb(0, _u8L("Hollowing"));
+    else ctl.statuscb(0, TR("Hollowing"));
 
     auto gridptr = mesh_to_grid(mesh.its, {}, voxel_scale, out_range, in_range);
 
@@ -96,14 +96,14 @@ static InteriorPtr generate_interior_verbose(const TriangleMesh & mesh,
     }
 
     if (ctl.stopcondition()) return {};
-    else ctl.statuscb(30, _u8L("Hollowing"));
+    else ctl.statuscb(30, TR("Hollowing"));
 
     double iso_surface = D;
     auto   narrowb = double(in_range);
     gridptr = redistance_grid(*gridptr, -(offset + D), narrowb, narrowb);
 
     if (ctl.stopcondition()) return {};
-    else ctl.statuscb(70, _u8L("Hollowing"));
+    else ctl.statuscb(70, TR("Hollowing"));
 
     double adaptivity = 0.;
     InteriorPtr interior = InteriorPtr{new Interior{}};
@@ -112,7 +112,7 @@ static InteriorPtr generate_interior_verbose(const TriangleMesh & mesh,
     interior->gridptr = gridptr;
 
     if (ctl.stopcondition()) return {};
-    else ctl.statuscb(100, _u8L("Hollowing"));
+    else ctl.statuscb(100, TR("Hollowing"));
 
     interior->closing_distance = D;
     interior->thickness = offset;

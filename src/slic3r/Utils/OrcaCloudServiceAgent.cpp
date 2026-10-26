@@ -887,7 +887,7 @@ std::string OrcaCloudServiceAgent::build_login_cmd()
     if (is_user_login()) {
         std::string display_name = get_user_nickname();
         if (display_name.empty()) {
-            display_name = _u8L("unknown name");
+            display_name = TR("unknown name");
         }
         json cmd;
         cmd["command"]         = "orca_userlogin";

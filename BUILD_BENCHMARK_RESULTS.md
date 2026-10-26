@@ -319,3 +319,9 @@ timings below include that overhead.
 - Benchmark: clean x64-clang interrupted at [621/952] (~29min); 7 TBD remain
 - PR pipeline (build_all.yml): pr_full_test_observability job added (full ctest, annotations, artifact upload, job summary)
 - Uncommitted: .github/workflows/build_all.yml edit + build_win.ps1 sync
+## Cross-Platform Note (updated 2026-10-26)
+
+- Pipeline (pr_full_test_observability) is Windows-only (windows-latest, PowerShell, clang-cl).
+- Cross-platform: extend to Linux (ubuntu-24.04) / macOS (macos-15) using existing uild_all.yml legs (uild_linux, unit_tests.yml). Unity exclusions (NSVGImplementation.cpp, 19 files) and SLIC3R_UNITY_BUILD=ON apply to all platforms; Linux clang + 
+inja + ccache can be faster than Windows clang-cl.
+- No automatic performance gain from portability — same source-level optimizations, faster execution environment on Linux.

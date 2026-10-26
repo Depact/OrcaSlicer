@@ -65,7 +65,7 @@ public:
     static std::string theme_apply_script();
     // Document-start user script that hands a bundled page its translated strings as
     // window.ORCA_UI_STRINGS, keyed by the ids its T() lookups and data-i18n attributes use
-    // (resources/web/include/i18n.js). The strings come from _u8L, so they go through the same .po
+    // (resources/web/include/i18n.js). The strings come from TR, so they go through the same .po
     // pipeline as the rest of the UI. They are in place before any page script runs; the page's
     // static markup shows its English until the page's init calls TranslatePage(). A host builds them
     // when it creates its web view; a language switch rebuilds the GUI and with it the host.

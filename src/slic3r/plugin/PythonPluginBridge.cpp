@@ -197,7 +197,7 @@ std::vector<CapturedCapability> PythonPluginBridge::finalize_plugin_capture(cons
                     granted = PluginAuditManager::instance().request_permissions(plugin_key, requested_permissions);
                 }
                 if (!granted) {
-                    error = _u8L("Plugin permission request denied");
+                    error = TR("Plugin permission request denied");
                     BOOST_LOG_TRIVIAL(warning) << error << " for key " << plugin_key;
                     discard_pending_for_key();
                     clear_active_key();

@@ -1679,7 +1679,7 @@ void TreeSupport::generate_toolpaths()
                 if (m_object->print()->canceled())
                     break;
 
-                //m_object->print()->set_status(70, (boost::format(_u8L("Support: generate toolpath at layer %d")) % layer_id).str());
+                //m_object->print()->set_status(70, (boost::format(TR("Support: generate toolpath at layer %d")) % layer_id).str());
 
                 SupportLayer* ts_layer = m_object->get_support_layer(layer_id);
                 Flow support_flow(support_extrusion_width, ts_layer->height, nozzle_diameter);
@@ -1914,7 +1914,7 @@ void TreeSupport::generate()
 
     // Generate overhang areas
     profiler.stage_start(STAGE_DETECT_OVERHANGS);
-    m_object->print()->set_status(55, _u8L("Generating support"));
+    m_object->print()->set_status(55, TR("Generating support"));
     detect_overhangs();
     profiler.stage_finish(STAGE_DETECT_OVERHANGS);
 
@@ -1927,7 +1927,7 @@ void TreeSupport::generate()
 
     std::vector<TreeSupport3D::SupportElements> move_bounds(m_highest_overhang_layer + 1);
     profiler.stage_start(STAGE_GENERATE_CONTACT_NODES);
-    m_object->print()->set_status(56, _u8L("Support: generate contact points"));
+    m_object->print()->set_status(56, TR("Support: generate contact points"));
     generate_contact_points();
     profiler.stage_finish(STAGE_GENERATE_CONTACT_NODES);
 
@@ -1935,7 +1935,7 @@ void TreeSupport::generate()
 
     //Drop nodes to lower layers.
     profiler.stage_start(STAGE_DROP_DOWN_NODES);
-    m_object->print()->set_status(60, _u8L("Generating support"));
+    m_object->print()->set_status(60, TR("Generating support"));
     drop_nodes();
     profiler.stage_finish(STAGE_DROP_DOWN_NODES);
 
@@ -1943,14 +1943,14 @@ void TreeSupport::generate()
 
     //Generate support areas.
     profiler.stage_start(STAGE_DRAW_CIRCLES);
-    m_object->print()->set_status(65, _u8L("Generating support"));
+    m_object->print()->set_status(65, TR("Generating support"));
     draw_circles();
     profiler.stage_finish(STAGE_DRAW_CIRCLES);
 
 
 
     profiler.stage_start(STAGE_GENERATE_TOOLPATHS);
-    m_object->print()->set_status(70, _u8L("Generating support"));
+    m_object->print()->set_status(70, TR("Generating support"));
     generate_toolpaths();
     profiler.stage_finish(STAGE_GENERATE_TOOLPATHS);
 
@@ -2354,7 +2354,7 @@ void TreeSupport::draw_circles()
 
                 }
 
-                //m_object->print()->set_status(65, (boost::format( _u8L("Support: generate polygons at layer %d")) % layer_nr).str());
+                //m_object->print()->set_status(65, (boost::format( TR("Support: generate polygons at layer %d")) % layer_nr).str());
 
                 // join roof segments
                 roof_areas     = diff_clipped(closing_ex(roof_areas, line_width_scaled), get_collision(false));
@@ -2743,7 +2743,7 @@ void TreeSupport::draw_circles()
             std::map<const Polygon*, std::tuple<int, Point, Point>> holePropagationInfos;
             for (int layer_nr = contact_nodes.size() - 1; layer_nr > 0; layer_nr--) {
                 if (print->canceled()) break;
-                //m_object->print()->set_status(66, (boost::format(_u8L("Support: fix holes at layer %d")) % layer_nr).str());
+                //m_object->print()->set_status(66, (boost::format(TR("Support: fix holes at layer %d")) % layer_nr).str());
 
                 const std::vector<SupportNode*>& curr_layer_nodes = contact_nodes[layer_nr];
                 SupportLayer* ts_layer = m_object->get_support_layer(layer_nr + m_raft_layers);
@@ -2955,7 +2955,7 @@ void TreeSupport::drop_nodes()
 
         std::deque<std::pair<size_t, SupportNode*>> unsupported_branch_leaves; // All nodes that are leaves on this layer that would result in unsupported ('mid-air') branches.
 
-        m_object->print()->set_status(60 + int(10 * (1 - float(layer_nr) / contact_nodes.size())), _u8L("Generating support"));// (boost::format(_u8L("Support: propagate branches at layer %d")) % layer_nr).str());
+        m_object->print()->set_status(60 + int(10 * (1 - float(layer_nr) / contact_nodes.size())), TR("Generating support"));// (boost::format(TR("Support: propagate branches at layer %d")) % layer_nr).str());
 
         Polygons layer_contours = m_ts_data->get_contours_with_holes(obj_layer_nr);
         //std::unordered_map<Line, bool, LineHash>& mst_line_x_layer_contour_cache = m_mst_line_x_layer_contour_caches[layer_nr];

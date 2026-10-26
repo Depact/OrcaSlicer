@@ -78,7 +78,7 @@ void GLGizmoMmuSegmentation::on_shutdown()
 
 std::string GLGizmoMmuSegmentation::on_get_name() const
 {
-    return _u8L("Color Painting");
+    return TR("Color Painting");
 }
 
 bool GLGizmoMmuSegmentation::on_is_selectable() const
@@ -150,7 +150,7 @@ bool GLGizmoMmuSegmentation::on_init()
     m_desc["smart_fill_angle"] = _L("Smart fill angle");
     m_desc["height_range"]     = _L("Height range");
     m_desc["toggle_wireframe"] = _L("Toggle Wireframe");
-    m_desc["perform_remap"]    = _u8L("Remap filaments");
+    m_desc["perform_remap"]    = TR("Remap filaments");
     m_desc["remap"]            = _L("Remap");
     m_desc["remap_reset"]      = _L("Reset");
 

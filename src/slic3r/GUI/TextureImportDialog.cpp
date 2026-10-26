@@ -1771,7 +1771,7 @@ TextureImportDialog::TextureImportDialog(
         entry.dialog_index = (int)i;
         entry.color_hex = texture_normalize_color_hex(entry.color_hex);
         if (entry.name.empty())
-            entry.name = GUI::format(_u8L("Filament %d"), i + 1);
+            entry.name = GUI::format(TR("Filament %d"), i + 1);
         m_filament_color_strs.push_back(entry.color_hex);
         m_filament_names.push_back(entry.name);
         m_filament_colors_rgba.push_back(parse_color_string(entry.color_hex));
@@ -2423,7 +2423,7 @@ void TextureImportDialog::start_computation(bool auto_color, bool initial)
                                        std::function<bool()>       cancel_callback,
                                        std::string*                error_message) -> bool {
         if (progress_callback)
-            progress_callback(_u8L("Repairing mesh").c_str(), 0);
+            progress_callback(TR("Repairing mesh").c_str(), 0);
 
         struct Canceled {};
         TriangleMesh tm(mesh);
@@ -2438,7 +2438,7 @@ void TextureImportDialog::start_computation(bool auto_color, bool initial)
         }
         repaired_mesh = tm.its;
         if (progress_callback)
-            progress_callback(_u8L("Repairing mesh").c_str(), 100);
+            progress_callback(TR("Repairing mesh").c_str(), 100);
         return true;
     };
 
@@ -2568,7 +2568,7 @@ void TextureImportDialog::on_computation_complete(wxCommandEvent&)
         m_filament_entries[i].color_hex = i < m_filament_color_strs.size() ?
             texture_normalize_color_hex(m_filament_color_strs[i]) : "#808080";
         m_filament_entries[i].name = i < m_filament_names.size() ?
-            m_filament_names[i] : GUI::format(_u8L("Filament %d"), i + 1);
+            m_filament_names[i] : GUI::format(TR("Filament %d"), i + 1);
     }
     m_new_filament_colors.clear();
     m_new_filament_preset_names.clear();
@@ -2962,7 +2962,7 @@ void TextureImportDialog::compact_used_virtual_filaments()
     for (size_t i = 0; i < existing_count; ++i) {
         compact_colors.push_back(old_colors[i]);
         compact_color_strs.push_back(i < old_color_strs.size() ? old_color_strs[i] : "");
-        compact_names.push_back(i < old_names.size() ? old_names[i] : GUI::format(_u8L("Filament %d"), i + 1));
+        compact_names.push_back(i < old_names.size() ? old_names[i] : GUI::format(TR("Filament %d"), i + 1));
         TextureFilamentEntry entry = i < old_entries.size() ? old_entries[i] : TextureFilamentEntry{};
         entry.dialog_index = (int)i;
         entry.color_hex = texture_normalize_color_hex(compact_color_strs.back());
@@ -3637,7 +3637,7 @@ void TextureImportDialog::do_auto_match()
         // Match clusters to closest existing filaments
         std::vector<std::string> names;
         for (size_t i = 0; i < m_existing_filament_count; ++i)
-            names.push_back(m_filament_names.size() > i ? m_filament_names[i] : GUI::format(_u8L("Filament %d"), i + 1));
+            names.push_back(m_filament_names.size() > i ? m_filament_names[i] : GUI::format(TR("Filament %d"), i + 1));
 
         std::vector<std::array<float, 4>> existing_filament_colors(
             m_filament_colors_rgba.begin(),

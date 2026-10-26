@@ -835,7 +835,7 @@ std::string fix_slicing_errors(PrintObject* object, LayerPtrs &layers, const std
     BOOST_LOG_TRIVIAL(debug) << "Slicing objects - fixing slicing errors in parallel - end";
 
     if(is_replaced)
-        error_msg = _u8L("Empty layers around bottom are replaced by nearest normal layers.");
+        error_msg = TR("Empty layers around bottom are replaced by nearest normal layers.");
 
     // remove empty layers from bottom
     while (! layers.empty() && (layers.front()->lslices.empty() || layers.front()->empty())) {
@@ -848,7 +848,7 @@ std::string fix_slicing_errors(PrintObject* object, LayerPtrs &layers, const std
 
     //BBS
     if(error_msg.empty() && !buggy_layers.empty())
-        error_msg = _u8L("The model has too many empty layers.");
+        error_msg = TR("The model has too many empty layers.");
 
     // BBS: first layer slices are sorted by volume group, if the first layer is empty and replaced by the 2nd layer
 // the later will be stored in "object->firstLayerObjGroupsMod()"
@@ -883,7 +883,7 @@ void PrintObject::slice()
     if (! this->set_started(posSlice))
         return;
     //BBS: add flag to reload scene for shell rendering
-    m_print->set_status(5, _u8L("Slicing mesh"), PrintBase::SlicingStatus::RELOAD_SCENE);
+    m_print->set_status(5, TR("Slicing mesh"), PrintBase::SlicingStatus::RELOAD_SCENE);
     std::vector<coordf_t> layer_height_profile;
     this->update_layer_height_profile(*this->model_object(), m_slicing_params, layer_height_profile);
     m_print->throw_if_canceled();
@@ -950,7 +950,7 @@ void PrintObject::slice()
             }
         });
     if (m_layers.empty())
-        throw Slic3r::SlicingError(_u8L("No layers were detected. You might want to repair the model or check its size or thickness and retry.\n"));
+        throw Slic3r::SlicingError(TR("No layers were detected. You might want to repair the model or check its size or thickness and retry.\n"));
 
     // Belt printer: offset all layer Z values so objects at different positions
     // along the belt print at different heights on the tilted belt.  This is a
@@ -1402,7 +1402,7 @@ void PrintObject::slice_volumes()
         if (m_config.xy_hole_compensation.value != 0.f || m_config.xy_contour_compensation.value != 0.f) {
             this->active_step_add_warning(
                 PrintStateBase::WarningLevel::CRITICAL,
-                _u8L("An object's XY size compensation will not be used because it is also color-painted.\nXY Size "
+                TR("An object's XY size compensation will not be used because it is also color-painted.\nXY Size "
                   "compensation cannot be combined with color-painting."));
             BOOST_LOG_TRIVIAL(info) << "xy compensation will not work for object " << this->model_object()->name << " for multi filament.";
         }
@@ -1418,9 +1418,9 @@ void PrintObject::slice_volumes()
         if (m_config.xy_hole_compensation.value != 0.f || m_config.xy_contour_compensation.value != 0.f) {
             this->active_step_add_warning(
                 PrintStateBase::WarningLevel::CRITICAL,
-                _u8L("An object has enabled XY Size compensation which will not be used because it is also fuzzy skin painted.\nXY Size "
+                TR("An object has enabled XY Size compensation which will not be used because it is also fuzzy skin painted.\nXY Size "
                      "compensation cannot be combined with fuzzy skin painting.") +
-                    "\n" + (_u8L("Object name")) + ": " + this->model_object()->name);
+                    "\n" + (TR("Object name")) + ": " + this->model_object()->name);
         }
 
         BOOST_LOG_TRIVIAL(debug) << "Slicing volumes - Fuzzy skin segmentation";

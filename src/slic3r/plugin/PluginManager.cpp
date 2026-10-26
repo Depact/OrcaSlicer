@@ -206,7 +206,7 @@ std::string PluginManager::check_registry_locked(const std::string& plugin_key, 
 {
     const Plugin* entry = find_plugin_locked(plugin_key);
     if (entry != nullptr && entry->is_loaded())
-        return GUI::format(_u8L("Plugin package is already loaded: %1%"), plugin_key);
+        return GUI::format(TR("Plugin package is already loaded: %1%"), plugin_key);
 
     // A capability name must be unique per type across every loaded package.
     for (const auto& capability : candidate.capabilities) {
@@ -218,7 +218,7 @@ std::string PluginManager::check_registry_locked(const std::string& plugin_key, 
             for (const auto& existing : other.capabilities) {
                 if (existing && existing->type() == capability->type() && existing->name() == capability->name())
                     // TRN %1% is the capability type (e.g. Script), %2% the capability name.
-                    return GUI::format(_u8L("Capability collision for type %1% and name '%2%'"),
+                    return GUI::format(TR("Capability collision for type %1% and name '%2%'"),
                                        PluginConfig::capability_type_label(capability->type()), capability->name());
             }
         }
@@ -316,7 +316,7 @@ void PluginManager::merge_discovered_plugins(std::vector<PluginDescriptor> disco
                 continue;
 
             if (std::find(seen.begin(), seen.end(), descriptor.plugin_key) != seen.end()) {
-                const std::string duplicate_error = GUI::format(_u8L("Duplicate plugin key discovered: %1%"), descriptor.plugin_key);
+                const std::string duplicate_error = GUI::format(TR("Duplicate plugin key discovered: %1%"), descriptor.plugin_key);
                 if (Plugin* existing = find_plugin_locked(descriptor.plugin_key)) {
                     existing->descriptor.set_error(duplicate_error);
                     BOOST_LOG_TRIVIAL(error) << duplicate_error << " (" << existing->descriptor.entry_path << ", "
@@ -690,7 +690,7 @@ bool PluginManager::wait_for_plugin_load(const std::string& plugin_key, std::chr
     if (timeout == std::chrono::milliseconds::max()) {
         m_load_cv.wait(lock, done);
     } else if (!m_load_cv.wait_for(lock, timeout, done)) {
-        error = _u8L("Plugin load is still in progress");
+        error = TR("Plugin load is still in progress");
         return false;
     }
 
@@ -857,11 +857,11 @@ void PluginManager::load_plugin(const std::string& plugin_key, bool skip_deps, s
     if (!exists || invalid) {
         std::string message;
         if (invalid) {
-            message = GUI::format(_u8L("Plugin is invalid: %1%"), plugin_id);
+            message = GUI::format(TR("Plugin is invalid: %1%"), plugin_id);
             if (!invalid_error.empty())
                 message += " - " + invalid_error;
         } else {
-            message = GUI::format(_u8L("Plugin not found: %1%"), plugin_id);
+            message = GUI::format(TR("Plugin not found: %1%"), plugin_id);
         }
 
         {
@@ -895,9 +895,9 @@ void PluginManager::load_plugin(const std::string& plugin_key, bool skip_deps, s
         try {
             load_plugin_impl(plugin_id, skip_deps, capabilities_to_enable);
         } catch (const std::exception& ex) {
-            fail_unexpected(GUI::format(_u8L("Unexpected plugin load failure: %1%"), ex.what()));
+            fail_unexpected(GUI::format(TR("Unexpected plugin load failure: %1%"), ex.what()));
         } catch (...) {
-            fail_unexpected(_u8L("Unexpected plugin load failure"));
+            fail_unexpected(TR("Unexpected plugin load failure"));
         }
 
         if (!m_shutting_down.load(std::memory_order_acquire))
@@ -923,7 +923,7 @@ void PluginManager::load_plugin_impl(const std::string& plugin_key, bool skip_de
 
     PluginDescriptor descriptor;
     if (!try_get_plugin_descriptor(plugin_key, descriptor)) {
-        fail(GUI::format(_u8L("Plugin manifest not found: %1%"), plugin_key));
+        fail(GUI::format(TR("Plugin manifest not found: %1%"), plugin_key));
         return;
     }
 
@@ -972,7 +972,7 @@ void PluginManager::load_plugin_impl(const std::string& plugin_key, bool skip_de
             if (registry_error.empty()) {
                 Plugin* entry = find_plugin_locked(plugin_key);
                 if (entry == nullptr) {
-                    registry_error = GUI::format(_u8L("Plugin manifest not found: %1%"), plugin_key);
+                    registry_error = GUI::format(TR("Plugin manifest not found: %1%"), plugin_key);
                 } else {
                     // Move everything via Plugin's own move assignment, but the package's
                     // descriptor (identity/metadata) belongs to the registry entry, not to the
@@ -1586,7 +1586,7 @@ void PluginManager::fetch_plugins_from_cloud(std::vector<std::string>* out_not_f
                     return;
                 plater->get_notification_manager()->push_notification(GUI::NotificationType::CustomNotification,
                                                                       GUI::NotificationManager::NotificationLevel::WarningNotificationLevel,
-                                                                      _u8L("Failed to fetch plugins from the cloud. See logs for details."));
+                                                                      TR("Failed to fetch plugins from the cloud. See logs for details."));
             });
         }
     }
@@ -1654,11 +1654,11 @@ bool PluginManager::subscribe_and_install_cloud_plugin(const std::string& plugin
 
     const std::string plugin_uuid = is_uuid(plugin_key) ? plugin_key : std::string{};
     if (plugin_uuid.empty()) {
-        error = _u8L("Cloud plugin key is missing UUID.");
+        error = TR("Cloud plugin key is missing UUID.");
         return false;
     }
     if (!m_cloud_service.can_fetch_cloud_plugins()) {
-        error = _u8L("Sign in to OrcaCloud to install this plugin.");
+        error = TR("Sign in to OrcaCloud to install this plugin.");
         return false;
     }
 
@@ -1676,7 +1676,7 @@ bool PluginManager::subscribe_and_install_cloud_plugin(const std::string& plugin
         fetch_plugins_from_cloud();
         found = try_get_plugin_descriptor(plugin_key, descriptor) && descriptor.is_cloud_plugin();
         if (!found) {
-            error = _u8L("Subscribed cloud plugin was not returned by OrcaCloud.");
+            error = TR("Subscribed cloud plugin was not returned by OrcaCloud.");
             return false;
         }
     }
@@ -1694,7 +1694,7 @@ bool PluginManager::download_and_install_cloud_plugin(const std::string& plugin_
     CloudPluginDownload download;
     PluginDescriptor descriptor;
     if (!try_get_plugin_descriptor(plugin_key, descriptor)) {
-        error = GUI::format(_u8L("Plugin not found: %1%"), plugin_key);
+        error = GUI::format(TR("Plugin not found: %1%"), plugin_key);
         BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << ": Failed to find plugin key " << plugin_key;
         return false;
     }
@@ -1704,7 +1704,7 @@ bool PluginManager::download_and_install_cloud_plugin(const std::string& plugin_
     const std::string requested_version = version.empty() ? descriptor.version : version;
     if (!m_cloud_service.download_cloud_plugin(descriptor, requested_version, download, error)) {
         if (error.empty())
-            error = _u8L("Failed to download cloud plugin.");
+            error = TR("Failed to download cloud plugin.");
         set_plugin_error(plugin_key, error);
         BOOST_LOG_TRIVIAL(error) << __FUNCTION__ << ": " << error;
         return false;
@@ -1724,7 +1724,7 @@ bool PluginManager::download_and_install_cloud_plugin(const std::string& plugin_
 
     if (!install_plugin(download.package_path, descriptor, error)) {
         if (error.empty())
-            error = _u8L("Failed to install cloud plugin.");
+            error = TR("Failed to install cloud plugin.");
         set_plugin_error(plugin_key, error);
         boost::system::error_code ec;
         boost::filesystem::remove(download.package_path, ec);
@@ -1750,7 +1750,7 @@ bool PluginManager::download_and_install_cloud_plugin(const std::string& plugin_
         std::lock_guard<std::mutex> lock(m_mutex);
         Plugin* entry = find_plugin_locked(plugin_key);
         if (entry == nullptr) {
-            error = _u8L("Plugin not found.");
+            error = TR("Plugin not found.");
             BOOST_LOG_TRIVIAL(warning) << __FUNCTION__ << ": Cloud plugin " << plugin_key
                                        << " downloaded successfully but failed to update plugin metadata. Plugin object not found.";
         } else {
@@ -1772,12 +1772,12 @@ bool PluginManager::update_cloud_plugin(const std::string& plugin_key, std::stri
 
     PluginDescriptor descriptor;
     if (!try_get_plugin_descriptor(plugin_key, descriptor)) {
-        error = GUI::format(_u8L("Plugin not found: %1%"), plugin_key);
+        error = GUI::format(TR("Plugin not found: %1%"), plugin_key);
         return false;
     }
 
     if (!descriptor.is_cloud_plugin()) {
-        error = _u8L("Only cloud plugins can be updated.");
+        error = TR("Only cloud plugins can be updated.");
         set_plugin_error(plugin_key, error);
         return false;
     }
@@ -1788,7 +1788,7 @@ bool PluginManager::update_cloud_plugin(const std::string& plugin_key, std::stri
         if (descriptor.cloud->update_available) {
             version = descriptor.latest_available_version();
         } else {
-            error = _u8L("No update is available for this plugin.");
+            error = TR("No update is available for this plugin.");
             set_plugin_error(plugin_key, error);
             return false;
         }
@@ -1802,7 +1802,7 @@ bool PluginManager::update_cloud_plugin(const std::string& plugin_key, std::stri
         {
             std::lock_guard<std::mutex> lock(m_mutex);
             resolved_allowed_plugin_root = resolve_allowed_plugin_root(descriptor, get_plugin_directories(m_cloud_user_id),
-                                                                       _u8L("Refusing to delete a plugin outside the known plugin directories."),
+                                                                       TR("Refusing to delete a plugin outside the known plugin directories."),
                                                                        resolved_root, error);
         }
 
@@ -1839,7 +1839,7 @@ bool PluginManager::delete_installed_plugin_package(const PluginDescriptor& plug
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         resolved_allowed_plugin_root = resolve_allowed_plugin_root(plugin, get_plugin_directories(m_cloud_user_id),
-                                                                   _u8L("Refusing to delete a plugin outside the known plugin directories."),
+                                                                   TR("Refusing to delete a plugin outside the known plugin directories."),
                                                                    resolved_root, error);
     }
     if (!resolved_allowed_plugin_root)
@@ -1870,7 +1870,7 @@ bool PluginManager::keep_installed_plugin_as_local(const PluginDescriptor& plugi
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         resolved_allowed_plugin_root = resolve_allowed_plugin_root(plugin_descriptor, get_plugin_directories(m_cloud_user_id),
-                                                                   _u8L("Refusing to update a plugin outside the known plugin directories."),
+                                                                   TR("Refusing to update a plugin outside the known plugin directories."),
                                                                    resolved_root, error);
     }
 
@@ -1896,12 +1896,12 @@ bool PluginManager::keep_installed_plugin_as_local(const PluginDescriptor& plugi
 
         Plugin* entry = find_plugin_locked(old_key);
         if (entry == nullptr) {
-            error = GUI::format(_u8L("Plugin manifest not found: %1%"), old_key);
+            error = GUI::format(TR("Plugin manifest not found: %1%"), old_key);
             return false;
         }
 
         if (find_plugin_locked(new_key) != nullptr && new_key != old_key) {
-            error = GUI::format(_u8L("Cannot keep plugin local: local plugin key already exists: %1%"), new_key);
+            error = GUI::format(TR("Cannot keep plugin local: local plugin key already exists: %1%"), new_key);
             BOOST_LOG_TRIVIAL(warning) << error;
             return false;
         }
@@ -1921,7 +1921,7 @@ bool PluginManager::keep_installed_plugin_as_local(const PluginDescriptor& plugi
         if (install_state.installed_version.empty())
             install_state.installed_version = local_descriptor.version;
         if (!write_install_state(resolved_root, install_state)) {
-            error = GUI::format(_u8L("Failed to update plugin install state: %1%"), (resolved_root / INSTALL_STATE_FILE).string());
+            error = GUI::format(TR("Failed to update plugin install state: %1%"), (resolved_root / INSTALL_STATE_FILE).string());
             return false;
         }
 
@@ -1989,7 +1989,7 @@ bool PluginManager::delete_plugin(const std::string& plugin_key, std::string& er
 
     PluginDescriptor descriptor;
     if (!try_get_plugin_descriptor(plugin_key, descriptor)) {
-        error = GUI::format(_u8L("Plugin not found: %1%"), plugin_key);
+        error = GUI::format(TR("Plugin not found: %1%"), plugin_key);
         return false;
     }
 
@@ -2011,18 +2011,18 @@ bool PluginManager::unsubscribe_cloud_plugin(const std::string& plugin_key, std:
 
     PluginDescriptor descriptor;
     if (!try_get_plugin_descriptor(plugin_key, descriptor)) {
-        error = GUI::format(_u8L("Plugin not found: %1%"), plugin_key);
+        error = GUI::format(TR("Plugin not found: %1%"), plugin_key);
         return false;
     }
 
     if (!descriptor.is_cloud_plugin()) {
-        error = _u8L("Only cloud plugins can be unsubscribed.");
+        error = TR("Only cloud plugins can be unsubscribed.");
         set_plugin_error(plugin_key, error);
         return false;
     }
 
     if (descriptor.cloud && descriptor.cloud->is_mine) {
-        error = _u8L("Cannot unsubscribe your own plugins.");
+        error = TR("Cannot unsubscribe your own plugins.");
         set_plugin_error(plugin_key, error);
         return false;
     }
@@ -2044,18 +2044,18 @@ bool PluginManager::delete_and_unsubscribe_cloud_plugin(const std::string& plugi
 
     PluginDescriptor descriptor;
     if (!try_get_plugin_descriptor(plugin_key, descriptor)) {
-        error = GUI::format(_u8L("Plugin not found: %1%"), plugin_key);
+        error = GUI::format(TR("Plugin not found: %1%"), plugin_key);
         return false;
     }
 
     if (!descriptor.is_cloud_plugin()) {
-        error = _u8L("Only cloud plugins can be deleted and unsubscribed.");
+        error = TR("Only cloud plugins can be deleted and unsubscribed.");
         set_plugin_error(plugin_key, error);
         return false;
     }
 
     if (descriptor.cloud->is_mine) {
-        error = _u8L("Cannot unsubscribe your own plugins. Use Delete to remove the local files.");
+        error = TR("Cannot unsubscribe your own plugins. Use Delete to remove the local files.");
         set_plugin_error(plugin_key, error);
         return false;
     }
@@ -2096,7 +2096,7 @@ ExecutionResult PluginManager::run_script_capability(const std::string& plugin_k
         error = ex.what();
         BOOST_LOG_TRIVIAL(error) << "Script plugin execution threw exception. plugin_key=" << plugin_key << " error=" << error;
     } catch (...) {
-        error = _u8L("Unknown error");
+        error = TR("Unknown error");
         BOOST_LOG_TRIVIAL(error) << "Script plugin execution threw unknown exception. plugin_key=" << plugin_key;
     }
 

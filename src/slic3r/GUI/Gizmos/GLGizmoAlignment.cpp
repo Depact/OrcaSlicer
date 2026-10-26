@@ -676,7 +676,7 @@ size_t GLGizmoAlignment::get_items_count(AlignType type, bool align_parent, std:
 
     if (is_parts_selection(align_parent)) {
         const size_t count = get_selected_part_volumes().size();
-        return count > 0 ? count : cannot_move(_u8L("Parts of a cut object cannot be moved"));
+        return count > 0 ? count : cannot_move(TR("Parts of a cut object cannot be moved"));
     }
 
     // Instances are moved through their instance offsets, which do_move() commits only from an Instance selection.
@@ -688,7 +688,7 @@ size_t GLGizmoAlignment::get_items_count(AlignType type, bool align_parent, std:
                       type == AlignType::DISTRIBUTE_Z;
     // The plate gives no Z target, and aligning to its bottom would duplicate Drop.
     if (is_z && align_parent)
-        return cannot_move(_u8L("Aligning to the plate is available in X and Y only"));
+        return cannot_move(TR("Aligning to the plate is available in X and Y only"));
 
     PartPlateList &plate_list = wxGetApp().plater()->get_partplate_list();
     int            plate_idx  = -1;
@@ -698,13 +698,13 @@ size_t GLGizmoAlignment::get_items_count(AlignType type, bool align_parent, std:
             continue;
         // Auto-drop would put a raised object back on the bed and leave a lowered one sunk.
         if (is_z && selection.get_model()->objects[obj_idx]->auto_drop)
-            return cannot_move(_u8L("Turn off Auto-Drop for the selected objects to move them in Z"));
+            return cannot_move(TR("Turn off Auto-Drop for the selected objects to move them in Z"));
         if (align_parent) {
             // The plate holding the selection is the target, so it must hold all of it.
             for (int inst_idx : inst_idxs) {
                 const int idx = plate_list.find_instance(obj_idx, inst_idx);
                 if (idx == -1 || (plate_idx != -1 && idx != plate_idx))
-                    return cannot_move(_u8L("All selected objects must be on the same plate"));
+                    return cannot_move(TR("All selected objects must be on the same plate"));
                 plate_idx = idx;
             }
         }

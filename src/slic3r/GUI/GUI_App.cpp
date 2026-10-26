@@ -3794,7 +3794,7 @@ bool GUI_App::on_init_inner()
     if (m_config_corrupted) {
         m_config_corrupted = false;
         show_error(nullptr,
-                   _u8L(
+                   TR(
                        "The OrcaSlicer configuration file may be corrupted and cannot be parsed.\nOrcaSlicer has attempted to recreate the "
                        "configuration file.\nPlease note, application settings will be lost, but printer profiles will not be affected."));
     }
@@ -5871,24 +5871,24 @@ void GUI_App::on_http_error(wxCommandEvent &evt)
             // The agent injects the local preset name into every 409 conflict body, so this is
             // normally populated; fall back to a generic header if it is somehow missing.
             const std::string header = conflict_preset_name.empty()
-                ? _u8L("Cloud sync conflict:")
-                : format(_u8L("Cloud sync conflict for preset \"%s\":"), conflict_preset_name);
+                ? TR("Cloud sync conflict:")
+                : format(TR("Cloud sync conflict for preset \"%s\":"), conflict_preset_name);
 
             switch (conflict_code) {
             case -1:
-                text = header + " " + _u8L("This preset has a newer version in OrcaCloud.\n"
+                text = header + " " + TR("This preset has a newer version in OrcaCloud.\n"
                             "Pull downloads the cloud copy. Force push overwrites it with your local preset.");
                 break;
             case -2:
-                text = header + " " + _u8L("A preset with this name already exists in OrcaCloud.\n"
+                text = header + " " + TR("A preset with this name already exists in OrcaCloud.\n"
                             "Pull downloads the cloud copy. Force push overwrites it with your local preset.");
                 break;
             case -3:
-                text = header + " " + _u8L("A preset with the same name was previously deleted from the cloud.\n"
+                text = header + " " + TR("A preset with the same name was previously deleted from the cloud.\n"
                             "Delete will delete your local preset. Force push overwrites it with your local preset.");
                 break;
             default:
-                text = header + " " + _u8L("There was an unexpected or unidentified preset conflict.\n"
+                text = header + " " + TR("There was an unexpected or unidentified preset conflict.\n"
                             "Pull downloads the cloud copy. Force push overwrites it with your local preset.");
                 break;
             };
@@ -8101,7 +8101,7 @@ void GUI_App::start_sync_user_preset(bool with_progress_dlg)
                                 .plater()
                                 ->get_notification_manager()
                                 ->push_notification(NotificationType::CustomNotification,
-                                                    NotificationManager::NotificationLevel::RegularNotificationLevel, _u8L("There is an update available. Open the preset bundle dialog to update it."));
+                                                    NotificationManager::NotificationLevel::RegularNotificationLevel, TR("There is an update available. Open the preset bundle dialog to update it."));
 
                             update_available = false;
                         }
@@ -10402,7 +10402,7 @@ void GUI_App::start_download(std::string url)
     // ORCA: non-throwing probe, as in init_download_path(); ec is deliberately unread.
     boost::system::error_code ec;
     if (dest_folder.empty() || !boost::filesystem::is_directory(dest_folder, ec)) {
-        std::string msg = _u8L("Could not start URL download. Destination folder is not set. Please choose destination folder in Configuration Wizard.");
+        std::string msg = TR("Could not start URL download. Destination folder is not set. Please choose destination folder in Configuration Wizard.");
         BOOST_LOG_TRIVIAL(error) << msg;
         show_error(nullptr, msg);
         return;

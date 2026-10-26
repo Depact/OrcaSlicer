@@ -38,7 +38,7 @@ TextureDisplacementBakeJob::TextureDisplacementBakeJob(TextureDisplacementBakeIn
 
 void TextureDisplacementBakeJob::process(Ctl &ctl)
 {
-    const std::string status = _u8L("Baking texture displacement");
+    const std::string status = TR("Baking texture displacement");
     ctl.update_status(1, status);
 
     // Only ever touches m_input (captured by value before this job was queued) and local state -
@@ -105,7 +105,7 @@ void TextureDisplacementBakeJob::finalize(bool canceled, std::exception_ptr &ept
         for (size_t i = 0; unchanged && i < out.vertices.size(); ++i)
             unchanged = (out.vertices[i] - m_input.base_mesh.vertices[i]).cwiseAbs().maxCoeff() < 1e-5f;
         if (unchanged) {
-            show_error(nullptr, _u8L("The bake produced no displacement, so nothing was changed and the paint was kept. "
+            show_error(nullptr, TR("The bake produced no displacement, so nothing was changed and the paint was kept. "
                                      "Check that the painted layer has a texture and a non-zero depth."));
             return;
         }
@@ -252,7 +252,7 @@ void TextureDisplacementBakeJob::finalize(bool canceled, std::exception_ptr &ept
     // triangle and no relief at all, and pressing Bake again from there would subdivide that mesh a
     // second time. So the caller says who owns the undo step.
     if (m_input.take_snapshot) {
-        Plater::TakeSnapshot snapshot(plater, _u8L("Bake texture displacement"), UndoRedo::SnapshotType::GizmoAction);
+        Plater::TakeSnapshot snapshot(plater, TR("Bake texture displacement"), UndoRedo::SnapshotType::GizmoAction);
         commit();
     } else {
         commit();
@@ -270,7 +270,7 @@ void TextureDisplacementBakeJob::finalize(bool canceled, std::exception_ptr &ept
         };
         wxGetApp().notification_manager()->push_notification(
             NotificationType::CustomNotification, NotificationManager::NotificationLevel::WarningNotificationLevel,
-            Slic3r::format(_u8L("The triangle budget limited the detail: this resolution needs %1% triangles, "
+            Slic3r::format(TR("The triangle budget limited the detail: this resolution needs %1% triangles, "
                                 "the budget kept %2%. Raise Budget or use a coarser Resolution for the full detail."),
                            count(m_stats.triangles_refined), count(m_stats.triangles_budget)));
     }

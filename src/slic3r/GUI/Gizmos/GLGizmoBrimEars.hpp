@@ -104,8 +104,8 @@ public:
     bool is_selection_rectangle_dragging() const override { return m_selection_rectangle.is_dragging(); }
 
     bool wants_enter_leave_snapshots() const override { return true; }
-    std::string get_gizmo_entering_text() const override { return _u8L("Entering Brim Ears"); }
-    std::string get_gizmo_leaving_text() const override { return _u8L("Leaving Brim Ears"); }
+    std::string get_gizmo_entering_text() const override { return TR("Entering Brim Ears"); }
+    std::string get_gizmo_leaving_text() const override { return TR("Leaving Brim Ears"); }
 
 private:
     bool on_init() override;

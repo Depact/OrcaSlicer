@@ -41,7 +41,7 @@
 namespace Slic3r {
 namespace GUI {
 
-static const std::string warning_text = _u8L("Unable to perform boolean operation on selected parts");
+static const std::string warning_text = TR("Unable to perform boolean operation on selected parts");
 
 GLGizmoMeshBoolean::GLGizmoMeshBoolean(GLCanvas3D& parent, const std::string& icon_filename, unsigned int sprite_id)
     : GLGizmoBase(parent, icon_filename, sprite_id)
@@ -137,7 +137,7 @@ bool GLGizmoMeshBoolean::on_init()
 
 std::string GLGizmoMeshBoolean::on_get_name() const
 {
-    return _u8L("Mesh Boolean");
+    return TR("Mesh Boolean");
 }
 
 bool GLGizmoMeshBoolean::on_is_activable() const
@@ -240,15 +240,15 @@ void GLGizmoMeshBoolean::on_render_input_window(float x, float y, float bottom_l
     GizmoImguiSetNextWIndowPos(x, y, ImGuiCond_Always, 0.0f, 0.0f);
     GizmoImguiBegin("MeshBoolean", ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
 
-    const int max_tab_length = 2 * ImGui::GetStyle().FramePadding.x + std::max(ImGui::CalcTextSize(_u8L("Union").c_str()).x,
-        std::max(ImGui::CalcTextSize(_u8L("Difference").c_str()).x, ImGui::CalcTextSize(_u8L("Intersection").c_str()).x));
+    const int max_tab_length = 2 * ImGui::GetStyle().FramePadding.x + std::max(ImGui::CalcTextSize(TR("Union").c_str()).x,
+        std::max(ImGui::CalcTextSize(TR("Difference").c_str()).x, ImGui::CalcTextSize(TR("Intersection").c_str()).x));
     const int max_cap_length = ImGui::GetStyle().WindowPadding.x + ImGui::GetStyle().ItemSpacing.x +
-                               std::max({ImGui::CalcTextSize(_u8L("Source Volume").c_str()).x,
-                                         ImGui::CalcTextSize(_u8L("Tool Volume").c_str()).x,
-                                         ImGui::CalcTextSize(_u8L("Subtract from").c_str()).x,
-                                         ImGui::CalcTextSize(_u8L("Subtract with").c_str()).x});
+                               std::max({ImGui::CalcTextSize(TR("Source Volume").c_str()).x,
+                                         ImGui::CalcTextSize(TR("Tool Volume").c_str()).x,
+                                         ImGui::CalcTextSize(TR("Subtract from").c_str()).x,
+                                         ImGui::CalcTextSize(TR("Subtract with").c_str()).x});
 
-    const int select_btn_length = 2 * ImGui::GetStyle().FramePadding.x + std::max(ImGui::CalcTextSize(_u8L("1 selected").c_str()).x, ImGui::CalcTextSize(_u8L("Select").c_str()).x);
+    const int select_btn_length = 2 * ImGui::GetStyle().FramePadding.x + std::max(ImGui::CalcTextSize(TR("1 selected").c_str()).x, ImGui::CalcTextSize(TR("Select").c_str()).x);
 
     auto selectable = [](const std::string& label, bool selected, const ImVec2& size_arg) {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0,0 });
@@ -306,25 +306,25 @@ void GLGizmoMeshBoolean::on_render_input_window(float x, float y, float bottom_l
     };
 
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0);
-    if (selectable(_u8L("Union"), m_operation_mode == MeshBooleanOperation::Union, ImVec2(max_tab_length, 0.0f))) {
+    if (selectable(TR("Union"), m_operation_mode == MeshBooleanOperation::Union, ImVec2(max_tab_length, 0.0f))) {
         m_operation_mode = MeshBooleanOperation::Union;
     }
     ImGui::SameLine(0, 0);
-    if (selectable(_u8L("Difference"), m_operation_mode == MeshBooleanOperation::Difference, ImVec2(max_tab_length, 0.0f))) {
+    if (selectable(TR("Difference"), m_operation_mode == MeshBooleanOperation::Difference, ImVec2(max_tab_length, 0.0f))) {
         m_operation_mode = MeshBooleanOperation::Difference;
     }
     ImGui::SameLine(0, 0);
-    if (selectable(_u8L("Intersection"), m_operation_mode == MeshBooleanOperation::Intersection, ImVec2(max_tab_length, 0.0f))) {
+    if (selectable(TR("Intersection"), m_operation_mode == MeshBooleanOperation::Intersection, ImVec2(max_tab_length, 0.0f))) {
         m_operation_mode = MeshBooleanOperation::Intersection;
     }
     ImGui::PopStyleVar();
 
     ImGui::AlignTextToFramePadding();
-    std::string cap_str1 = m_operation_mode != MeshBooleanOperation::Difference ? _u8L("Part 1") : _u8L("Subtract from");
+    std::string cap_str1 = m_operation_mode != MeshBooleanOperation::Difference ? TR("Part 1") : TR("Subtract from");
     m_imgui->text(cap_str1);
     ImGui::SameLine(max_cap_length);
     // TRN Mesh Boolean button label once one volume is picked.
-    std::string select_src_str = m_src.mv ? _u8L("1 selected") : _u8L("Select");
+    std::string select_src_str = m_src.mv ? TR("1 selected") : TR("Select");
     select_src_str += "##select_source_volume";
     ImGui::PushItemWidth(select_btn_length);
     if (selectable(select_src_str, m_selecting_state == MeshBooleanSelectingState::SelectSource, ImVec2(select_btn_length, 0)))
@@ -349,10 +349,10 @@ void GLGizmoMeshBoolean::on_render_input_window(float x, float y, float bottom_l
     }
 
     ImGui::AlignTextToFramePadding();
-    std::string cap_str2 = m_operation_mode != MeshBooleanOperation::Difference ? _u8L("Part 2") : _u8L("Subtract with");
+    std::string cap_str2 = m_operation_mode != MeshBooleanOperation::Difference ? TR("Part 2") : TR("Subtract with");
     m_imgui->text(cap_str2);
     ImGui::SameLine(max_cap_length);
-    std::string select_tool_str = m_tool.mv ? _u8L("1 selected") : _u8L("Select");
+    std::string select_tool_str = m_tool.mv ? TR("1 selected") : TR("Select");
     select_tool_str += "##select_tool_volume";
     ImGui::PushItemWidth(select_btn_length);
     if (selectable(select_tool_str, m_selecting_state == MeshBooleanSelectingState::SelectTool, ImVec2(select_btn_length, 0)))

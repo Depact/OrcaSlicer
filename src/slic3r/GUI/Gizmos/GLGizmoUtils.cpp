@@ -87,9 +87,9 @@ namespace Slic3r::GUI::GLGizmoUtils {
         // host window pushed; a negative wrap position keeps the URL on one line.
         if (ImGui::IsItemHovered()){
             if(url && *url)
-                wxGetApp().imgui()->tooltip(_u8L("Wiki Guide") + "\n" + url, -1.f);
+                wxGetApp().imgui()->tooltip(TR("Wiki Guide") + "\n" + url, -1.f);
             else
-                wxGetApp().imgui()->tooltip(_u8L("Wiki Guide"), -1.f);
+                wxGetApp().imgui()->tooltip(TR("Wiki Guide"), -1.f);
         }
         return clicked; // for dynamically generated links
     }
@@ -103,9 +103,9 @@ namespace Slic3r::GUI::GLGizmoUtils {
             wxLaunchDefaultBrowser(wxString::FromUTF8(url));
         if (ImGui::IsItemHovered()){
             if(url && *url)
-                wxGetApp().imgui()->tooltip(_u8L("Video Guide") + "\n" + url, -1.f);
+                wxGetApp().imgui()->tooltip(TR("Video Guide") + "\n" + url, -1.f);
             else
-                wxGetApp().imgui()->tooltip(_u8L("Video Guide"), -1.f);
+                wxGetApp().imgui()->tooltip(TR("Video Guide"), -1.f);
         }
         return clicked; // for dynamically generated links
     }

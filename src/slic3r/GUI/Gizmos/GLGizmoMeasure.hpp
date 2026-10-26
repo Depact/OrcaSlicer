@@ -264,9 +264,9 @@ public:
     virtual bool gizmo_event(SLAGizmoEventType action, const Vec2d& mouse_position, bool shift_down, bool alt_down, bool control_down);
 
     bool wants_enter_leave_snapshots() const override { return true; }
-    std::string get_gizmo_entering_text() const override { return _u8L("Entering Measure gizmo"); }
-    std::string get_gizmo_leaving_text() const override { return _u8L("Leaving Measure gizmo"); }
-    //std::string get_action_snapshot_name() const override { return _u8L("Measure gizmo editing"); }
+    std::string get_gizmo_entering_text() const override { return TR("Entering Measure gizmo"); }
+    std::string get_gizmo_leaving_text() const override { return TR("Leaving Measure gizmo"); }
+    //std::string get_action_snapshot_name() const override { return TR("Measure gizmo editing"); }
 
 protected:
     bool on_init() override;

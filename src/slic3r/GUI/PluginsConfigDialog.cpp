@@ -57,14 +57,14 @@ PluginsConfigDialog::~PluginsConfigDialog() { m_alive->store(false, std::memory_
 nlohmann::json PluginsConfigDialog::localized_strings() const
 {
     return {
-        {"no_capabilities", _u8L("This preset does not use any plugin capabilities")},
-        {"capabilities_label", _u8L("Capabilities used by this preset")},
-        {"config_json_label", _u8L("Capability configuration (JSON)")},
-        {"config_frame_title", _u8L("Plugin configuration")},
-        {"restore_title", _u8L("Discard this preset's override and use the global configuration again")},
-        {"restore_defaults", _u8L("Restore defaults")},
-        {"save", _u8L("Save")},
-        {"invalid_json", _u8L("Invalid JSON")},
+        {"no_capabilities", TR("This preset does not use any plugin capabilities")},
+        {"capabilities_label", TR("Capabilities used by this preset")},
+        {"config_json_label", TR("Capability configuration (JSON)")},
+        {"config_frame_title", TR("Plugin configuration")},
+        {"restore_title", TR("Discard this preset's override and use the global configuration again")},
+        {"restore_defaults", TR("Restore defaults")},
+        {"save", TR("Save")},
+        {"invalid_json", TR("Invalid JSON")},
     };
 }
 

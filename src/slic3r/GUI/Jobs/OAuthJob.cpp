@@ -27,12 +27,12 @@ void OAuthJob::parse_token_response(const std::string& body, bool error, OAuthRe
     const auto j = nlohmann::json::parse(body, nullptr, false, true);
     if (j.is_discarded()) {
         BOOST_LOG_TRIVIAL(warning) << "Invalid or no JSON data on token response: " << body;
-        result.error_message = _u8L("Unknown error");
+        result.error_message = TR("Unknown error");
     } else if (error) {
         if (j.contains("error_description")) {
             j.at("error_description").get_to(result.error_message);
         } else {
-            result.error_message = _u8L("Unknown error");
+            result.error_message = TR("Unknown error");
         }
     } else {
         j.at("access_token").get_to(result.access_token);
@@ -60,18 +60,18 @@ void OAuthJob::process(Ctl& ctl)
 
             if (state != _data.params.state) {
                 BOOST_LOG_TRIVIAL(warning) << "The provided state was not correct. Got " << state << " and expected " << _data.params.state;
-                return handle_auth_fail(_u8L("The provided state is not correct."));
+                return handle_auth_fail(TR("The provided state is not correct."));
             }
 
             if (code.empty()) {
                 const auto error_code = url_get_param(url, "error_code");
                 if (error_code == "user_denied") {
                     BOOST_LOG_TRIVIAL(debug) << "User did not give the required permission when authorizing this application";
-                    return handle_auth_fail(_u8L("Please give the required permissions when authorizing this application."));
+                    return handle_auth_fail(TR("Please give the required permissions when authorizing this application."));
                 }
 
                 BOOST_LOG_TRIVIAL(warning) << "Unexpected error when logging in. Error_code: " << error_code << ", State: " << state;
-                return handle_auth_fail(_u8L("Something unexpected happened when trying to log in, please try again."));
+                return handle_auth_fail(TR("Something unexpected happened when trying to log in, please try again."));
             }
 
 
@@ -113,7 +113,7 @@ void OAuthJob::process(Ctl& ctl)
 
     // Handle timeout
     if (!received && ctl.was_canceled()) {
-        _data.result->error_message = _u8L("User canceled.");
+        _data.result->error_message = TR("User canceled.");
     } else {
         // Wait a while to ensure the response has sent
         std::this_thread::sleep_for(std::chrono::milliseconds(1500));

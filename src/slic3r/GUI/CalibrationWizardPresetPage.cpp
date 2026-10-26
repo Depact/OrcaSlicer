@@ -1540,7 +1540,7 @@ bool CalibrationPresetPage::is_filament_in_blacklist(int tray_id, Preset* preset
             std::string filamnt_type;
             preset->get_filament_type(filamnt_type);
             if (filamnt_type == "TPU") {
-                error_tips = _u8L("TPU is not supported for Flow Dynamics Auto-Calibration.");
+                error_tips = TR("TPU is not supported for Flow Dynamics Auto-Calibration.");
                 return false;
             }
         }
@@ -1614,12 +1614,12 @@ bool CalibrationPresetPage::is_filaments_compatiable(const std::map<int, Preset*
             nozzle_temperature_range_highs);
 
     if (compatibility == FilamentCompatibilityType::InvalidTemperatureRange) {
-        error_tips = _u8L("Invalid recommended nozzle temperature range. The lower bound must be lower than the upper bound.");
+        error_tips = TR("Invalid recommended nozzle temperature range. The lower bound must be lower than the upper bound.");
         return false;
     }
 
     if (compatibility == FilamentCompatibilityType::HighLowMixed) {
-        error_tips = _u8L("Selected nozzle temperatures are incompatible. For multi-material printing, each filament's nozzle temperature must be within the recommended nozzle temperature range of the other filaments. Otherwise, nozzle clogging or printer damage may occur.");
+        error_tips = TR("Selected nozzle temperatures are incompatible. For multi-material printing, each filament's nozzle temperature must be within the recommended nozzle temperature range of the other filaments. Otherwise, nozzle clogging or printer damage may occur.");
         return false;
     }
 

@@ -1201,7 +1201,7 @@ bool repair_mesh(TriangleMesh &mesh, MeshRepairStats *stats_out, std::string *er
         *stats_out = stats;
     if (!ok) {
         if (error)
-            *error = _u8L("The mesh does not enclose any volume.");
+            *error = TR("The mesh does not enclose any volume.");
         return false;
     }
     BOOST_LOG_TRIVIAL(info) << "repair_mesh: welded " << stats.welded_vertices << " vertices, removed " << stats.removed_triangles

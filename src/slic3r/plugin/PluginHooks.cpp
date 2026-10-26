@@ -108,11 +108,11 @@ void install_slicing_pipeline_hook()
                     } catch (const std::exception& ex) {
                         // A Python raise reaches here as pybind11::error_already_set; surface it as a
                         // (non-critical) slicing error instead of a crash.
-                        throw SlicingError(GUI::format(_u8L("Slicing pipeline plugin '%1%' error: %2%"),
+                        throw SlicingError(GUI::format(TR("Slicing pipeline plugin '%1%' error: %2%"),
                                                        ref.capability_name, ex.what()));
                     }
                     if (r.status == PluginResult::FatalError)
-                        throw SlicingError(GUI::format(_u8L("Slicing pipeline plugin '%1%' error: %2%"),
+                        throw SlicingError(GUI::format(TR("Slicing pipeline plugin '%1%' error: %2%"),
                                                        ref.capability_name, r.message));
                     // log a non-empty success/skipped message instead of dropping it. This is
                     // log-only by design: every pipeline hook fires AFTER set_done() (see Print.cpp),

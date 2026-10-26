@@ -1269,7 +1269,7 @@ bool PresetUpdater::priv::perform_updates(Updates &&updates, bool snapshot) cons
         //if (snapshot) {
         //	BOOST_LOG_TRIVIAL(info) << "Taking a snapshot...";
         //	if (! GUI::Config::take_config_snapshot_cancel_on_error(*GUI::wxGetApp().app_config, Snapshot::SNAPSHOT_DOWNGRADE, "",
-        //		_u8L("Continue and install configuration updates?")))
+        //		TR("Continue and install configuration updates?")))
         //		return false;
         //}
         BOOST_LOG_TRIVIAL(info) << format("[Orca Updater]:Deleting %1% incompatible bundles", updates.incompats.size());
@@ -1282,7 +1282,7 @@ bool PresetUpdater::priv::perform_updates(Updates &&updates, bool snapshot) cons
         //if (snapshot) {
         //	BOOST_LOG_TRIVIAL(info) << "Taking a snapshot...";
         //	if (! GUI::Config::take_config_snapshot_cancel_on_error(*GUI::wxGetApp().app_config, Snapshot::SNAPSHOT_UPGRADE, "",
-        //		_u8L("Continue and install configuration updates?")))
+        //		TR("Continue and install configuration updates?")))
         //		return false;
         //}
 
@@ -1667,7 +1667,7 @@ void PresetUpdater::priv::check_new_vendors(const std::set<std::string>& system_
                             GUI::wxGetApp().plater()->get_notification_manager()->push_notification(
                                 GUI::NotificationType::PresetUpdateFinished,
                                 GUI::NotificationManager::NotificationLevel::ImportantNotificationLevel,
-                                Slic3r::format(_u8L("Configuration package: %1% updated to %2%"), vendor_id, cur_ver.to_string()));
+                                Slic3r::format(TR("Configuration package: %1% updated to %2%"), vendor_id, cur_ver.to_string()));
                         }
                     });
                 }
@@ -1764,7 +1764,7 @@ PresetUpdater::UpdateResult PresetUpdater::config_update(const Semver& old_slic3
                 ->get_notification_manager()
                 ->push_notification(GUI::NotificationType::PresetUpdateFinished,
                                     GUI::NotificationManager::NotificationLevel::ImportantNotificationLevel,
-                                    Slic3r::format(_u8L("Configuration package: %1% updated to %2%"), b, cur_ver.to_string()));
+                                    Slic3r::format(TR("Configuration package: %1% updated to %2%"), b, cur_ver.to_string()));
             }
             return R_UPDATE_INSTALLED;
         }

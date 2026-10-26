@@ -5333,7 +5333,7 @@ void TabPrinter::build_fff()
 
                         if (errors != enum_bitmask<ThumbnailError>()) {
                             // TRN: The first argument is the parameter's name; the second argument is its value.
-                            std::string error_str = format(_u8L("Invalid value provided for parameter %1%: %2%"), "thumbnails", val);
+                            std::string error_str = format(TR("Invalid value provided for parameter %1%: %2%"), "thumbnails", val);
                             error_str += GCodeThumbnails::get_error_string(errors);
                             InfoDialog(parent(), _L("G-code flavor is switched"), from_u8(error_str)).ShowModal();
                         }
@@ -7962,7 +7962,7 @@ void Tab::save_preset(std::string name /*= ""*/, bool detach, bool save_to_proje
     // focus currently.is there anything better than this ?
 //!	m_tabctrl->OnSetFocus();
     if (from_input) {
-        SavePresetDialog dlg(m_parent, m_type, m_mode, detach ? _u8L("Detached") : "");
+        SavePresetDialog dlg(m_parent, m_type, m_mode, detach ? TR("Detached") : "");
         dlg.Show(false);
         dlg.input_name_from_other(input_name);
         wxCommandEvent evt(wxEVT_TEXT, GetId());
@@ -7973,7 +7973,7 @@ void Tab::save_preset(std::string name /*= ""*/, bool detach, bool save_to_proje
     }
 
     if (name.empty()) {
-        SavePresetDialog dlg(m_parent, m_type, m_mode, detach ? _u8L("Detached") : "");
+        SavePresetDialog dlg(m_parent, m_type, m_mode, detach ? TR("Detached") : "");
         if (!m_just_edit) {
             if (dlg.ShowModal() != wxID_OK)
                 return;
@@ -8182,7 +8182,7 @@ void Tab::delete_preset()
     }
 
     if (is_base_preset && (current_preset.type == Preset::Type::TYPE_FILAMENT)) {
-        msg += from_u8(_u8L("Are you sure to delete the selected preset?\nIf the preset corresponds to a filament currently in use on your printer, please reset the filament information for that slot."));
+        msg += from_u8(TR("Are you sure to delete the selected preset?\nIf the preset corresponds to a filament currently in use on your printer, please reset the filament information for that slot."));
     } else {
         msg += _L("Are you sure you want to delete the selected preset?");
     }
@@ -9729,7 +9729,7 @@ void TabSLAPrint::update_description_lines()
     //        {
     //            bool elev = !m_config->opt_bool("pad_enable") || !m_config->opt_bool("pad_around_object");
     //            m_support_object_elevation_description_line->SetText(elev ? "" :
-    //                from_u8((boost::format(_u8L("\"%1%\" is disabled because \"%2%\" is on in \"%3%\" category.\n"
+    //                from_u8((boost::format(TR("\"%1%\" is disabled because \"%2%\" is on in \"%3%\" category.\n"
     //                    "To enable \"%1%\", please switch off \"%2%\""))
     //                    % _L("Object elevation") % _L("Pad around object") % _L("Pad")).str()));
     //        }

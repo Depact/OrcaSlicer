@@ -1099,8 +1099,8 @@ private:
 	//prepared (basic) notifications
 	// non-static so its not loaded too early. If static, the translations wont load correctly.
 	const std::vector<NotificationData> basic_notifications = {
-        NotificationData{NotificationType::Mouse3dDisconnected, NotificationLevel::RegularNotificationLevel, 10, _u8L("3D Mouse disconnected.")},
-        NotificationData{NotificationType::PresetUpdateAvailable, NotificationLevel::ImportantNotificationLevel, BBL_NOTICE_MAX_INTERVAL, _u8L("A new configuration is available. Update now\?"), _u8L("More"),
+        NotificationData{NotificationType::Mouse3dDisconnected, NotificationLevel::RegularNotificationLevel, 10, TR("3D Mouse disconnected.")},
+        NotificationData{NotificationType::PresetUpdateAvailable, NotificationLevel::ImportantNotificationLevel, BBL_NOTICE_MAX_INTERVAL, TR("A new configuration is available. Update now\?"), TR("More"),
 		[](wxEvtHandler* evnthndlr) {
 			if (evnthndlr != nullptr)
 				wxPostEvent(evnthndlr, PresetUpdateAvailableClickedEvent(EVT_PRESET_UPDATE_AVAILABLE_CLICKED));
@@ -1112,15 +1112,15 @@ private:
         NotificationData{NotificationType::EmptyAutoColorChange, NotificationLevel::PrintInfoNotificationLevel, 10,
                          std::string(_devL("You need add a color change event to the print. The print need look like a sign.").mb_str())},
         NotificationData{NotificationType::DesktopIntegrationSuccess, NotificationLevel::RegularNotificationLevel, 10,
-		_u8L("Integration was successful.") },
+		TR("Integration was successful.") },
         NotificationData{NotificationType::DesktopIntegrationFail, NotificationLevel::WarningNotificationLevel, 10,
-		_u8L("Integration failed.") },
+		TR("Integration failed.") },
         NotificationData{NotificationType::UndoDesktopIntegrationSuccess, NotificationLevel::RegularNotificationLevel, 10,
-		_u8L("Undo integration was successful.") },
+		TR("Undo integration was successful.") },
 
         NotificationData{NotificationType::BBLPluginUpdateAvailable, NotificationLevel::ImportantNotificationLevel, BBL_NOTICE_MAX_INTERVAL,
-			_u8L("New network plug-in available."),
-			_u8L("Details"),
+			TR("New network plug-in available."),
+			TR("Details"),
                          [](wxEvtHandler* evnthndlr) {
                 //BBS set feishu release page by default
                  wxCommandEvent* evt = new wxCommandEvent(EVT_UPDATE_PLUGINS_WHEN_LAUNCH);
@@ -1129,31 +1129,31 @@ private:
              }},
 
         NotificationData{NotificationType::BBLPrinterConfigUpdateAvailable, NotificationLevel::ImportantNotificationLevel, BBL_NOTICE_MAX_INTERVAL,
-                         _u8L("New printer config available."), _u8L("Details"),
+                         TR("New printer config available."), TR("Details"),
                          [](wxEvtHandler *evnthndlr) {
                              if (evnthndlr != nullptr) wxPostEvent(evnthndlr, PrinterConfigUpdateAvailableClickedEvent(EVT_PRINTER_CONFIG_UPDATE_AVAILABLE_CLICKED));
                              return true;
                          }},
 
         NotificationData{NotificationType::BBLUserPresetExceedLimit, NotificationLevel::WarningNotificationLevel, BBL_NOTICE_MAX_INTERVAL,
-			_u8L("The number of user presets cached in the cloud has exceeded the upper limit, newly created user presets can only be used locally."), 
-			_u8L("Wiki Guide"),
+			TR("The number of user presets cached in the cloud has exceeded the upper limit, newly created user presets can only be used locally."), 
+			TR("Wiki Guide"),
                          [](wxEvtHandler* evnthndlr) {
 				wxLaunchDefaultBrowser("https://wiki.bambulab.com/en/software/bambu-studio/3rd-party-printer-profile#cloud-user-presets-limit");
 				return false;
              }},
 
         NotificationData{NotificationType::UndoDesktopIntegrationFail, NotificationLevel::WarningNotificationLevel, 10,
-		_u8L("Undo integration failed.") },
-        NotificationData{NotificationType::ExportOngoing, NotificationLevel::RegularNotificationLevel, 0, _u8L("Exporting")},
-        NotificationData{NotificationType::NewAppAvailable, NotificationLevel::ImportantNotificationLevel, 20, _u8L("An update is available!"), _u8L("Go to download page"),
+		TR("Undo integration failed.") },
+        NotificationData{NotificationType::ExportOngoing, NotificationLevel::RegularNotificationLevel, 0, TR("Exporting")},
+        NotificationData{NotificationType::NewAppAvailable, NotificationLevel::ImportantNotificationLevel, 20, TR("An update is available!"), TR("Go to download page"),
                          [](wxEvtHandler *evnthndlr) {
 				//BBS set feishu release page by default
 				wxGetApp().open_browser_with_warning_dialog("https://www.thingiverse.com/"); return true;
 			 }},
-			//{NotificationType::NewAppAvailable, NotificationLevel::ImportantNotificationLevel, 20,  _u8L("New vesion of PrusaSlicer is available.",  _u8L("Download page.") },
-			//{NotificationType::LoadingFailed, NotificationLevel::RegularNotificationLevel, 20,  _u8L("Loading of model has Failed") },
-			//{NotificationType::DeviceEjected, NotificationLevel::RegularNotificationLevel, 10,  _u8L("Removable device has been safely ejected")} // if we want changeble text (like here name of device), we need to do it as CustomNotification
+			//{NotificationType::NewAppAvailable, NotificationLevel::ImportantNotificationLevel, 20,  TR("New vesion of PrusaSlicer is available.",  TR("Download page.") },
+			//{NotificationType::LoadingFailed, NotificationLevel::RegularNotificationLevel, 20,  TR("Loading of model has Failed") },
+			//{NotificationType::DeviceEjected, NotificationLevel::RegularNotificationLevel, 10,  TR("Removable device has been safely ejected")} // if we want changeble text (like here name of device), we need to do it as CustomNotification
 	};
 public:
     void set_scale(float scale = 1.0);

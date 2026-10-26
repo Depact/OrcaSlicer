@@ -363,7 +363,7 @@ void NetworkAgentFactory::register_python_printer_agent(const std::string& plugi
             if (pair.first != capability_key && pair.second == info.id) {
                 const std::string error_message = GUI::format(
                     // TRN %1% is the printer agent name, %2% its ID, %3% the capability and %4% the plugin already using that ID.
-                    _u8L("Printer-agent '%1%' could not be enabled: agent ID '%2%' is already registered by capability '%3%' from plugin '%4%'."),
+                    TR("Printer-agent '%1%' could not be enabled: agent ID '%2%' is already registered by capability '%3%' from plugin '%4%'."),
                     info.name, info.id, pair.first.second, pair.first.first);
                 BOOST_LOG_TRIVIAL(warning) << error_message;
                 reject_conflicting_capability(error_message);
@@ -393,7 +393,7 @@ void NetworkAgentFactory::register_python_printer_agent(const std::string& plugi
         if (agent_it != agents.end() && agent_it->second.plugin_identifier != plugin_full_ref) {
             const std::string error_message = GUI::format(
                 // TRN %1% is the printer agent name, %2% its ID and %3% the printer agent already using that ID.
-                _u8L("Printer-agent '%1%' could not be enabled: agent ID '%2%' is already registered by '%3%'."),
+                TR("Printer-agent '%1%' could not be enabled: agent ID '%2%' is already registered by '%3%'."),
                 info.name, info.id, agent_it->second.display_name);
             BOOST_LOG_TRIVIAL(warning) << error_message;
             reject_conflicting_capability(error_message);

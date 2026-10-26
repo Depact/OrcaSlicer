@@ -9953,7 +9953,7 @@ void PrintConfigDef::handle_legacy_composite(DynamicPrintConfig &config)
 
         if (errors != enum_bitmask<ThumbnailError>()) {
             // TRN %1% is a parameter name, %2% its value.
-            std::string error_str = "\n" + Slic3r::format(_u8L("Invalid value provided for parameter %1%: %2%"), "thumbnails", thumbnails_str);
+            std::string error_str = "\n" + Slic3r::format(TR("Invalid value provided for parameter %1%: %2%"), "thumbnails", thumbnails_str);
             error_str += GCodeThumbnails::get_error_string(errors);
             throw BadOptionValueException(error_str);
         }
@@ -12343,42 +12343,42 @@ std::map<std::string, std::string> validate(const FullPrintConfig &cfg, bool und
     std::map<std::string, std::string> error_message;
     // --layer-height
     if (cfg.get_abs_value("layer_height") <= 0) {
-        error_message.emplace("layer_height", _u8L("invalid value ") + std::to_string(cfg.get_abs_value("layer_height")));
+        error_message.emplace("layer_height", TR("invalid value ") + std::to_string(cfg.get_abs_value("layer_height")));
     }
     else if (fabs(fmod(cfg.get_abs_value("layer_height"), SCALING_FACTOR)) > 1e-4) {
-        error_message.emplace("layer_height", _u8L("invalid value ") + std::to_string(cfg.get_abs_value("layer_height")));
+        error_message.emplace("layer_height", TR("invalid value ") + std::to_string(cfg.get_abs_value("layer_height")));
     }
 
     // --first-layer-height
     if (cfg.initial_layer_print_height.value <= 0) {
-        error_message.emplace("initial_layer_print_height", _u8L("invalid value ") + std::to_string(cfg.initial_layer_print_height.value));
+        error_message.emplace("initial_layer_print_height", TR("invalid value ") + std::to_string(cfg.initial_layer_print_height.value));
     }
 
     // --filament-diameter
     for (double fd : cfg.filament_diameter.values)
         if (fd < 1) {
-            error_message.emplace("filament_diameter", _u8L("invalid value ") + cfg.filament_diameter.serialize());
+            error_message.emplace("filament_diameter", TR("invalid value ") + cfg.filament_diameter.serialize());
             break;
         }
 
     // --nozzle-diameter
     for (double nd : cfg.nozzle_diameter.values)
         if (nd < 0.005) {
-            error_message.emplace("nozzle_diameter", _u8L("invalid value ") + cfg.nozzle_diameter.serialize());
+            error_message.emplace("nozzle_diameter", TR("invalid value ") + cfg.nozzle_diameter.serialize());
             break;
         }
 
     // --perimeters
     if (cfg.wall_loops.value < 0) {
-        error_message.emplace("wall_loops", _u8L("invalid value ") + std::to_string(cfg.wall_loops.value));
+        error_message.emplace("wall_loops", TR("invalid value ") + std::to_string(cfg.wall_loops.value));
     }
 
     // --solid-layers
     if (cfg.top_shell_layers < 0) {
-        error_message.emplace("top_shell_layers", _u8L("invalid value ") + std::to_string(cfg.top_shell_layers));
+        error_message.emplace("top_shell_layers", TR("invalid value ") + std::to_string(cfg.top_shell_layers));
     }
     if (cfg.bottom_shell_layers < 0) {
-        error_message.emplace("bottom_shell_layers", _u8L("invalid value ") + std::to_string(cfg.bottom_shell_layers));
+        error_message.emplace("bottom_shell_layers", TR("invalid value ") + std::to_string(cfg.bottom_shell_layers));
     }
 
     if (cfg.use_firmware_retraction.value &&
@@ -12399,61 +12399,61 @@ std::map<std::string, std::string> validate(const FullPrintConfig &cfg, bool und
                 
     // --gcode-flavor
     if (! print_config_def.get("gcode_flavor")->has_enum_value(cfg.gcode_flavor.serialize())) {
-        error_message.emplace("gcode_flavor", _u8L("invalid value ") + cfg.gcode_flavor.serialize());
+        error_message.emplace("gcode_flavor", TR("invalid value ") + cfg.gcode_flavor.serialize());
     }
 
     // --fill-pattern
     if (! print_config_def.get("sparse_infill_pattern")->has_enum_value(cfg.sparse_infill_pattern.serialize())) {
-        error_message.emplace("sparse_infill_pattern", _u8L("invalid value ") + cfg.sparse_infill_pattern.serialize());
+        error_message.emplace("sparse_infill_pattern", TR("invalid value ") + cfg.sparse_infill_pattern.serialize());
     }
 
     // --top-fill-pattern
     if (! print_config_def.get("top_surface_pattern")->has_enum_value(cfg.top_surface_pattern.serialize())) {
-        error_message.emplace("top_surface_pattern", _u8L("invalid value ") + cfg.top_surface_pattern.serialize());
+        error_message.emplace("top_surface_pattern", TR("invalid value ") + cfg.top_surface_pattern.serialize());
     }
 
     // --bottom-fill-pattern
     if (! print_config_def.get("bottom_surface_pattern")->has_enum_value(cfg.bottom_surface_pattern.serialize())) {
-        error_message.emplace("bottom_surface_pattern", _u8L("invalid value ") + cfg.bottom_surface_pattern.serialize());
+        error_message.emplace("bottom_surface_pattern", TR("invalid value ") + cfg.bottom_surface_pattern.serialize());
     }
 
     // --soild-fill-pattern
     if (!print_config_def.get("internal_solid_infill_pattern")->has_enum_value(cfg.internal_solid_infill_pattern.serialize())) {
-        error_message.emplace("internal_solid_infill_pattern", _u8L("invalid value ") + cfg.internal_solid_infill_pattern.serialize());
+        error_message.emplace("internal_solid_infill_pattern", TR("invalid value ") + cfg.internal_solid_infill_pattern.serialize());
     }
 
     // --skirt-height
     if (cfg.skirt_height < 0) {
-        error_message.emplace("skirt_height", _u8L("invalid value ") + std::to_string(cfg.skirt_height));
+        error_message.emplace("skirt_height", TR("invalid value ") + std::to_string(cfg.skirt_height));
     }
 
     // --bridge-flow-ratio
     if (cfg.bridge_flow <= 0) {
-        error_message.emplace("bridge_flow", _u8L("invalid value ") + std::to_string(cfg.bridge_flow));
+        error_message.emplace("bridge_flow", TR("invalid value ") + std::to_string(cfg.bridge_flow));
     }
     
     // --internal-bridge-flow-ratio
     if (cfg.internal_bridge_flow <= 0) {
-        error_message.emplace("internal_bridge_flow", _u8L("invalid value ") + std::to_string(cfg.internal_bridge_flow));
+        error_message.emplace("internal_bridge_flow", TR("invalid value ") + std::to_string(cfg.internal_bridge_flow));
     }
 
     // extruder clearance
     if (cfg.extruder_clearance_radius <= 0) {
-        error_message.emplace("extruder_clearance_radius", _u8L("invalid value ") + std::to_string(cfg.extruder_clearance_radius));
+        error_message.emplace("extruder_clearance_radius", TR("invalid value ") + std::to_string(cfg.extruder_clearance_radius));
     }
     if (cfg.extruder_clearance_height_to_rod <= 0) {
-        error_message.emplace("extruder_clearance_height_to_rod", _u8L("invalid value ") + std::to_string(cfg.extruder_clearance_height_to_rod));
+        error_message.emplace("extruder_clearance_height_to_rod", TR("invalid value ") + std::to_string(cfg.extruder_clearance_height_to_rod));
     }
     if (cfg.extruder_clearance_height_to_lid <= 0) {
-        error_message.emplace("extruder_clearance_height_to_lid", _u8L("invalid value ") + std::to_string(cfg.extruder_clearance_height_to_lid));
+        error_message.emplace("extruder_clearance_height_to_lid", TR("invalid value ") + std::to_string(cfg.extruder_clearance_height_to_lid));
     }
     if (cfg.nozzle_height <= 0)
-        error_message.emplace("nozzle_height", _u8L("invalid value ") + std::to_string(cfg.nozzle_height));
+        error_message.emplace("nozzle_height", TR("invalid value ") + std::to_string(cfg.nozzle_height));
 
     // --extrusion-multiplier
     for (double em : cfg.filament_flow_ratio.values)
         if (em <= 0) {
-            error_message.emplace("filament_flow_ratio", _u8L("invalid value ") + cfg.filament_flow_ratio.serialize());
+            error_message.emplace("filament_flow_ratio", TR("invalid value ") + cfg.filament_flow_ratio.serialize());
             break;
         }
 
@@ -12463,27 +12463,27 @@ std::map<std::string, std::string> validate(const FullPrintConfig &cfg, bool und
         // Note that we might want to have more than one perimeter on the bottom
         // solid layers.
         if (cfg.wall_loops != 1) {
-            error_message.emplace("wall_loops", _u8L("Invalid value when spiral vase mode is enabled: ") + std::to_string(cfg.wall_loops));
+            error_message.emplace("wall_loops", TR("Invalid value when spiral vase mode is enabled: ") + std::to_string(cfg.wall_loops));
             //return "Can't make more than one perimeter when spiral vase mode is enabled";
             //return "Can't make less than one perimeter when spiral vase mode is enabled";
         }
 
         if (cfg.sparse_infill_density > 0) {
-            error_message.emplace("sparse_infill_density", _u8L("Invalid value when spiral vase mode is enabled: ") + std::to_string(cfg.sparse_infill_density));
+            error_message.emplace("sparse_infill_density", TR("Invalid value when spiral vase mode is enabled: ") + std::to_string(cfg.sparse_infill_density));
             //return "Spiral vase mode can only print hollow objects, so you need to set Fill density to 0";
         }
 
         if (cfg.top_shell_layers > 0) {
-            error_message.emplace("top_shell_layers", _u8L("Invalid value when spiral vase mode is enabled: ") + std::to_string(cfg.top_shell_layers));
+            error_message.emplace("top_shell_layers", TR("Invalid value when spiral vase mode is enabled: ") + std::to_string(cfg.top_shell_layers));
             //return "Spiral vase mode is not compatible with top solid layers";
         }
 
         if (cfg.enable_support ) {
-            error_message.emplace("enable_support", _u8L("Invalid value when spiral vase mode is enabled: ") + std::to_string(cfg.enable_support));
+            error_message.emplace("enable_support", TR("Invalid value when spiral vase mode is enabled: ") + std::to_string(cfg.enable_support));
             //return "Spiral vase mode is not compatible with support";
         }
         if (cfg.enforce_support_layers > 0) {
-            error_message.emplace("enforce_support_layers", _u8L("Invalid value when spiral vase mode is enabled: ") + std::to_string(cfg.enforce_support_layers));
+            error_message.emplace("enforce_support_layers", TR("Invalid value when spiral vase mode is enabled: ") + std::to_string(cfg.enforce_support_layers));
             //return "Spiral vase mode is not compatible with support";
         }
     }
@@ -12514,9 +12514,9 @@ std::map<std::string, std::string> validate(const FullPrintConfig &cfg, bool und
             double allowed_max = (key == "bridge_line_width") ? min_nozzle_diameter : MAX_LINE_WIDTH_MULTIPLIER * max_nozzle_diameter;
             if (abs_width > allowed_max) {
                 if (key == "bridge_line_width")
-                    error_message.emplace(key, _u8L("Bridge line width must not exceed nozzle diameter: ") + std::to_string(abs_width));
+                    error_message.emplace(key, TR("Bridge line width must not exceed nozzle diameter: ") + std::to_string(abs_width));
                 else
-                    error_message.emplace(key, _u8L("too large line width ") + std::to_string(abs_width));
+                    error_message.emplace(key, TR("too large line width ") + std::to_string(abs_width));
                 //return std::string("Too Large line width: ") + key;
             }
         }
@@ -12564,7 +12564,7 @@ std::map<std::string, std::string> validate(const FullPrintConfig &cfg, bool und
         if (out_of_range) {
             if (error_message.find(opt_key) == error_message.end())
                 // TRN %1% is the current value, %2% and %3% the lowest and highest allowed values.
-                error_message.emplace(opt_key, Slic3r::format(_u8L("%1% not in range [%2%, %3%]"), opt->serialize(), optdef->min, optdef->max));
+                error_message.emplace(opt_key, Slic3r::format(TR("%1% not in range [%2%, %3%]"), opt->serialize(), optdef->min, optdef->max));
             //return std::string("Value out of range: " + opt_key);
         }
     }

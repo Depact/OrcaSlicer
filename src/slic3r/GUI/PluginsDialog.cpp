@@ -265,7 +265,7 @@ PluginAvailableActions evaluate_action_policy(const PluginDialogItem& item)
     available_actions.can_toggle                   = !is_loading && (has_local || available_actions.toggle_installs_cloud_plugin);
 
     auto add_action = [&available_actions](const char* id, const char* label, bool enabled = true, bool danger = false) {
-        available_actions.context_actions.push_back(PluginContextAction{id, _u8L(label), enabled, danger});
+        available_actions.context_actions.push_back(PluginContextAction{id, TR(label), enabled, danger});
     };
 
     // Owned cloud plugins fall through to the local delete: it removes the installed package only.
@@ -299,7 +299,7 @@ PluginDialogItem build_plugin_dialog_item(const PluginDescriptor& descriptor)
     item.display_name = descriptor.name;
     item.description  = !descriptor.is_metadata_valid() && descriptor.has_error() ?
                             descriptor.normalized_error() :
-                            (descriptor.description.empty() ? _u8L("No description.") : descriptor.description);
+                            (descriptor.description.empty() ? TR("No description.") : descriptor.description);
     item.author       = descriptor.author;
     item.version      = descriptor.version;
     // The cloud merge overwrites `version` with the latest cloud version, so prefer the preserved local
@@ -589,91 +589,91 @@ PluginsDialog::PluginsDialog(wxWindow* parent, wxWindowID id, const wxString&, c
 nlohmann::json PluginsDialog::localized_strings() const
 {
     return {
-        {"search_plugins", _u8L("Search plugins")},
-        {"clear", _u8L("Clear")},
-        {"clear_search", _u8L("Clear search")},
-        {"match_case", _u8L("Match case")},
-        {"match_whole_word", _u8L("Match whole word")},
-        {"refresh", _u8L("Refresh")},
-        {"install_options", _u8L("More plugin install options")},
-        {"install_plugin", _u8L("Install plugin")},
-        {"install_local_plugin", _u8L("Install local plugin")},
-        {"activate", _u8L("Activate")},
-        {"sort_by_name", _u8L("Sort by name")},
-        {"name", _u8L("Name")},
-        {"sort_by_version", _u8L("Sort by version")},
-        {"plugin_version", _u8L("Plugin Version")},
-        {"sort_by_source", _u8L("Sort by source")},
-        {"source", _u8L("Source")},
-        {"sort_by_status", _u8L("Sort by status")},
-        {"status", _u8L_CONTEXT("Status", "Plugin")},
-        {"resize_hint", _u8L("Drag to resize; double-click to reset")},
-        {"resize_list", _u8L("Resize the plugin list")},
-        {"details_label", _u8L("Plugin details")},
-        {"tab_info", _u8L("Plugin Info")},
-        {"description", _u8L("Description")},
-        {"tab_config", _u8L("Config")},
-        {"tab_changelog", _u8L("Changelog")},
-        {"tab_diagnostics", _u8L("Diagnostics")},
-        {"types", _u8L("Types")},
-        {"author", _u8L("Author")},
-        {"installed_version", _u8L("Installed Version")},
-        {"latest_version", _u8L("Latest Version")},
-        {"update_available", _u8L("Update available")},
-        {"update_title", _u8L("Update to the latest version")},
-        {"update", _u8L("Update")},
-        {"no_description", _u8L("No description available")},
-        {"config_select_plugin", _u8L("Select a plugin to configure its capabilities")},
-        {"configurable_capabilities", _u8L("Configurable capabilities")},
-        {"config_json_label", _u8L("Capability configuration (JSON)")},
-        {"config_frame_title", _u8L("Plugin configuration")},
-        {"restore_title", _u8L("Discard the settings saved for this capability and restore the plugin's defaults")},
-        {"restore_defaults", _u8L("Restore defaults")},
-        {"save", _u8L("Save")},
-        {"changelog_label", _u8L("Plugin changelog")},
-        {"version", _u8L("Version")},
-        {"date", _u8L("Date")},
-        {"changes", _u8L("Changes")},
-        {"no_changelog", _u8L("No changelog available")},
-        {"no_issues", _u8L("No issues detected")},
-        {"no_plugins", _u8L("No plugins found")},
-        {"no_match", _u8L("No plugins match \"%s\"")},
-        {"source_mine", _u8L("Mine")},
-        {"source_subscribed", _u8L_CONTEXT("Subscribed", "Plugin")},
-        {"source_orphaned", _u8L("Orphaned")},
-        {"source_local", _u8L_CONTEXT("Local", "Plugin")},
-        {"mixed_capabilities", _u8L("Some plugin capabilities are enabled")},
-        {"collapse_named", _u8L("Collapse %s capabilities")},
-        {"expand_named", _u8L("Expand %s capabilities")},
-        {"collapse", _u8L("Collapse capabilities")},
-        {"expand", _u8L("Expand capabilities")},
-        {"open_in_browser", _u8L("Open this plugin in your browser")},
-        {"capability_count", _u8L("Capabilities: %s")},
-        {"capabilities", _u8L_CONTEXT("Capabilities", "Plugin")},
-        {"run_named", _u8L("Run \"%s\"")},
-        {"enable_named", _u8L("Enable %s")},
-        {"not_available", _u8L("N/A")},
-        {"unauthorized", _u8L("Unauthorized for updates")},
-        {"not_installed", _u8L("Not installed")},
-        {"config_loading", _u8L("Loading the plugin…")},
-        {"config_no_capabilities", _u8L("This plugin exposes no capabilities")},
-        {"config_activate", _u8L("Activate this plugin to configure its capabilities")},
-        {"invalid_json", _u8L("Invalid JSON")},
-        {"view_on_cloud", _u8L("View on OrcaCloud <a>here</a>")},
-        {"status_activated", _u8L("Activated")},
-        {"status_loading", _u8L("Loading")},
-        {"status_error", _u8L("Error")},
-        {"status_runtime_error", _u8L("Runtime error")},
-        {"status_inactive", _u8L("Inactive")},
-        {"status_activated_desc", _u8L("This plugin is active and ready to be used.")},
-        {"status_loading_desc", _u8L("This plugin is still loading.")},
-        {"status_error_desc", _u8L("This plugin is blocked until its error is fixed.")},
-        {"status_runtime_error_desc", _u8L("This plugin is loaded but a capability reported an error.")},
-        {"status_inactive_desc", _u8L("This plugin is inactive. Activate it to install or load it.")},
-        {"select_plugin", _u8L("Select a plugin to view its status and details.")},
-        {"orphaned_note", _u8L("Orphaned: This plugin is no longer subscribed or available in OrcaCloud. The local copy remains installed and can still be used.")},
-        {"newer_version_note", _u8L("A newer plugin version is available.")},
-        {"unauthorized_note", _u8L("Cloud updates are unavailable because this plugin is unauthorized for updates.")},
+        {"search_plugins", TR("Search plugins")},
+        {"clear", TR("Clear")},
+        {"clear_search", TR("Clear search")},
+        {"match_case", TR("Match case")},
+        {"match_whole_word", TR("Match whole word")},
+        {"refresh", TR("Refresh")},
+        {"install_options", TR("More plugin install options")},
+        {"install_plugin", TR("Install plugin")},
+        {"install_local_plugin", TR("Install local plugin")},
+        {"activate", TR("Activate")},
+        {"sort_by_name", TR("Sort by name")},
+        {"name", TR("Name")},
+        {"sort_by_version", TR("Sort by version")},
+        {"plugin_version", TR("Plugin Version")},
+        {"sort_by_source", TR("Sort by source")},
+        {"source", TR("Source")},
+        {"sort_by_status", TR("Sort by status")},
+        {"status", TR_CONTEXT("Status", "Plugin")},
+        {"resize_hint", TR("Drag to resize; double-click to reset")},
+        {"resize_list", TR("Resize the plugin list")},
+        {"details_label", TR("Plugin details")},
+        {"tab_info", TR("Plugin Info")},
+        {"description", TR("Description")},
+        {"tab_config", TR("Config")},
+        {"tab_changelog", TR("Changelog")},
+        {"tab_diagnostics", TR("Diagnostics")},
+        {"types", TR("Types")},
+        {"author", TR("Author")},
+        {"installed_version", TR("Installed Version")},
+        {"latest_version", TR("Latest Version")},
+        {"update_available", TR("Update available")},
+        {"update_title", TR("Update to the latest version")},
+        {"update", TR("Update")},
+        {"no_description", TR("No description available")},
+        {"config_select_plugin", TR("Select a plugin to configure its capabilities")},
+        {"configurable_capabilities", TR("Configurable capabilities")},
+        {"config_json_label", TR("Capability configuration (JSON)")},
+        {"config_frame_title", TR("Plugin configuration")},
+        {"restore_title", TR("Discard the settings saved for this capability and restore the plugin's defaults")},
+        {"restore_defaults", TR("Restore defaults")},
+        {"save", TR("Save")},
+        {"changelog_label", TR("Plugin changelog")},
+        {"version", TR("Version")},
+        {"date", TR("Date")},
+        {"changes", TR("Changes")},
+        {"no_changelog", TR("No changelog available")},
+        {"no_issues", TR("No issues detected")},
+        {"no_plugins", TR("No plugins found")},
+        {"no_match", TR("No plugins match \"%s\"")},
+        {"source_mine", TR("Mine")},
+        {"source_subscribed", TR_CONTEXT("Subscribed", "Plugin")},
+        {"source_orphaned", TR("Orphaned")},
+        {"source_local", TR_CONTEXT("Local", "Plugin")},
+        {"mixed_capabilities", TR("Some plugin capabilities are enabled")},
+        {"collapse_named", TR("Collapse %s capabilities")},
+        {"expand_named", TR("Expand %s capabilities")},
+        {"collapse", TR("Collapse capabilities")},
+        {"expand", TR("Expand capabilities")},
+        {"open_in_browser", TR("Open this plugin in your browser")},
+        {"capability_count", TR("Capabilities: %s")},
+        {"capabilities", TR_CONTEXT("Capabilities", "Plugin")},
+        {"run_named", TR("Run \"%s\"")},
+        {"enable_named", TR("Enable %s")},
+        {"not_available", TR("N/A")},
+        {"unauthorized", TR("Unauthorized for updates")},
+        {"not_installed", TR("Not installed")},
+        {"config_loading", TR("Loading the plugin…")},
+        {"config_no_capabilities", TR("This plugin exposes no capabilities")},
+        {"config_activate", TR("Activate this plugin to configure its capabilities")},
+        {"invalid_json", TR("Invalid JSON")},
+        {"view_on_cloud", TR("View on OrcaCloud <a>here</a>")},
+        {"status_activated", TR("Activated")},
+        {"status_loading", TR("Loading")},
+        {"status_error", TR("Error")},
+        {"status_runtime_error", TR("Runtime error")},
+        {"status_inactive", TR("Inactive")},
+        {"status_activated_desc", TR("This plugin is active and ready to be used.")},
+        {"status_loading_desc", TR("This plugin is still loading.")},
+        {"status_error_desc", TR("This plugin is blocked until its error is fixed.")},
+        {"status_runtime_error_desc", TR("This plugin is loaded but a capability reported an error.")},
+        {"status_inactive_desc", TR("This plugin is inactive. Activate it to install or load it.")},
+        {"select_plugin", TR("Select a plugin to view its status and details.")},
+        {"orphaned_note", TR("Orphaned: This plugin is no longer subscribed or available in OrcaCloud. The local copy remains installed and can still be used.")},
+        {"newer_version_note", TR("A newer plugin version is available.")},
+        {"unauthorized_note", TR("Cloud updates are unavailable because this plugin is unauthorized for updates.")},
     };
 }
 
@@ -902,7 +902,7 @@ void PluginsDialog::toggle_plugin(const std::string& plugin_key, bool enabled)
 
     if (!available_actions.can_toggle) {
         if (dialog_item.unauthorized && available_actions.toggle_installs_cloud_plugin == false && row_data.has_local_package() == false) {
-            const std::string install_error = _u8L("Unauthorized cloud plugins cannot be installed.");
+            const std::string install_error = TR("Unauthorized cloud plugins cannot be installed.");
             manager.set_plugin_error(plugin_key, install_error);
             show_status(from_u8(install_error), "warn");
         }
@@ -1094,7 +1094,7 @@ bool PluginsDialog::install_cloud_plugin(const std::string& plugin_key, const st
     } catch (const std::exception& ex) {
         error = ex.what();
     } catch (...) {
-        error = _u8L("Unknown error");
+        error = TR("Unknown error");
     }
 
     if (!downloaded) {
@@ -1162,7 +1162,7 @@ void PluginsDialog::run_script_plugin_capability(const std::string& plugin_key, 
     ExecutionResult result;
 
     auto complete_with_error = [this, &manager, &plugin_key](const std::string& plugin_error, const wxString& status_message) {
-        const std::string normalized_error = plugin_error.empty() ? _u8L("Script plugin failed.") : plugin_error;
+        const std::string normalized_error = plugin_error.empty() ? TR("Script plugin failed.") : plugin_error;
         if (!manager.set_plugin_error(plugin_key, normalized_error))
             BOOST_LOG_TRIVIAL(warning) << "Failed to record plugin error. plugin_key=" << plugin_key;
 
@@ -1225,7 +1225,7 @@ void PluginsDialog::update_plugin(const std::string& plugin_key)
     } catch (const std::exception& ex) {
         error = ex.what();
     } catch (...) {
-        error = _u8L("Unknown error");
+        error = TR("Unknown error");
     }
 
     if (!updated) {
@@ -1353,34 +1353,34 @@ void PluginsDialog::reload_local_plugin(const std::string& plugin_key, bool clea
                 if (clear_cache) {
                     PluginDescriptor descriptor;
                     if (!manager.try_get_plugin_descriptor(plugin_key, descriptor))
-                        return {false, _u8L("Plugin not found.")};
+                        return {false, TR("Plugin not found.")};
 
                     boost::filesystem::path resolved_root;
                     std::string                  resolve_error;
                     if (!resolve_allowed_plugin_root(descriptor, {get_orca_plugins_dir()},
-                                                     _u8L("Refusing to clear a plugin cache outside the local plugin directory."),
+                                                     TR("Refusing to clear a plugin cache outside the local plugin directory."),
                                                      resolved_root, resolve_error))
                         return {false, resolve_error};
                     cache_dir = resolved_root / "__whl_extracted__";
                 }
 
                 if (!manager.unload_plugin(plugin_key))
-                    return {false, _u8L("Failed to unload plugin.")};
+                    return {false, TR("Failed to unload plugin.")};
 
                 if (clear_cache) {
                     boost::system::error_code ec;
                     boost::filesystem::remove_all(cache_dir, ec);
                     if (ec)
-                        return {false, GUI::format(_u8L("Failed to clear plugin cache: %1%"), ec.message())};
+                        return {false, GUI::format(TR("Failed to clear plugin cache: %1%"), ec.message())};
                 }
 
                 manager.load_plugin(plugin_key, false);
                 std::string error;
                 if (!manager.wait_for_plugin_load(plugin_key, std::chrono::minutes(5), error) || !manager.is_plugin_loaded(plugin_key))
-                    return {false, error.empty() ? _u8L("Plugin failed to load.") : error};
+                    return {false, error.empty() ? TR("Plugin failed to load.") : error};
 
                 if (!was_loaded && !manager.unload_plugin(plugin_key))
-                    return {false, _u8L("Plugin reloaded, but failed to restore the inactive state.")};
+                    return {false, TR("Plugin reloaded, but failed to restore the inactive state.")};
 
                 return {true, {}};
             },
@@ -1388,7 +1388,7 @@ void PluginsDialog::reload_local_plugin(const std::string& plugin_key, bool clea
     } catch (const std::exception& ex) {
         reload_result = {false, ex.what()};
     } catch (...) {
-        reload_result = {false, _u8L("Unknown plugin reload error.")};
+        reload_result = {false, TR("Unknown plugin reload error.")};
     }
 
     if (!reload_result.first) {
@@ -1435,14 +1435,14 @@ void PluginsDialog::reinstall_cloud_plugin(const PluginDescriptor& plugin)
                     manager.load_plugin(plugin_key);
                     std::string error;
                     if (!manager.wait_for_plugin_load(plugin_key, std::chrono::minutes(5), error) || !manager.is_plugin_loaded(plugin_key))
-                        return {false, error.empty() ? _u8L("Plugin failed to load.") : error};
+                        return {false, error.empty() ? TR("Plugin failed to load.") : error};
                     return {true, {}};
                 },
                 _L("Reloading plugin"), _L("Reloading plugin"));
         } catch (const std::exception& ex) {
             reload_result = {false, ex.what()};
         } catch (...) {
-            reload_result = {false, _u8L("Unknown plugin reload error.")};
+            reload_result = {false, TR("Unknown plugin reload error.")};
         }
 
         if (!reload_result.first) {

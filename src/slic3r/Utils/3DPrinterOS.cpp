@@ -238,7 +238,7 @@ private:
         if (m_cancelled || m_attempt >= m_max_retries) {
             if (m_attempt >= m_max_retries) {
                 m_resp.put("result", false);
-                m_resp.put("message", _u8L("Maximum login retries exceeded"));
+                m_resp.put("message", TR("Maximum login retries exceeded"));
             }
             wxQueueEvent(this, new wxThreadEvent(wxEVT_THREAD, wxID_ABORT));
             return;
@@ -257,7 +257,7 @@ private:
                 if (!m_cancelled) {
                     m_resp.put("result", false);
                     // TRN %1% is an HTTP status code.
-                    m_resp.put("message", (status != 200) ? Slic3r::GUI::format(_u8L("HTTP error: %1%"), status) : error);
+                    m_resp.put("message", (status != 200) ? Slic3r::GUI::format(TR("HTTP error: %1%"), status) : error);
                     wxQueueEvent(this, new wxThreadEvent(wxEVT_THREAD, wxID_ABORT));
                 }
             })
@@ -265,7 +265,7 @@ private:
                 if (!m_cancelled) {
                     if (status != 200) {
                         m_resp.put("result", false);
-                        m_resp.put("message", Slic3r::GUI::format(_u8L("HTTP error: %1%"), status));
+                        m_resp.put("message", Slic3r::GUI::format(TR("HTTP error: %1%"), status));
                         wxQueueEvent(this, new wxThreadEvent(wxEVT_THREAD, wxID_ABORT));
                         return;
                     }
@@ -275,7 +275,7 @@ private:
                         pt::read_json(ss, m_resp);
                     } catch (...) {
                         m_resp.put("result", false);
-                        m_resp.put("message", _u8L("Could not parse server response."));
+                        m_resp.put("message", TR("Could not parse server response."));
                     }
 
                     if (m_resp.get<bool>("result", false) && m_resp.get_optional<std::string>("message.session").has_value()) {
@@ -476,7 +476,7 @@ bool C3DPrinterOS::upload(
                 pt::read_json(ss, uploadResponse);
             } catch (const std::exception &) {
                 uploadResponse.put("result", false);
-                uploadResponse.put("message", _u8L("Could not parse server response."));
+                uploadResponse.put("message", TR("Could not parse server response."));
             }
         })
         .on_error([&](std::string body, std::string error, unsigned status) {
@@ -651,7 +651,7 @@ void C3DPrinterOS::send_form(
                 pt::read_json(ss, responseTree);
             } catch (const std::exception &) {
                 responseTree.put("result", false);
-                responseTree.put("message", _u8L("Could not parse server response."));
+                responseTree.put("message", TR("Could not parse server response."));
             }
         })
         .perform_sync();

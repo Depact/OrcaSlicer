@@ -44,24 +44,24 @@ using json = nlohmann::json;
 namespace Slic3r {
 namespace GUI {
 
-static auto check_gcode_failed_str      = _u8L("Abnormal print file data: please slice again.");
-static auto     printjob_cancel_str         = _u8L("Task canceled.");
-static auto     timeout_to_upload_str       = _u8L("Upload task timed out. Please check the network status and try again.");
-static auto     failed_in_cloud_service_str = _u8L("Cloud service connection failed. Please try again.");
-static auto     file_is_not_exists_str      = _u8L("Print file not found; please slice again.");
-static auto file_over_size_str = _u8L("The print file exceeds the maximum allowable size (1GB). Please simplify the model and slice again.");
-static auto print_canceled_str    = _u8L("Task canceled.");
-static auto send_print_failed_str = _u8L("Failed to send the print job. Please try again.");
-static auto upload_ftp_failed_str = _u8L("Failed to upload file to ftp. Please try again.");
+static auto check_gcode_failed_str      = TR("Abnormal print file data: please slice again.");
+static auto     printjob_cancel_str         = TR("Task canceled.");
+static auto     timeout_to_upload_str       = TR("Upload task timed out. Please check the network status and try again.");
+static auto     failed_in_cloud_service_str = TR("Cloud service connection failed. Please try again.");
+static auto     file_is_not_exists_str      = TR("Print file not found; please slice again.");
+static auto file_over_size_str = TR("The print file exceeds the maximum allowable size (1GB). Please simplify the model and slice again.");
+static auto print_canceled_str    = TR("Task canceled.");
+static auto send_print_failed_str = TR("Failed to send the print job. Please try again.");
+static auto upload_ftp_failed_str = TR("Failed to upload file to ftp. Please try again.");
 
-static auto     desc_network_error          = _u8L("Check the current status of the Bambu Lab server by clicking on the link above.");
-static auto     desc_file_too_large         = _u8L("The size of the print file is too large. Please adjust the file size and try again.");
-static auto     desc_fail_not_exist         = _u8L("Print file not found; please slice it again and send it for printing.");
+static auto     desc_network_error          = TR("Check the current status of the Bambu Lab server by clicking on the link above.");
+static auto     desc_file_too_large         = TR("The size of the print file is too large. Please adjust the file size and try again.");
+static auto     desc_fail_not_exist         = TR("Print file not found; please slice it again and send it for printing.");
 
-static auto desc_upload_ftp_failed      = _u8L("Failed to upload print file via FTP. Please check the network status and try again.");
+static auto desc_upload_ftp_failed      = TR("Failed to upload print file via FTP. Please check the network status and try again.");
 
-static auto sending_over_lan_str        = _u8L("Sending print job over LAN");
-static auto sending_over_cloud_str      = _u8L("Sending print job through cloud service");
+static auto sending_over_lan_str        = TR("Sending print job over LAN");
+static auto sending_over_cloud_str      = TR("Sending print job through cloud service");
 
 static wxString wait_sending_finish         = _L("Print task sending times out.");
 //static wxString desc_wait_sending_finish    = _L("The printer timed out while receiving a print job. Please check if the network is functioning properly and send the print again.");
@@ -166,10 +166,10 @@ void PrintJob::process(Ctl &ctl)
     AppConfig* config = wxGetApp().app_config;
 
     if (this->connection_type == "lan") {
-        msg = _u8L("Sending print job over LAN");
+        msg = TR("Sending print job over LAN");
     }
     else {
-        msg = _u8L("Sending print job through cloud service");
+        msg = TR("Sending print job through cloud service");
     }
 
     ctl.update_status(0, msg);
@@ -445,49 +445,49 @@ void PrintJob::process(Ctl &ctl)
 
                         if (stage == SendingPrintJobStage::PrintingStageCreate && !is_try_lan_mode_failed) {
                             if (this->connection_type == "lan") {
-                                msg = _u8L("Sending print job over LAN");
+                                msg = TR("Sending print job over LAN");
                             } else {
-                                msg = _u8L("Sending print job through cloud service");
+                                msg = TR("Sending print job through cloud service");
                             }
                         }
                         else if (stage == SendingPrintJobStage::PrintingStageUpload && !is_try_lan_mode_failed) {
                             if (code >= 0 && code <= 100 && !info.empty()) {
                                 if (this->connection_type == "lan") {
-                                    msg = _u8L("Sending print job over LAN");
+                                    msg = TR("Sending print job over LAN");
                                 } else {
-                                    msg = _u8L("Sending print job through cloud service");
+                                    msg = TR("Sending print job through cloud service");
                                 }
                                 msg += format("(%s)", info);
                             }
                         }
                         else if (stage == SendingPrintJobStage::PrintingStageWaiting) {
                             if (this->connection_type == "lan") {
-                                msg = _u8L("Sending print job over LAN");
+                                msg = TR("Sending print job over LAN");
                             } else {
-                                msg = _u8L("Sending print job through cloud service");
+                                msg = TR("Sending print job through cloud service");
                             }
                         }
                         else  if (stage == SendingPrintJobStage::PrintingStageRecord && !is_try_lan_mode) {
-                            msg = _u8L("Sending print configuration");
+                            msg = TR("Sending print configuration");
                         }
                         else if (stage == SendingPrintJobStage::PrintingStageSending && !is_try_lan_mode) {
                             if (this->connection_type == "lan") {
-                                msg = _u8L("Sending print job over LAN");
+                                msg = TR("Sending print job over LAN");
                             } else {
-                                msg = _u8L("Sending print job through cloud service");
+                                msg = TR("Sending print job through cloud service");
                             }
                         }
                         else if (stage == SendingPrintJobStage::PrintingStageFinished) {
-                            msg = format(_u8L("Successfully sent. Will automatically jump to the device page in %ss"), info);
+                            msg = format(TR("Successfully sent. Will automatically jump to the device page in %ss"), info);
                             if (m_print_job_completed_id == wxGetApp().plater()->get_send_calibration_finished_event()) {
-                                msg = format(_u8L("Successfully sent. Will automatically jump to the next page in %ss"), info);
+                                msg = format(TR("Successfully sent. Will automatically jump to the next page in %ss"), info);
                             }
                             ctl.clear_percent();
                         } else {
                             if (this->connection_type == "lan") {
-                                msg = _u8L("Sending print job over LAN");
+                                msg = TR("Sending print job over LAN");
                             } else {
-                                msg = _u8L("Sending print job through cloud service");
+                                msg = TR("Sending print job through cloud service");
                             }
                         }
 
@@ -580,7 +580,7 @@ void PrintJob::process(Ctl &ctl)
 
     if (m_print_type == "from_sdcard_view") {
         BOOST_LOG_TRIVIAL(info) << "print_job: try to send with cloud, model is sdcard view";
-        ctl.update_status(curr_percent, _u8L("Sending print job through cloud service"));
+        ctl.update_status(curr_percent, TR("Sending print job through cloud service"));
         mark_lifecycle_started();
         result = m_agent->start_sdcard_print(params, update_fn, cancel_fn);
     } else if (params.connection_type != "lan") {
@@ -603,7 +603,7 @@ void PrintJob::process(Ctl &ctl)
             }
             else {
                 BOOST_LOG_TRIVIAL(info) << "print_job: use ftp send print only";
-                ctl.update_status(curr_percent, _u8L("Sending print job over LAN"));
+                ctl.update_status(curr_percent, TR("Sending print job over LAN"));
                 is_try_lan_mode = true;
                 mark_lifecycle_started();
                 result = m_agent->start_local_print_with_record(params, update_fn, cancel_fn, wait_fn);
@@ -621,7 +621,7 @@ void PrintJob::process(Ctl &ctl)
                 && this->has_sdcard) {
                 // try to send local with record
                 BOOST_LOG_TRIVIAL(info) << "print_job: try to start local print with record";
-                ctl.update_status(curr_percent, _u8L("Sending print job over LAN"));
+                ctl.update_status(curr_percent, TR("Sending print job over LAN"));
                 mark_lifecycle_started();
                 result = m_agent->start_local_print_with_record(params, update_fn, cancel_fn, wait_fn);
                 if (result == 0) {
@@ -637,48 +637,48 @@ void PrintJob::process(Ctl &ctl)
                     is_try_lan_mode_failed = true;
                     // try to send with cloud
                     BOOST_LOG_TRIVIAL(warning) << "print_job: try to send with cloud";
-                    ctl.update_status(curr_percent, _u8L("Sending print job through cloud service"));
+                    ctl.update_status(curr_percent, TR("Sending print job through cloud service"));
                     // Started was already emitted before the local attempt.
                     result = m_agent->start_print(params, update_fn, cancel_fn, wait_fn);
                 }
             }
             else {
                 BOOST_LOG_TRIVIAL(info) << "print_job: send with cloud";
-                ctl.update_status(curr_percent, _u8L("Sending print job through cloud service"));
+                ctl.update_status(curr_percent, TR("Sending print job through cloud service"));
                 mark_lifecycle_started();
                 result = m_agent->start_print(params, update_fn, cancel_fn, wait_fn);
             }
         }
     } else {
         if (this->could_emmc_print) {
-            ctl.update_status(curr_percent, _u8L("Sending print job over LAN"));
+            ctl.update_status(curr_percent, TR("Sending print job over LAN"));
             mark_lifecycle_started();
             result = m_agent->start_local_print(params, update_fn, cancel_fn);
         } else {
             switch(this->sdcard_state) {
                 case DevStorage::SdcardState::NO_SDCARD:
-                    ctl.update_status(curr_percent, _u8L("A Storage needs to be inserted before printing via LAN."));
+                    ctl.update_status(curr_percent, TR("A Storage needs to be inserted before printing via LAN."));
                     return;
                 case DevStorage::SdcardState::HAS_SDCARD_ABNORMAL:
                     if(this->has_sdcard) {
                         // means the storage is abnormal but can be used option is enabled
-                        ctl.update_status(curr_percent, _u8L("Sending print job over LAN, but the Storage in the printer is abnormal and print-issues may be caused by this."));
+                        ctl.update_status(curr_percent, TR("Sending print job over LAN, but the Storage in the printer is abnormal and print-issues may be caused by this."));
                         mark_lifecycle_started();
                         result = m_agent->start_local_print(params, update_fn, cancel_fn);
                         break;
                     }
-                    ctl.update_status(curr_percent, _u8L("The Storage in the printer is abnormal. Please replace it with a normal Storage before sending print job to printer."));
+                    ctl.update_status(curr_percent, TR("The Storage in the printer is abnormal. Please replace it with a normal Storage before sending print job to printer."));
                     return;
                 case DevStorage::SdcardState::HAS_SDCARD_READONLY:
-                    ctl.update_status(curr_percent, _u8L("The Storage in the printer is read-only. Please replace it with a normal Storage before sending print job to printer."));
+                    ctl.update_status(curr_percent, TR("The Storage in the printer is read-only. Please replace it with a normal Storage before sending print job to printer."));
                     return;
                 case DevStorage::SdcardState::HAS_SDCARD_NORMAL:
-                    ctl.update_status(curr_percent, _u8L("Sending print job over LAN"));
+                    ctl.update_status(curr_percent, TR("Sending print job over LAN"));
                     mark_lifecycle_started();
                     result = m_agent->start_local_print(params, update_fn, cancel_fn);
                     break;
                 default:
-                    ctl.update_status(curr_percent, _u8L("Encountered an unknown error with the Storage status. Please try again."));
+                    ctl.update_status(curr_percent, TR("Encountered an unknown error with the Storage status. Please try again."));
                     return;
             }
         }
@@ -690,7 +690,7 @@ void PrintJob::process(Ctl &ctl)
         // The printer is still fetching its encryption flag (a transient state), so ask the
         // user to retry rather than showing a generic error.
         if (result == BAMBU_NETOWRK_ERR_PRINT_SP_ENC_FLAG_NOT_READY) {
-            msg_text = _u8L("Retrieving printer information, please try again later.");
+            msg_text = TR("Retrieving printer information, please try again later.");
         } else if (result == BAMBU_NETWORK_ERR_PRINT_WR_FILE_NOT_EXIST || result == BAMBU_NETWORK_ERR_PRINT_SP_FILE_NOT_EXIST) {
             msg_text = file_is_not_exists_str;
         } else if (result == BAMBU_NETWORK_ERR_PRINT_SP_FILE_OVER_SIZE || result == BAMBU_NETWORK_ERR_PRINT_WR_FILE_OVER_SIZE) {

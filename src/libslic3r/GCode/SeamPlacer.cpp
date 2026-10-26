@@ -1643,12 +1643,12 @@ void SeamPlacer::init(const Print &print, std::function<void(void)> throw_if_can
       // Enforced" in menu order, each type once. The same msgids as the menu share its translations.
       const auto type_list = [](unsigned mask) {
           const std::pair<ModelVolumeType, std::string> types[] = {
-              {ModelVolumeType::PRECISE_SEAM_CENTER, _u8L("Seam Center")},
-              {ModelVolumeType::PRECISE_SEAM_LEFT, _u8L("Seam Left")},
-              {ModelVolumeType::PRECISE_SEAM_RIGHT, _u8L("Seam Right")},
-              {ModelVolumeType::PRECISE_SEAM_ENFORCED, _u8L("Seam Enforced")},
-              {ModelVolumeType::PRECISE_SEAM_BLOCKED, _u8L("Seam Blocked")},
-              {ModelVolumeType::PRECISE_SEAM_NEUTRAL, _u8L("Seam Neutral")}};
+              {ModelVolumeType::PRECISE_SEAM_CENTER, TR("Seam Center")},
+              {ModelVolumeType::PRECISE_SEAM_LEFT, TR("Seam Left")},
+              {ModelVolumeType::PRECISE_SEAM_RIGHT, TR("Seam Right")},
+              {ModelVolumeType::PRECISE_SEAM_ENFORCED, TR("Seam Enforced")},
+              {ModelVolumeType::PRECISE_SEAM_BLOCKED, TR("Seam Blocked")},
+              {ModelVolumeType::PRECISE_SEAM_NEUTRAL, TR("Seam Neutral")}};
           std::string list;
           for (const auto &[type, name] : types)
               if (mask & PreciseSeam::PreciseSeamWarnings::type_bit(type))
@@ -1657,11 +1657,11 @@ void SeamPlacer::init(const Print &print, std::function<void(void)> throw_if_can
       };
       std::vector<std::string> parts;
       if (failed_types != 0)
-          parts.push_back((boost::format(_u8L("failed to process some intersections (%1%)")) % type_list(failed_types)).str());
+          parts.push_back((boost::format(TR("failed to process some intersections (%1%)")) % type_list(failed_types)).str());
       if (mi != 0)
-          parts.push_back((boost::format(_u8L("multiple intersections with a perimeter, only one was used (%1%)")) % type_list(mi)).str());
+          parts.push_back((boost::format(TR("multiple intersections with a perimeter, only one was used (%1%)")) % type_list(mi)).str());
       if (fc != 0)
-          parts.push_back((boost::format(_u8L("a perimeter is fully inside a modifier, the modifier was not applied to it (%1%)")) % type_list(fc)).str());
+          parts.push_back((boost::format(TR("a perimeter is fully inside a modifier, the modifier was not applied to it (%1%)")) % type_list(fc)).str());
       // Modifiers whose usage flags match, in print and volume order, so the named one is deterministic.
       const auto collect_modifiers = [&print, &precise_seam_warnings](const auto &matches) {
           std::vector<const ModelVolume*> found;
@@ -1685,12 +1685,12 @@ void SeamPlacer::init(const Print &print, std::function<void(void)> throw_if_can
           const ModelVolume *first = fully_blocked.front();
           if (fully_blocked.size() == 1) {
               // TRN: %1% is the modifier type "Seam Blocked" as in the menu, %2% the modifier name, %3% the object name.
-              parts.push_back((boost::format(_u8L("%1% modifier \"%2%\" of \"%3%\" covers an entire perimeter"))
-                  % _u8L("Seam Blocked") % first->name % first->get_object()->name).str());
+              parts.push_back((boost::format(TR("%1% modifier \"%2%\" of \"%3%\" covers an entire perimeter"))
+                  % TR("Seam Blocked") % first->name % first->get_object()->name).str());
           } else {
               // TRN: %1% is the modifier type "Seam Blocked" as in the menu, %2% the modifier name, %3% the object name, %4% the number of modifiers.
-              parts.push_back((boost::format(_u8L("%1% modifier \"%2%\" of \"%3%\" (%4% in total) covers an entire perimeter"))
-                  % _u8L("Seam Blocked") % first->name % first->get_object()->name % fully_blocked.size()).str());
+              parts.push_back((boost::format(TR("%1% modifier \"%2%\" of \"%3%\" (%4% in total) covers an entire perimeter"))
+                  % TR("Seam Blocked") % first->name % first->get_object()->name % fully_blocked.size()).str());
           }
       }
       // Modifiers evaluated somewhere that never reached a perimeter; never-evaluated ones are not reported.
@@ -1705,21 +1705,21 @@ void SeamPlacer::init(const Print &print, std::function<void(void)> throw_if_can
       if (!no_effect.empty()) {
           const ModelVolume *first = no_effect.front();
           if (no_effect.size() == 1)
-              parts.push_back((boost::format(_u8L("modifier \"%1%\" of \"%2%\" had no effect on the seam (it might not reach the centerline of the printed perimeter)"))
+              parts.push_back((boost::format(TR("modifier \"%1%\" of \"%2%\" had no effect on the seam (it might not reach the centerline of the printed perimeter)"))
                   % first->name % first->get_object()->name).str());
           else
-              parts.push_back((boost::format(_u8L("modifier \"%1%\" of \"%2%\" (%3% in total) had no effect on the seam (it might not reach the centerline of the printed perimeter)"))
+              parts.push_back((boost::format(TR("modifier \"%1%\" of \"%2%\" (%3% in total) had no effect on the seam (it might not reach the centerline of the printed perimeter)"))
                   % first->name % first->get_object()->name % no_effect.size()).str());
       }
       if (!parts.empty()) {
           // One line: the export warnings dialog shows only the first line of each warning.
-          std::string warning_text = _u8L("Precise Seam") + ": ";
+          std::string warning_text = TR("Precise Seam") + ": ";
           for (size_t i = 0; i < parts.size(); ++i) {
               if (i > 0) warning_text += "; ";
               warning_text += parts[i];
           }
           warning_text += ". ";
-          warning_text += _u8L("Seam placement may differ from expected.");
+          warning_text += TR("Seam placement may differ from expected.");
           m_precise_seam_warning = std::move(warning_text);
       }
   }

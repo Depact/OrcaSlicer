@@ -572,7 +572,7 @@ void ArrangeJob::prepare_imex_zones()
 void ArrangeJob::prepare()
 {
     m_plater->get_notification_manager()->push_notification(NotificationType::ArrangeOngoing,
-        NotificationManager::NotificationLevel::RegularNotificationLevel, _u8L("Arranging..."));
+        NotificationManager::NotificationLevel::RegularNotificationLevel, TR("Arranging..."));
     m_plater->get_notification_manager()->bbl_close_plateinfo_notification();
 
     params = init_arrange_params(m_plater);
@@ -646,7 +646,7 @@ void ArrangeJob::check_unprintable()
 #endif
             if (it->poly.area() < 0.001) {
                 auto msg = (boost::format(
-                    _u8L("Object %s has zero size and can't be arranged."))
+                    TR("Object %s has zero size and can't be arranged."))
                     % it->name).str();
                 m_plater->get_notification_manager()->push_notification(NotificationType::BBLPlateInfo,
                     NotificationManager::NotificationLevel::WarningNotificationLevel, msg);
@@ -661,7 +661,7 @@ void ArrangeJob::check_unprintable()
 
 void ArrangeJob::process(Ctl &ctl)
 {
-    static const auto arrangestr = _u8L("Arranging");
+    static const auto arrangestr = TR("Arranging");
     ctl.update_status(0, arrangestr);
     ctl.call_on_main_thread([this]{ prepare(); }).wait();;
 
@@ -694,7 +694,7 @@ void ArrangeJob::process(Ctl &ctl)
 
     params.progressind = [this, &ctl](unsigned num_finished, std::string str = "") {
         // TRN Progress status. %1% is the name of the object being arranged.
-        ctl.update_status(num_finished * 100 / status_range(), GUI::format(_u8L("Arranging %1%"), str));
+        ctl.update_status(num_finished * 100 / status_range(), GUI::format(TR("Arranging %1%"), str));
     };
 
     {
@@ -740,8 +740,8 @@ void ArrangeJob::process(Ctl &ctl)
 
     // finalize just here.
     ctl.update_status(100,
-        ctl.was_canceled() ? _u8L("Arranging canceled.") :
-        we_have_unpackable_items ? _u8L("Arranging complete, but some items were not able to be arranged. Reduce spacing and try again.") : _u8L("Arranging done."));
+        ctl.was_canceled() ? TR("Arranging canceled.") :
+        we_have_unpackable_items ? TR("Arranging complete, but some items were not able to be arranged. Reduce spacing and try again.") : TR("Arranging done."));
 }
 
 ArrangeJob::ArrangeJob() : m_plater{wxGetApp().plater()} { }

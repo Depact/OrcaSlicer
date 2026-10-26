@@ -92,7 +92,7 @@ bool fix_model_with_cgal_gui(ModelObject &model_object, int volume_idx, GUI::Pro
         // Volumes repaired before a cancel or an error keep their new mesh.
         model_object.invalidate_bounding_box();
         finished = true;
-        on_progress(_u8L("Repair finished"), 100);
+        on_progress(TR("Repair finished"), 100);
     });
 
     while (!finished) {

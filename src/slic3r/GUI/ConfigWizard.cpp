@@ -2473,7 +2473,7 @@ bool ConfigWizard::priv::apply_config(AppConfig *app_config, PresetBundle *prese
     }
 
     //BBS: remove snapshot logic
-    /*if (snapshot && ! take_config_snapshot_cancel_on_error(*app_config, snapshot_reason, "", _u8L("Do you want to continue changing the configuration?")))
+    /*if (snapshot && ! take_config_snapshot_cancel_on_error(*app_config, snapshot_reason, "", TR("Do you want to continue changing the configuration?")))
         return false;*/
 
     if (check_unsaved_preset_changes &&

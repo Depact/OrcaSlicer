@@ -569,7 +569,7 @@ void PrinterFileSystem::FetchModel(size_t index, std::function<void(int, std::st
             if (result != 0) {
                 auto iter = error_messages.find(result);
                 if (iter != error_messages.end())
-                    *file_data = _u8L(iter->second.c_str());
+                    *file_data = TR(iter->second.c_str());
                 else
                     file_data->clear();
             }
@@ -1312,9 +1312,9 @@ void PrinterFileSystem::RequestUploadFile()
             if (result != SUCCESS && result != CONTINUE && result != FILE_EXIST) {
                 std::string error_msg = "";
                 if (result == ERROR_CANCEL) {
-                    error_msg = _u8L("User cancels task.");
+                    error_msg = TR("User cancels task.");
                 } else if (result == FILE_READ_WRITE_ERR || result == FILE_OPEN_ERR) {
-                    error_msg = _u8L("Failed to read file, please try again.");
+                    error_msg = TR("Failed to read file, please try again.");
                 }
                 wxLogWarning("PrinterFileSystem::UploadFile error: %d\n", result);
                 SendChangedEvent(EVT_UPLOAD_CHANGED, FF_UPLOADCANCEL, error_msg, result);

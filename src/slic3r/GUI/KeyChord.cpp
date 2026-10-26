@@ -85,7 +85,7 @@ std::string special_key_label(int key)
 {
     for (const KeyName& k : special_keys)
         if (k.key == key)
-            return _u8L_CONTEXT(k.label != nullptr ? k.label : k.name, "Keyboard Shortcut");
+            return TR_CONTEXT(k.label != nullptr ? k.label : k.name, "Keyboard Shortcut");
     return special_key_name(key);
 }
 
@@ -302,7 +302,7 @@ std::string KeyChord::modifier_prefix(int modifier)
     if (modifier == wxMOD_CONTROL)
         return shortkey_ctrl_prefix();
     if (modifier == wxMOD_SHIFT)
-        return _u8L("Shift+");
+        return TR("Shift+");
     if (modifier == wxMOD_ALT)
         return shortkey_alt_prefix();
 #ifdef __APPLE__

@@ -396,7 +396,7 @@ void AMSMaterialsSetting::create_panel_normal(wxWindow* parent)
     m_sizer_temperature->AddStretchSpacer();
 
     wxString warning_string = wxString::FromUTF8(
-        (boost::format(_u8L("The input value should be greater than %1% and less than %2%")) % FILAMENT_MIN_TEMP % FILAMENT_MAX_TEMP).str());
+        (boost::format(TR("The input value should be greater than %1% and less than %2%")) % FILAMENT_MIN_TEMP % FILAMENT_MAX_TEMP).str());
     warning_text = new wxStaticText(parent, wxID_ANY, warning_string, wxDefaultPosition, wxDefaultSize, 0);
     warning_text->SetFont(::Label::Body_13);
     warning_text->SetForegroundColour(wxColour(255, 111, 0));

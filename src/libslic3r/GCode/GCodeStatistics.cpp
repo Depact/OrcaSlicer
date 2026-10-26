@@ -194,7 +194,7 @@ void export_gcode_statistics(const GCodeProcessorResult &result, const std::stri
     file << gcode_statistics_json(result);
     file.close();
     if (file.fail())
-        throw ExportError(format(_u8L("Failed to write the G-code statistics to %1%."), path));
+        throw ExportError(format(TR("Failed to write the G-code statistics to %1%."), path));
 }
 
 } // namespace Slic3r

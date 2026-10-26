@@ -108,7 +108,7 @@ void break_to_debugger()
 
 const std::string& shortkey_shift_prefix()
 {
-	static const std::string str = _u8L("Shift+");
+	static const std::string str = TR("Shift+");
     return str;
 }
 
@@ -118,7 +118,7 @@ const std::string& shortkey_ctrl_prefix()
 #ifdef __APPLE__
 		u8"\u2318+"  // "⌘+" (Mac Command+)
 #else
-		_u8L("Ctrl+")
+		TR("Ctrl+")
 #endif
 		;
 	return str;
@@ -130,7 +130,7 @@ const std::string& shortkey_alt_prefix()
 #ifdef __APPLE__
 		u8"\u2325+"  // "⌥+" (Mac Option+)
 #else
-		_u8L("Alt+")
+		TR("Alt+")
 #endif
 		;
 	return str;

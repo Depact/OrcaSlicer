@@ -797,7 +797,7 @@ void GLGizmoBrimEars::on_render_input_window(float x, float y, float bottom_limi
 
             ImGui::Dummy(ImVec2(font_size * 1.8f, 0.0f)); // Horizontal indent
             ImGui::SameLine();
-            m_imgui->bold_text(_u8L("Set the brim type of this object to \"painted\""));
+            m_imgui->bold_text(TR("Set the brim type of this object to \"painted\""));
 
             ImVec2 min = ImGui::GetItemRectMin();
             ImVec2 max = ImGui::GetItemRectMax();
@@ -851,9 +851,9 @@ bool GLGizmoBrimEars::on_is_activable() const
 std::string GLGizmoBrimEars::on_get_name() const
 {
     if (!on_is_activable() && m_state == EState::Off) {
-        return _u8L("Brim Ears") + ":\n" + _u8L("Please select single object.");
+        return TR("Brim Ears") + ":\n" + TR("Please select single object.");
     } else {
-        return _u8L("Brim Ears");
+        return TR("Brim Ears");
     }
 }
 

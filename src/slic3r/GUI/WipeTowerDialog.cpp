@@ -501,7 +501,7 @@ WipingDialog::WipingDialog(wxWindow* parent, const int max_flush_volume) :
     // The page's strings (resources/web/flush/WipingDialog.html), keyed by their T() ids.
     const nlohmann::json page_strings = {
         // TRN Corner header of the flushing volume table: rows are the filament flushed from, columns the filament changed to.
-        {"from_to", _u8L("from/to")},
+        {"from_to", TR("from/to")},
     };
     m_webview->AddUserScript(wxString::FromUTF8(WebViewHostDialog::localized_strings_script(page_strings)));
     main_sizer->Add(m_webview, 1, wxEXPAND);

@@ -166,7 +166,7 @@ void Print::_plan_belt_purge()
     m_wipe_tower_data.tool_ordering.sort_and_build_data(*this, (unsigned int) -1, false);
 
     if (m_wipe_tower_data.tool_ordering.empty() || m_wipe_tower_data.tool_ordering.last_extruder() == unsigned(-1))
-        throw Slic3r::SlicingError(_u8L("The print is empty. The model is not printable with current print settings."));
+        throw Slic3r::SlicingError(TR("The print is empty. The model is not printable with current print settings."));
 
     // Is there any filament change at all? Not ToolOrdering::has_wipe_tower(): that reads the
     // FIRST layer's flag, and on a belt the first layer may be a brim apron band, which carries
@@ -307,7 +307,7 @@ void Print::_plan_belt_purge()
     if (total_leftover > 1.f) {
         this->active_step_add_warning(
             PrintStateBase::WarningLevel::CRITICAL,
-            Slic3r::format(_u8L("The belt purge tower cannot absorb the full purge volume: %1% mm³ in total could not "
+            Slic3r::format(TR("The belt purge tower cannot absorb the full purge volume: %1% mm³ in total could not "
                                 "be purged (worst layer: %2% mm³ at height %3%). The print may show color bleeding. "
                                 "Increase the belt purge tower width, or reduce flushing volumes."),
                            int(std::ceil(total_leftover)), int(std::ceil(worst_layer_leftover)),

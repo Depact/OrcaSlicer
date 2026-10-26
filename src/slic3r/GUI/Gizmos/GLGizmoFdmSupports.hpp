@@ -44,9 +44,9 @@ protected:
     void render_tooltip_button(float x, float y);
     wxString handle_snapshot_action_name(bool shift_down, Button button_down) const override;
 
-    std::string get_gizmo_entering_text() const override { return _u8L("Entering Paint-on supports"); }
-    std::string get_gizmo_leaving_text() const override { return _u8L("Leaving Paint-on supports"); }
-    std::string get_action_snapshot_name() const override { return _u8L("Paint-on supports editing"); }
+    std::string get_gizmo_entering_text() const override { return TR("Entering Paint-on supports"); }
+    std::string get_gizmo_leaving_text() const override { return TR("Leaving Paint-on supports"); }
+    std::string get_action_snapshot_name() const override { return TR("Paint-on supports editing"); }
 
     // BBS
     wchar_t                           m_current_tool = 0;

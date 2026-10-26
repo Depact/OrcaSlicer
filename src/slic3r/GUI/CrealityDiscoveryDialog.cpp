@@ -91,7 +91,7 @@ void CrealityDiscoveryDialog::run_discovery()
         if (!h.model_name.empty())
             row.model = h.model_name;
         else if (h.cfs_capable)
-            row.model = _u8L("(unknown K-series)");
+            row.model = TR("(unknown K-series)");
         else
             row.model = "Creality";
         m_rows.push_back(std::move(row));

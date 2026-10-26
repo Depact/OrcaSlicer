@@ -111,7 +111,7 @@ void GLGizmoFdmSupports::on_opening()
 
 std::string GLGizmoFdmSupports::on_get_name() const
 {
-    return _u8L("Support Painting");
+    return TR("Support Painting");
 }
 
 bool GLGizmoFdmSupports::on_init()
