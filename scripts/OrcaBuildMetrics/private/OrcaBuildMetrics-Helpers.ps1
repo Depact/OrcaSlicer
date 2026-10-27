@@ -159,12 +159,13 @@ function Axis-OrcaBuildTicks {
         for ($prec = 1; $prec -le 4; $prec++) {
             $labels = @()
             foreach ($v in $vals) {
+                $formatted = $v.ToString("F$prec")
                 if ($Unit -eq ' GB') {
-                    $labels += ('{0:f{1}}G' -f $v, $prec)
+                    $labels += ($formatted + "G")
                 } elseif ($Unit -eq '%') {
-                    $labels += ('{0:f{1}}%' -f $v, $prec)
+                    $labels += ($formatted + "%")
                 } else {
-                    $labels += ('{0:f{1}}' -f $v, $prec)
+                    $labels += $formatted
                 }
             }
             if (($labels | Select-Object -Unique).Count -eq $labels.Count) {

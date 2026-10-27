@@ -36,6 +36,10 @@ $presetDirs = @{
 . (Join-Path $UnitsDir "build.ps1")
 . (Join-Path $UnitsDir "ccache_stats.ps1")
 
+# Load the OrcaBuildMetrics module so Show-BuildMetrics can render without Python/rich.
+. (Join-Path $RepoRoot "scripts\OrcaBuildMetrics\private\OrcaBuildMetrics-Helpers.ps1")
+. (Join-Path $RepoRoot "scripts\OrcaBuildMetrics\public\Show-OrcaBuildMetrics.ps1")
+
 $started = Get-Date
 $global:BuildStarted = $started
 $metricsJob = $null
@@ -94,25 +98,13 @@ try {
     function Show-BuildMetrics {
         param([string]$CsvPath, [string]$Preset, [string]$Config)
         if (-not $CsvPath -or -not (Test-Path $CsvPath)) { return }
-        $renderer = Join-Path $RepoRoot "scripts\\build_win_steps\build_metrics.py"
-        $python = Get-Python
-        if (-not $python -or -not (Test-Path $renderer)) {
-            Write-Status "metrics" "Saved to $CsvPath (install Python with rich for the chart)." "Yellow"
-            return
-        }
-        $renderArgs = @()
-        if ($python.Name -match "^py(\.exe)?$") { $renderArgs += "-3" }
-        $renderArgs += $renderer
-        $renderArgs += $CsvPath
-        $renderArgs += "--title"
-        $renderArgs += "OrcaSlicer build ($Preset, $Config)"
         Write-Host ""
-        try {
-            & $python.Source @renderArgs
-        } catch {
-            Write-Status "metrics" "Could not render: $($_.Exception.Message)" "Yellow"
-        }
+        $code = Show-OrcaBuildMetrics -CsvPath $CsvPath `
+            -Title "OrcaSlicer build ($Preset, $Config)"
         Write-Host ""
+        if ($code -ne 0) {
+            Write-Status "metrics" "Could not render chart (exit $code)." "Yellow"
+        }
     }
 
     $fmt = {
@@ -290,7 +282,7 @@ console.print(Rule(char="\u2501", style="green"))
         $compiler = $clangCl
     }
     $cmakeArgs = @()
-    if ($Preset -in @("x64-clang", "x64-clang-cache")) { $cmakeArgs += "-DSLIC3R_UNITY_BUILD=ON" }
+    if ($Preset -eq "x64-clang-cache") { $cmakeArgs += "-DSLIC3R_UNITY_BUILD=ON" }
     $timing = Configure-Build -Cmake $cmake -BuildDir $buildDir -Config $Config -Target $Target `
                               -UnityTest:$UnityTestLibslic3r -MaxJobs $MaxJobs `
                               -Generator $generator -Compiler $compiler -CMakeArgs $cmakeArgs
