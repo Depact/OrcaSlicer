@@ -74,7 +74,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$UnitsDir = Join-Path $RepoRoot "scripts\build_units"
+$UnitsDir = Join-Path $RepoRoot "scripts\build_win_steps"
 $presetDirs = @{
     "x64-clang"       = "build-clang"
     "x64-clang-cache" = "build-clang-cache"
