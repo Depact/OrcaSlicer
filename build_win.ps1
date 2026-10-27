@@ -181,7 +181,14 @@ try {
         $Preset = "x64-clang-cache"
         if (-not $Target) { $Target = "libslic3r" }
     } elseif (-not $Preset) {
-        if (Test-Path "build-clang-cache" -PathType Container) {
+        # Only use the cache preset when ccache is available AND its dependency
+        # tree is actually complete. Otherwise fall back to the plain clang build
+        # so a no-argument run just works.
+        $cacheManifest = Test-Path "deps\build-clang-cache\.deps-manifest"
+        $cachePrefix   = Test-Path "deps\build-clang-cache\OrcaSlicer_dep\usr\local"
+        $cacheStamps   = (Get-ChildItem "deps\build-clang-cache" -Filter "*-complete" -Name).Count -gt 0
+        $cacheDepsReady = $cacheManifest -and $cachePrefix -and $cacheStamps
+        if ((Test-Path "build-clang-cache" -PathType Container) -and $ccache -and $cacheDepsReady) {
             $Preset = "x64-clang-cache"
         } else {
             $Preset = "x64-clang"
@@ -283,7 +290,7 @@ console.print(Rule(char="\u2501", style="green"))
         $compiler = $clangCl
     }
     $cmakeArgs = @()
-    if ($Preset -eq "x64-clang-cache") { $cmakeArgs += "-DSLIC3R_UNITY_BUILD=ON" }
+    if ($Preset -in @("x64-clang", "x64-clang-cache")) { $cmakeArgs += "-DSLIC3R_UNITY_BUILD=ON" }
     $timing = Configure-Build -Cmake $cmake -BuildDir $buildDir -Config $Config -Target $Target `
                               -UnityTest:$UnityTestLibslic3r -MaxJobs $MaxJobs `
                               -Generator $generator -Compiler $compiler -CMakeArgs $cmakeArgs
