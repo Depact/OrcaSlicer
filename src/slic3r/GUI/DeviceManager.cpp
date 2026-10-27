@@ -5224,7 +5224,7 @@ DevAmsTray MachineObject::parse_vt_tray(json vtray)
             vt_tray.bed_temp = "";
         if (vtray.contains("tray_color")) {
             auto color = vtray["tray_color"].get<std::string>();
-            vt_tray.UpdateColorFromstr(color);
+            vt_tray.UpdateColorFromStr(color);
         }
         else {
             vt_tray.color = "";

@@ -94,7 +94,7 @@ static json guide_strings()
     return {
         {"loading", _u8L("Loading…")},
         // TRN Sidebar entry of the printer selection page for the group of custom (user-defined) printers.
-        {"custom_vendor", TR_CONTEXT("Custom", "Printer vendor")},
+        {"custom_vendor", _u8L_CONTEXT("Custom", "Printer vendor")},
         {"welcome", _u8L("Welcome to Orca Slicer")},
         {"setup_intro", _u8L("Orca Slicer will be set up in several steps. Let's start!")},
         {"get_started", _u8L("Get Started")},
@@ -103,8 +103,8 @@ static json guide_strings()
         {"china", _u8L("China")},
         {"europe", _u8L("Europe")},
         {"north_america", _u8L("North America")},
-        {"others", TR_CONTEXT("Others", "Region")},
-        {"back", TR_CONTEXT("Back", "Navigation")},
+        {"others", _u8L_CONTEXT("Others", "Region")},
+        {"back", _u8L_CONTEXT("Back", "Navigation")},
         {"next", _u8L("Next")},
         {"finish", _u8L("Finish")},
         {"confirm", _u8L("Confirm")},

@@ -688,8 +688,8 @@ NozzleListTable::NozzleListTable(wxWindow* parent) : wxPanel(parent,wxID_ANY,wxD
         try {
             json j = json::parse(message);
             if (j["msg"].get<std::string>() == "init") {
-                auto table_obj_str = BuildTableObjstr();
-                auto text_obj_str = BuildTextObjstr();
+                auto table_obj_str = BuildTableObjStr();
+                auto text_obj_str = BuildTextObjStr();
                 CallAfter([table_obj_str, text_obj_str, this] {
                     wxString script1 = wxString::Format("initText(%s)", text_obj_str);
                     m_web_view->RunScript(script1);
@@ -698,7 +698,7 @@ NozzleListTable::NozzleListTable(wxWindow* parent) : wxPanel(parent,wxID_ANY,wxD
                     });
             }
             else if (j["msg"].get<std::string>() == "updateList") {
-                auto table_obj_str = BuildTableObjstr();
+                auto table_obj_str = BuildTableObjStr();
 
                 CallAfter([table_obj_str, this] {
                     wxString script1 = wxString::Format("updateTable(%s)", table_obj_str);
@@ -731,7 +731,7 @@ NozzleListTable::NozzleListTable(wxWindow* parent) : wxPanel(parent,wxID_ANY,wxD
     wxGetApp().UpdateDarkUIWin(this);
 }
 
-wxString NozzleListTable::BuildTableObjstr()
+wxString NozzleListTable::BuildTableObjStr()
 {
     json obj;
     obj["darkmode"] = wxGetApp().dark_mode();
@@ -763,7 +763,7 @@ void NozzleListTable::SendSelectionChangedEvent()
     event.SetEventObject(this);
     ProcessWindowEvent(event);
 }
-wxString NozzleListTable::BuildTextObjstr()
+wxString NozzleListTable::BuildTextObjStr()
 {
     wxString nozzle_selection = _L("Nozzle Selection");
     wxString nozzle_list = _L("Available Nozzles");
@@ -790,7 +790,7 @@ void NozzleListTable::SetOptions(const std::vector<NozzleOption>& options,int de
 {
     m_nozzle_options = options;
     m_selected_idx = default_select;
-    auto table_obj_str = BuildTableObjstr();
+    auto table_obj_str = BuildTableObjStr();
     wxString script1 = wxString::Format("updateTable(%s)", table_obj_str);
     BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << "update table " << script1;
 

@@ -6742,7 +6742,7 @@ void ObjectList::start_filament_editor(wxDataViewItem item)
     if (!started)
         return;
 
-    SetCustomRendererP_u8L(custom_renderer);
+    SetCustomRendererPtr(custom_renderer);
     SetCustomRendererItem(item);
 }
 #endif // __WXOSX__
@@ -6851,7 +6851,7 @@ void ObjectList::OnEditingStarted(wxDataViewEvent &event)
             SetAcceleratorTable(wxNullAcceleratorTable);
     }
 #ifdef __WXOSX__
-    SetCustomRendererP_u8L(dynamic_cast<wxDataViewCustomRenderer*>(renderer));
+    SetCustomRendererPtr(dynamic_cast<wxDataViewCustomRenderer*>(renderer));
 #endif
 #endif //__WXMSW__
 }

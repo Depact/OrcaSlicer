@@ -366,7 +366,7 @@ static std::string get_unique_id()
     memset(&buf, 0, sizeof(buf));
     io_registry_entry_t ioRegistryRoot = IORegistryEntryFromPath(kIOMasterPortDefault, "IOService:/");
     if (ioRegistryRoot != MACH_PORT_NULL) {
-        CFStringRef uuidCf = (CFStringRef)IORegistryEntryCreateCFProperty(ioRegistryRoot, CFstr(kIOPlatformUUIDKey), kCFAllocatorDefault, 0);
+        CFStringRef uuidCf = (CFStringRef)IORegistryEntryCreateCFProperty(ioRegistryRoot, CFSTR(kIOPlatformUUIDKey), kCFAllocatorDefault, 0);
         IOObjectRelease(ioRegistryRoot);
         CFStringGetCString(uuidCf, buf, buf_size, kCFStringEncodingMacRoman);
         CFRelease(uuidCf);

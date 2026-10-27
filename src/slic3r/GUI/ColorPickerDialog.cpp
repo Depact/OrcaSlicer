@@ -343,7 +343,7 @@ nlohmann::json color_picker_ui_strings()
         // TRN: Keep the standard/brand name "RAL" unchanged.
         {"RAL Classic", _u8L("RAL Classic")},
         {"Gradients", _u8L("Gradients")},
-        {"Solid", TR_CONTEXT("Solid", "Color picker")},
+        {"Solid", _u8L_CONTEXT("Solid", "Color picker")},
         {"Gradient", _u8L("Gradient")},
         {"Gradient start", _u8L("Gradient start")},
         {"Gradient end", _u8L("Gradient end")},

@@ -566,7 +566,7 @@ bool bbs_get_attribute_value_bool(const char** attributes, unsigned int attribut
 void add_vec3(std::stringstream &stream, const Slic3r::Vec3f &tr)
 {
     for (unsigned r = 0; r < 3; ++r) {
-        stream << r;
+        stream << tr(r);
         if (r != 2)
             stream << " ";
     }
@@ -801,6 +801,9 @@ void PlateData::parse_filament_info(GCodeProcessorResult *result)
 }
 
 
+//! macro used to mark string used at localization,
+//! return same string
+#define L(s) (s)
 #define _(s) Slic3r::I18N::translate(s)
 
     // Base class with error messages management

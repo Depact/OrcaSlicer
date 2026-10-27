@@ -50,6 +50,10 @@
 
 namespace Slic3r::sla { struct Interior; }
 
+//! macro used to mark string used at localization,
+//! return same string
+#define L(s) Slic3r::I18N::translate(s)
+
 namespace Slic3r {
 
 namespace {
@@ -67,13 +71,13 @@ const std::array<unsigned, slaposCount> OBJ_STEP_LEVELS = {
 std::string OBJ_STEP_LABELS(size_t idx)
 {
     switch (idx) {
-    case slaposHollowing:            return _u8L("Hollowing model");
-    case slaposDrillHoles:           return _u8L("Drilling holes into model.");
-    case slaposObjectSlice:          return _u8L("Slicing model");
-    case slaposSupportPoints:        return _u8L("Generating support points");
-    case slaposSupportTree:          return _u8L("Generating support tree");
-    case slaposPad:                  return _u8L("Generating pad");
-    case slaposSliceSupports:        return _u8L("Slicing supports");
+    case slaposHollowing:            return L("Hollowing model");
+    case slaposDrillHoles:           return L("Drilling holes into model.");
+    case slaposObjectSlice:          return L("Slicing model");
+    case slaposSupportPoints:        return L("Generating support points");
+    case slaposSupportTree:          return L("Generating support tree");
+    case slaposPad:                  return L("Generating pad");
+    case slaposSliceSupports:        return L("Slicing supports");
     default:;
     }
     assert(false);
@@ -88,8 +92,8 @@ const std::array<unsigned, slapsCount> PRINT_STEP_LEVELS = {
 std::string PRINT_STEP_LABELS(size_t idx)
 {
     switch (idx) {
-    case slapsMergeSlicesAndEval:   return _u8L("Merging slices and calculating statistics");
-    case slapsRasterize:            return _u8L("Rasterizing layers");
+    case slapsMergeSlicesAndEval:   return L("Merging slices and calculating statistics");
+    case slapsRasterize:            return L("Rasterizing layers");
     default:;
     }
     assert(false); return "Out of bounds!";
@@ -449,14 +453,14 @@ void SLAPrint::Steps::drill_holes(SLAPrintObject &po)
     }
 
     if (MeshBoolean::cgal::does_self_intersect(*holes_mesh_cgal))
-        throw Slic3r::SlicingError(_u8L("Too many overlapping holes."));
+        throw Slic3r::SlicingError(L("Too many overlapping holes."));
 
     auto hollowed_mesh_cgal = MeshBoolean::cgal::triangle_mesh_to_cgal(hollowed_mesh);
 
     if (!MeshBoolean::cgal::does_bound_a_volume(*hollowed_mesh_cgal)) {
         po.active_step_add_warning(
             PrintStateBase::WarningLevel::NON_CRITICAL,
-            _u8L("Mesh to be hollowed is not suitable for hollowing (does not "
+            L("Mesh to be hollowed is not suitable for hollowing (does not "
               "bound a volume)."));
     }
 
@@ -464,7 +468,7 @@ void SLAPrint::Steps::drill_holes(SLAPrintObject &po)
         && !MeshBoolean::cgal::does_bound_a_volume(*holes_mesh_cgal)) {
         po.active_step_add_warning(
             PrintStateBase::WarningLevel::NON_CRITICAL,
-            _u8L("Unable to drill the current configuration of holes into the "
+            L("Unable to drill the current configuration of holes into the "
               "model."));
     }
 
@@ -483,14 +487,14 @@ void SLAPrint::Steps::drill_holes(SLAPrintObject &po)
             sla::remove_inside_triangles(mesh_view, interior, exclude_mask);
         }
     } catch (const Slic3r::RuntimeError &) {
-        throw Slic3r::SlicingError(_u8L(
+        throw Slic3r::SlicingError(L(
             "Drilling holes into the mesh failed. "
             "This is usually caused by broken model. Try to fix it first."));
     }
 
     if (hole_fail)
         po.active_step_add_warning(PrintStateBase::WarningLevel::NON_CRITICAL,
-                                   _u8L("Failed to drill some holes into the model"));
+                                   L("Failed to drill some holes into the model"));
      */
 }
 
@@ -535,7 +539,7 @@ void SLAPrint::Steps::slice_model(SLAPrintObject &po)
     if(slindex_it == po.m_slice_index.end())
         //TRN To be shown at the status bar on SLA slicing error.
         throw Slic3r::RuntimeError(
-            _u8L("Slicing had to be stopped due to an internal error: "
+            L("Slicing had to be stopped due to an internal error: "
               "Inconsistent slice index."));
 
     po.m_model_height_levels.clear();
@@ -656,7 +660,7 @@ void SLAPrint::Steps::support_points(SLAPrintObject &po)
 
         // Using RELOAD_SLA_SUPPORT_POINTS to tell the Plater to pass
         // the update status to GLGizmoSlaSupports
-        report_status(-1, _u8L("Generating support points"),
+        report_status(-1, L("Generating support points"),
                       SlicingStatus::RELOAD_SLA_SUPPORT_POINTS);
     } else {
         // There are either some points on the front-end, or the user
@@ -708,7 +712,7 @@ void SLAPrint::Steps::support_tree(SLAPrintObject &po)
     auto rc = SlicingStatus::RELOAD_SCENE;
 
     // This is to prevent "Done." being displayed during merged_mesh()
-    report_status(-1, _u8L("Visualizing supports"));
+    report_status(-1, L("Visualizing supports"));
 
     BOOST_LOG_TRIVIAL(debug) << "Processed support point count "
                              << po.m_supportdata->pts.size();
@@ -717,7 +721,7 @@ void SLAPrint::Steps::support_tree(SLAPrintObject &po)
     if(po.support_mesh().empty())
         BOOST_LOG_TRIVIAL(warning) << "Support mesh is empty";
 
-    report_status(-1, _u8L("Visualizing supports"), rc);
+    report_status(-1, L("Visualizing supports"), rc);
 }
 
 void SLAPrint::Steps::generate_pad(SLAPrintObject &po) {
@@ -747,7 +751,7 @@ void SLAPrint::Steps::generate_pad(SLAPrintObject &po) {
 
         if (!validate_pad(po.m_supportdata->support_tree_ptr->retrieve_mesh(sla::MeshType::Pad), pcfg))
             throw Slic3r::SlicingError(
-                    _u8L("No pad can be generated for this model with the "
+                    L("No pad can be generated for this model with the "
                       "current configuration"));
 
     } else if(po.m_supportdata && po.m_supportdata->support_tree_ptr) {
@@ -755,7 +759,7 @@ void SLAPrint::Steps::generate_pad(SLAPrintObject &po) {
     }
 
     throw_if_canceled();
-    report_status(-1, _u8L("Visualizing supports"), SlicingStatus::RELOAD_SCENE);
+    report_status(-1, L("Visualizing supports"), SlicingStatus::RELOAD_SCENE);
 }
 
 // Slicing the support geometries similarly to the model slicing procedure.
@@ -871,7 +875,7 @@ void SLAPrint::Steps::initialize_printer_input()
         for(const SliceRecord& slicerecord : o->get_slice_index()) {
             if (!slicerecord.is_valid())
                 throw Slic3r::SlicingError(
-                    _u8L("There are unprintable objects. Try to "
+                    L("There are unprintable objects. Try to "
                       "adjust support settings to make the "
                       "objects printable."));
 

@@ -47,6 +47,10 @@
 
 namespace Slic3r { class Polygon; }
 
+//! macro used to mark string used at localization,
+//! return same string
+#define L(s) Slic3r::I18N::translate(s)
+
 namespace Slic3r {
 
 
@@ -645,7 +649,7 @@ StringObjectException SLAPrint::validate(std::vector<StringObjectException> *war
         if(supports_en &&
            mo->sla_points_status == sla::PointsStatus::UserModified &&
            mo->sla_support_points.empty())
-            return {_u8L("Cannot proceed without support points! "
+            return {L("Cannot proceed without support points! "
                      "Add support points or disable support generation."), po};
 
         sla::SupportTreeConfig cfg = make_support_cfg(po->config());
@@ -656,13 +660,13 @@ StringObjectException SLAPrint::validate(std::vector<StringObjectException> *war
         sla::PadConfig::EmbedObject &builtinpad = padcfg.embed_object;
 
         if(supports_en && !builtinpad.enabled && elv < cfg.head_fullwidth())
-            return {_u8L(
+            return {L(
                 "Elevation is too low for object. Use the \"Pad around "
                 "object\" feature to print the object without elevation."), po};
 
         if(supports_en && builtinpad.enabled &&
            cfg.pillar_base_safety_distance_mm < builtinpad.object_gap_mm) {
-            return {_u8L(
+            return {L(
                 "The endings of the support pillars will be deployed on the "
                 "gap between the object and the pad. 'Support base safety "
                 "distance' has to be greater than the 'Pad object gap' "
@@ -678,14 +682,14 @@ StringObjectException SLAPrint::validate(std::vector<StringObjectException> *war
     double expt_cur = m_material_config.exposure_time.getFloat();
 
     if (expt_cur < expt_min || expt_cur > expt_max)
-        return {_u8L("Exposition time is out of printer profile bounds.")};
+        return {L("Exposition time is out of printer profile bounds.")};
 
     double iexpt_max = m_printer_config.max_initial_exposure_time.getFloat();
     double iexpt_min = m_printer_config.min_initial_exposure_time.getFloat();
     double iexpt_cur = m_material_config.initial_exposure_time.getFloat();
 
     if (iexpt_cur < iexpt_min || iexpt_cur > iexpt_max)
-        return {_u8L("Initial exposition time is out of printer profile bounds.")};
+        return {L("Initial exposition time is out of printer profile bounds.")};
 
     return {};
 }
@@ -801,7 +805,7 @@ void SLAPrint::process(long long *time_cost_with_cache, bool use_cache)
     }
 
     // If everything vent well
-    m_report_status(*this, 100, _u8L("Slicing done"));
+    m_report_status(*this, 100, L("Slicing done"));
 
 #ifdef SLAPRINT_DO_BENCHMARK
     std::string csvbenchstr;

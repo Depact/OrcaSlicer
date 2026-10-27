@@ -176,7 +176,7 @@ std::vector<SerialPortInfo> scan_serial_ports_extended()
 		if (IOServiceGetMatchingServices(kIOMasterPortDefault, classes, &iter) == KERN_SUCCESS) {
 			io_object_t port;
 			while ((port = IOIteratorNext(iter)) != 0) {
-				CFTypeRef cf_property = IORegistryEntryCreateCFProperty(port, CFstr(kIOCalloutDeviceKey), kCFAllocatorDefault, 0);
+				CFTypeRef cf_property = IORegistryEntryCreateCFProperty(port, CFSTR(kIOCalloutDeviceKey), kCFAllocatorDefault, 0);
 				if (cf_property) {
 					char path[PATH_MAX];
 					Boolean result = CFStringGetCString((CFStringRef)cf_property, path, sizeof(path), kCFStringEncodingUTF8);
@@ -187,16 +187,16 @@ std::vector<SerialPortInfo> scan_serial_ports_extended()
 
 						// Attempt to read out the device friendly name
 						if ((cf_property = IORegistryEntrySearchCFProperty(port, kIOServicePlane,
-						         CFstr("USB Interface Name"), kCFAllocatorDefault,
+						         CFSTR("USB Interface Name"), kCFAllocatorDefault,
 						         kIORegistryIterateRecursively | kIORegistryIterateParents)) ||
 						    (cf_property = IORegistryEntrySearchCFProperty(port, kIOServicePlane,
-						         CFstr("USB Product Name"), kCFAllocatorDefault,
+						         CFSTR("USB Product Name"), kCFAllocatorDefault,
 						         kIORegistryIterateRecursively | kIORegistryIterateParents)) ||
 						    (cf_property = IORegistryEntrySearchCFProperty(port, kIOServicePlane,
-						         CFstr("Product Name"), kCFAllocatorDefault,
+						         CFSTR("Product Name"), kCFAllocatorDefault,
 						         kIORegistryIterateRecursively | kIORegistryIterateParents)) ||
 						    (cf_property = IORegistryEntryCreateCFProperty(port, 
-						         CFstr(kIOTTYDeviceKey), kCFAllocatorDefault, 0))) {
+						         CFSTR(kIOTTYDeviceKey), kCFAllocatorDefault, 0))) {
 							// Description limited to 127 char, anything longer would not be user friendly anyway.
 							char description[128];
 							if (CFStringGetCString((CFStringRef)cf_property, description, sizeof(description), kCFStringEncodingUTF8)) {
@@ -210,9 +210,9 @@ std::vector<SerialPortInfo> scan_serial_ports_extended()
 
 						// Attempt to read out the VID & PID
 						int vid, pid;
-						auto cf_vendor = IORegistryEntrySearchCFProperty(port, kIOServicePlane, CFstr("idVendor"),
+						auto cf_vendor = IORegistryEntrySearchCFProperty(port, kIOServicePlane, CFSTR("idVendor"),
 							kCFAllocatorDefault, kIORegistryIterateRecursively | kIORegistryIterateParents);
-						auto cf_product = IORegistryEntrySearchCFProperty(port, kIOServicePlane, CFstr("idProduct"),
+						auto cf_product = IORegistryEntrySearchCFProperty(port, kIOServicePlane, CFSTR("idProduct"),
 							kCFAllocatorDefault, kIORegistryIterateRecursively | kIORegistryIterateParents);
 						if (cf_vendor && cf_product) {
 							if (CFNumberGetValue((CFNumberRef)cf_vendor, kCFNumberIntType, &vid) &&
@@ -368,7 +368,7 @@ void Serial::set_baud_rate(unsigned baud_rate)
 
 
 /*
-void Serial::set_D_u8L(bool on)
+void Serial::set_DTR(bool on)
 {
 	auto handle = native_handle();
 #if defined(_WIN32) && !defined(__SYMBIAN32__)
@@ -491,11 +491,11 @@ size_t Serial::printer_write_line(const std::string &line)
 
 void Serial::printer_reset()
 {
-	this->set_D_u8L(false);
+	this->set_DTR(false);
 	std::this_thread::sleep_for(std::chrono::milliseconds(200));
-	this->set_D_u8L(true);
+	this->set_DTR(true);
 	std::this_thread::sleep_for(std::chrono::milliseconds(200));
-	this->set_D_u8L(false);
+	this->set_DTR(false);
 	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 

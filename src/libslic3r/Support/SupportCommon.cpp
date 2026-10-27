@@ -32,7 +32,6 @@
 #include "libslic3r/Polyline.hpp"
 #include "SupportLayer.hpp"
 #include "SupportParameters.hpp"
-#include "SupportConstants.hpp"
 #include "libslic3r/libslic3r.h"
 #include "libslic3r/Surface.hpp"
 #include "libslic3r/Utils.hpp"
@@ -185,6 +184,11 @@ void trim_support_layers_by_exclusion_volumes(
 
 // how much we extend support around the actual contact area
 //FIXME this should be dependent on the nozzle diameter!
+#define SUPPORT_MATERIAL_MARGIN 1.5
+
+//#define SUPPORT_SURFACES_OFFSET_PARAMETERS jtMiter, 3.
+//#define SUPPORT_SURFACES_OFFSET_PARAMETERS jtMiter, 1.5
+#define SUPPORT_SURFACES_OFFSET_PARAMETERS jtSquare, 0.
 
 // Convert some of the intermediate layers into top/bottom interface layers as well as base interface layers.
 std::pair<SupportGeneratorLayersPtr, SupportGeneratorLayersPtr> generate_interface_layers(
@@ -240,7 +244,7 @@ std::pair<SupportGeneratorLayersPtr, SupportGeneratorLayersPtr> generate_interfa
                 if (polys.empty())
                     return polys;
                 return smooth_supports ?
-                    smooth_outward(closing(std::move(polys), closing_distance + minimum_island_radius, closing_distance, SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT), smoothing_distance) :
+                    smooth_outward(closing(std::move(polys), closing_distance + minimum_island_radius, closing_distance, SUPPORT_SURFACES_OFFSET_PARAMETERS), smoothing_distance) :
                     union_safety_offset(std::move(polys));
             };
             // ORCA: apply independent smoothing to bottom vs top.
@@ -469,11 +473,11 @@ SupportGeneratorLayersPtr generate_raft_base(
 
     Polygons interface_polygons;
     if (contacts != nullptr && ! contacts->polygons.empty())
-        polygons_append(interface_polygons, expand(contacts->polygons, inflate_factor_fine, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT));
+        polygons_append(interface_polygons, expand(contacts->polygons, inflate_factor_fine, SUPPORT_SURFACES_OFFSET_PARAMETERS));
     if (interfaces != nullptr && ! interfaces->polygons.empty())
-        polygons_append(interface_polygons, expand(interfaces->polygons, inflate_factor_fine, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT));
+        polygons_append(interface_polygons, expand(interfaces->polygons, inflate_factor_fine, SUPPORT_SURFACES_OFFSET_PARAMETERS));
     if (base_interfaces != nullptr && ! base_interfaces->polygons.empty())
-        polygons_append(interface_polygons, expand(base_interfaces->polygons, inflate_factor_fine, Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT));
+        polygons_append(interface_polygons, expand(base_interfaces->polygons, inflate_factor_fine, SUPPORT_SURFACES_OFFSET_PARAMETERS));
 
     // Output vector.
     SupportGeneratorLayersPtr raft_layers;
@@ -540,7 +544,7 @@ SupportGeneratorLayersPtr generate_raft_base(
             Polygons  trimming;
             // BBS: if first layer of support is intersected with object island, it must have the same function as brim unless in nobrim mode.
             // brim_object_gap is changed to 0 by default, it's no longer appropriate to use it to determine the gap of first layer support.
-            trimming = offset(object.layers().front()->lslices, (float) scale_(support_params.gap_xy_first_layer), Slic3r::SUPPORT_SURFACES_OFFSET_JOIN_TYPE, SUPPORT_SURFACES_OFFSET_MITER_LIMIT);
+            trimming = offset(object.layers().front()->lslices, (float) scale_(support_params.gap_xy_first_layer), SUPPORT_SURFACES_OFFSET_PARAMETERS);
             if (inflate_factor_1st_layer > SCALED_EPSILON) {
                 // Inflate in multiple steps to avoid leaking of the support 1st layer through object walls.
                 auto  nsteps = std::max(5, int(ceil(inflate_factor_1st_layer / support_params.first_layer_flow.scaled_width())));
@@ -1130,7 +1134,7 @@ void LoopInterfaceProcessor::generate(SupportGeneratorLayerExtruded &top_contact
             map_split_points[it->first_point()] = -1;
             loop_lines.push_back(it->split_at_first_point());
         }
-        loop_lines = intersection_pl(loop_lines, expand(overhang_polygons, scale_(Slic3r::SUPPORT_MATERIAL_MARGIN_COMMON)));
+        loop_lines = intersection_pl(loop_lines, expand(overhang_polygons, scale_(SUPPORT_MATERIAL_MARGIN)));
         // Because a closed loop has been split to a line, loop_lines may contain continuous segments split to 2 pieces.
         // Try to connect them.
         for (int i_line = 0; i_line < int(loop_lines.size()); ++ i_line) {
@@ -1454,6 +1458,11 @@ static void modulate_extrusion_by_overlapping_layers(
     for (auto it_fragment = path_fragments.begin(); it_fragment != path_fragments.end(); ++ it_fragment)
         extrusion_entities_append_paths(extrusions_in_out, std::move(it_fragment->polylines), extrusion_role, it_fragment->mm3_per_mm, it_fragment->width, it_fragment->height);
 }
+
+// Support layer that is covered by some form of dense interface.
+static constexpr const std::initializer_list<SupporLayerType> support_types_interface{
+    SupporLayerType::RaftInterface, SupporLayerType::BottomContact, SupporLayerType::BottomInterface, SupporLayerType::TopContact, SupporLayerType::TopInterface
+};
 
 SupportGeneratorLayersPtr generate_support_layers(
     PrintObject                         &object,
@@ -2093,8 +2102,8 @@ void PrintObjectSupportMaterial::clip_by_pillars(
     if (top_contacts.empty())
         return;
 
-    coord_t pillar_size    = scale_(Slic3r::TREE_SUPPORT_PILLAR_SIZE);
-    coord_t pillar_spacing = scale_(Slic3r::TREE_SUPPORT_PILLAR_SPACING);
+    coord_t pillar_size    = scale_(PILLAR_SIZE);
+    coord_t pillar_spacing = scale_(PILLAR_SPACING);
 
     // A regular grid of pillars, filling the 2D bounding box.
     Polygons grid;

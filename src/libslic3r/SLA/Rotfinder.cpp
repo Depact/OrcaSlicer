@@ -426,7 +426,7 @@ Vec2d find_least_supports_rotation(const ModelObject &      mo,
     return {rot[0], rot[1]};
 }
 
-inline BoundingBoxf3 bounding_box_with__u8L(const indexed_triangle_set &its,
+inline BoundingBoxf3 bounding_box_with_tr(const indexed_triangle_set &its,
                                           const Transform3f &tr)
 {
     if (its.vertices.empty())
@@ -477,7 +477,7 @@ Vec2d find_min_z_height_rotation(const ModelObject &mo,
     auto objfn = [&bp, &chull](const XYRotation &rot) {
         bp.statusfn();
         Transform3f tr = to_transform3f(rot);
-        return bounding_box_with__u8L(chull.its, tr).size().z();
+        return bounding_box_with_tr(chull.its, tr).size().z();
     };
 
     XYRotation rot = find_min_score<2>(objfn, inputs.begin(), inputs.end(), [&bp] {

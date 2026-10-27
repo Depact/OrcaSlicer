@@ -145,8 +145,8 @@ public:
     int GetSelectIdx();
     void SetOptions(const std::vector<NozzleOption>& options,int default_select);
 private:
-    wxString BuildTableObjstr();
-    wxString BuildTextObjstr();
+    wxString BuildTableObjStr();
+    wxString BuildTextObjStr();
     std::vector<NozzleOption> m_nozzle_options;
 
     void SendSelectionChangedEvent();

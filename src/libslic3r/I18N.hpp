@@ -31,10 +31,6 @@ namespace I18N {
 		[[maybe_unused]] const char* L(const char* s)    { return s; }
 		[[maybe_unused]] const char* L_CONTEXT(const char* s, const char* context) { return s; }
 		[[maybe_unused]] std::string _u8L(const char* s) { return Slic3r::I18N::translate(s); }
-		[[maybe_unused]] std::string _u8L(const std::string &s) { return Slic3r::I18N::translate(s); }
-		[[maybe_unused]] std::string TR(const char* s) { return Slic3r::I18N::translate(s); }
-		[[maybe_unused]] std::string TR(const std::string &s) { return Slic3r::I18N::translate(s); }
-		[[maybe_unused]] std::string TR_CONTEXT(const char* s, const char* context) { return Slic3r::I18N::translate(s); }
 	}
 #endif
 

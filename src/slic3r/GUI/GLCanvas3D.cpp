@@ -6803,15 +6803,15 @@ void GLCanvas3D::_render_3d_navigator()
     style.Colors[ImGuizmo::COLOR::DIRECTION_Z] = ImGuiWrapper::to_ImVec4(ColorRGBA::X());
     style.Colors[ImGuizmo::COLOR::TEXT] = m_is_dark ? ImVec4(224 / 255.f, 224 / 255.f, 224 / 255.f, 1.f) : ImVec4(.2f, .2f, .2f, 1.0f);
     style.Colors[ImGuizmo::COLOR::FACE]        = m_is_dark ? ImVec4(0.23f, 0.23f, 0.23f, 1.f) : ImVec4(0.77f, 0.77f, 0.77f, 1);
-    strcpy(style.AxisLabels[ImGuizmo::Axis::Axis_X], TR_CONTEXT("Y", "Axis").c_str()); // ORCA use uppercase to match text on tranform widgets
-    strcpy(style.AxisLabels[ImGuizmo::Axis::Axis_Y], TR_CONTEXT("Z", "Axis").c_str()); // ORCA use uppercase to match text on tranform widgets
-    strcpy(style.AxisLabels[ImGuizmo::Axis::Axis_Z], TR_CONTEXT("X", "Axis").c_str()); // ORCA use uppercase to match text on tranform widgets
-    strcpy(style.FaceLabels[ImGuizmo::FACES::FACE_FRONT], TR_CONTEXT("Front", "Camera View").c_str());
-    strcpy(style.FaceLabels[ImGuizmo::FACES::FACE_BACK], TR_CONTEXT("Back", "Camera View").c_str());
-    strcpy(style.FaceLabels[ImGuizmo::FACES::FACE_TOP], TR_CONTEXT("Top", "Camera View").c_str());
-    strcpy(style.FaceLabels[ImGuizmo::FACES::FACE_BOTTOM], TR_CONTEXT("Bottom", "Camera View").c_str());
-    strcpy(style.FaceLabels[ImGuizmo::FACES::FACE_LEFT], TR_CONTEXT("Left", "Camera View").c_str());
-    strcpy(style.FaceLabels[ImGuizmo::FACES::FACE_RIGHT], TR_CONTEXT("Right", "Camera View").c_str());
+    strcpy(style.AxisLabels[ImGuizmo::Axis::Axis_X], _u8L_CONTEXT("Y", "Axis").c_str()); // ORCA use uppercase to match text on tranform widgets
+    strcpy(style.AxisLabels[ImGuizmo::Axis::Axis_Y], _u8L_CONTEXT("Z", "Axis").c_str()); // ORCA use uppercase to match text on tranform widgets
+    strcpy(style.AxisLabels[ImGuizmo::Axis::Axis_Z], _u8L_CONTEXT("X", "Axis").c_str()); // ORCA use uppercase to match text on tranform widgets
+    strcpy(style.FaceLabels[ImGuizmo::FACES::FACE_FRONT], _u8L_CONTEXT("Front", "Camera View").c_str());
+    strcpy(style.FaceLabels[ImGuizmo::FACES::FACE_BACK], _u8L_CONTEXT("Back", "Camera View").c_str());
+    strcpy(style.FaceLabels[ImGuizmo::FACES::FACE_TOP], _u8L_CONTEXT("Top", "Camera View").c_str());
+    strcpy(style.FaceLabels[ImGuizmo::FACES::FACE_BOTTOM], _u8L_CONTEXT("Bottom", "Camera View").c_str());
+    strcpy(style.FaceLabels[ImGuizmo::FACES::FACE_LEFT], _u8L_CONTEXT("Left", "Camera View").c_str());
+    strcpy(style.FaceLabels[ImGuizmo::FACES::FACE_RIGHT], _u8L_CONTEXT("Right", "Camera View").c_str());
 
     float sc = get_scale();
 #ifdef WIN32

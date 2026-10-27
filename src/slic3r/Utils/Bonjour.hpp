@@ -111,7 +111,7 @@ struct BonjourRequest
 
 	std::vector<char> m_data;
 
-	static boost::optional<BonjourRequest> make_P_u8L(const std::string& service, const std::string& protocol);
+	static boost::optional<BonjourRequest> make_PTR(const std::string& service, const std::string& protocol);
 	static boost::optional<BonjourRequest> make_A(const std::string& hostname);
 	static boost::optional<BonjourRequest> make_AAAA(const std::string& hostname);
 private:
@@ -234,7 +234,7 @@ protected:
 	{
 		requests.clear();
 		// create PTR request
-		if (auto rqst = BonjourRequest::make_P_u8L(service, protocol); rqst)
+		if (auto rqst = BonjourRequest::make_PTR(service, protocol); rqst)
 			requests.push_back(std::move(rqst.get()));
 	}
 	boost::optional<BonjourRequest> request;

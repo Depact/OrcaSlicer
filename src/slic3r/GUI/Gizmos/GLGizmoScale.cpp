@@ -171,9 +171,9 @@ bool GLGizmoScale3D::on_init()
 std::string GLGizmoScale3D::on_get_name() const
 {
     if (!on_is_activable() && m_state == EState::Off) {
-        return TR_CONTEXT("Scale", "Verb") + ":\n" + _u8L("Please select at least one object.");
+        return _u8L_CONTEXT("Scale", "Verb") + ":\n" + _u8L("Please select at least one object.");
     } else {
-        return TR_CONTEXT("Scale", "Verb");
+        return _u8L_CONTEXT("Scale", "Verb");
     }
 }
 

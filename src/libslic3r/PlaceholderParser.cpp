@@ -773,7 +773,7 @@ namespace client
             } catch (SLIC3R_REGEX_NAMESPACE::regex_error &ex) {
                 // Syntax error in the regular expression
                 boost::throw_exception(qi::expectation_failure<Iterator>(
-                    rhs.begin(), rhs.end(), spirit::info("*" + Slic3r::format(L("Regular expression compilation failed: %1%"), ex.what()))));
+                    rhs.begin(), rhs.end(), spirit::info("*" + Slic3r::format(_u8L("Regular expression compilation failed: %1%"), ex.what()))));
             }
         }
 
@@ -797,7 +797,7 @@ namespace client
             } catch (SLIC3R_REGEX_NAMESPACE::regex_error &ex) {
                 // Syntax error in the regular expression
                 boost::throw_exception(qi::expectation_failure<Iterator>(
-                    pattern.begin(), pattern.end(), spirit::info("*" + Slic3r::format(L("Regular expression compilation failed: %1%"), ex.what()))));
+                    pattern.begin(), pattern.end(), spirit::info("*" + Slic3r::format(_u8L("Regular expression compilation failed: %1%"), ex.what()))));
             }
         }
 
@@ -1915,17 +1915,17 @@ namespace client
             if (! info.tag.empty() && info.tag.front() == '*') {
                 // The gat contains an explanatory string.
                 // TRN Custom G-code error. %1% is the line number, %2% the reason.
-                msg += Slic3r::format(L("Parsing error at line %1%: %2%"), line_nr, Slic3r::I18N::translate(info.tag.substr(1)));
+                msg += Slic3r::format(_u8L("Parsing error at line %1%: %2%"), line_nr, Slic3r::I18N::translate(info.tag.substr(1)));
             } else {
                 auto it = tag_to_error_message.find(info.tag);
                 if (it == tag_to_error_message.end()) {
                     // A generic error report based on the nonterminal or terminal symbol name.
                     // TRN Custom G-code error. %1% is the line number, %2% the name of a grammar rule.
-                    msg += Slic3r::format(L("Parsing error at line %1%. Expecting tag %2%"), line_nr, info.tag);
+                    msg += Slic3r::format(_u8L("Parsing error at line %1%. Expecting tag %2%"), line_nr, info.tag);
                 } else {
                     // Use the human readable error message.
                     // TRN Custom G-code error. %1% is the line number, %2% the reason.
-                    msg += Slic3r::format(L("Parsing error at line %1%. %2%"), line_nr, Slic3r::I18N::translate(it->second));
+                    msg += Slic3r::format(_u8L("Parsing error at line %1%. %2%"), line_nr, Slic3r::I18N::translate(it->second));
                 }
             }
             msg += '\n';

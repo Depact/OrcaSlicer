@@ -85,7 +85,7 @@ std::string special_key_label(int key)
 {
     for (const KeyName& k : special_keys)
         if (k.key == key)
-            return TR_CONTEXT(k.label != nullptr ? k.label : k.name, "Keyboard Shortcut");
+            return _u8L_CONTEXT(k.label != nullptr ? k.label : k.name, "Keyboard Shortcut");
     return special_key_name(key);
 }
 

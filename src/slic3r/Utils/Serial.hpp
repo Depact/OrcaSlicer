@@ -60,7 +60,7 @@ public:
 	// see FirmwareDialog::priv::avr109_reboot()
 
 /*
-	void set_D_u8L(bool on);
+	void set_DTR(bool on);
 
 	// Resets the line number both internally as well as with the firmware using M110
 	void reset_line_num();

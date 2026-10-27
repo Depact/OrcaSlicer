@@ -332,7 +332,7 @@ static std::vector<double> expand_physical_to_full_matrix(
     return full;
 }
 
-wxString WipingDialog::BuildTableObjstr()
+wxString WipingDialog::BuildTableObjStr()
 {
     auto full_config = wxGetApp().preset_bundle->full_config();
     auto filament_colors = full_config.option<ConfigOptionStrings>("filament_colour")->values;
@@ -400,7 +400,7 @@ wxString WipingDialog::BuildTableObjstr()
     return obj_str;
 }
 
-wxString WipingDialog::BuildTextObjstr(bool multi_language)
+wxString WipingDialog::BuildTextObjStr(bool multi_language)
 {
     wxString auto_flush_tip;
     wxString volume_desp_panel;
@@ -524,8 +524,8 @@ WipingDialog::WipingDialog(wxWindow* parent, const int max_flush_volume) :
     wxGetApp().UpdateDlgDarkUI(this);
 
     //m_webview->Bind(wxEVT_WEBVIEW_NAVIGATED, [this](auto& evt) {
-    //    auto table_obj_str = BuildTableObjstr();
-    //    auto text_obj_str = BuildTextObjstr();
+    //    auto table_obj_str = BuildTableObjStr();
+    //    auto text_obj_str = BuildTextObjStr();
     //    CallAfter([table_obj_str, text_obj_str, this] {
     //        wxString script = wxString::Format("buildTable(%s);buildText(%s)", table_obj_str, text_obj_str);
     //        m_webview->RunScript(script);
@@ -538,8 +538,8 @@ WipingDialog::WipingDialog(wxWindow* parent, const int max_flush_volume) :
         try {
             json j = json::parse(message);
             if (j["msg"].get<std::string>() == "init") {
-                auto table_obj_str = BuildTableObjstr();
-                auto text_obj_str = BuildTextObjstr(true);
+                auto table_obj_str = BuildTableObjStr();
+                auto text_obj_str = BuildTextObjStr(true);
                 CallAfter([table_obj_str, text_obj_str, this] {
                     wxString script1 = wxString::Format("buildTable(%s)", table_obj_str);
                     m_webview->RunScript(script1);
@@ -547,7 +547,7 @@ WipingDialog::WipingDialog(wxWindow* parent, const int max_flush_volume) :
                     bool result = m_webview->RunScript(script2);
                     if (!result) {
                         BOOST_LOG_TRIVIAL(error) << __FUNCTION__<< "Failed to run buildText, retry without multi language";
-                        wxString script3 = wxString::Format("buildText(%s)", BuildTextObjstr(false));
+                        wxString script3 = wxString::Format("buildText(%s)", BuildTextObjStr(false));
                         m_webview->RunScript(script3);
                     }
                     });

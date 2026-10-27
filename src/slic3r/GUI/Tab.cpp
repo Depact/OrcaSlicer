@@ -827,18 +827,18 @@ wxString Tab::translate_category(const wxString& title, Preset::Type preset_type
     if (preset_type == Preset::TYPE_PRINTER && title.Contains("Extruder ")) {
         auto preset = wxGetApp().preset_bundle;
         if (preset && preset->is_bbl_vendor()) {
-            if (title == "Extruder 1") return _u8L(L("Left Extruder"));
-            if (title == "Extruder 2") return _u8L(L("Right Extruder"));
+            if (title == "Extruder 1") return tr(L("Left Extruder"));
+            if (title == "Extruder 2") return tr(L("Right Extruder"));
         }
-        return _u8L(L("Extruder")) + title.SubString(8, title.Last());
+        return tr(L("Extruder")) + title.SubString(8, title.Last());
     }
     // Orca: one "Extruder" page serves all extruders; name it "Extruders" when there are several.
     if (preset_type == Preset::TYPE_PRINTER && title == "Extruder") {
         auto preset = wxGetApp().preset_bundle;
         if (preset && preset->get_printer_extruder_count() > 1)
-            return _u8L(L("Extruders"));
+            return tr(L("Extruders"));
     }
-    return _u8L(title);
+    return tr(title);
 }
 
 void Tab::OnActivate()

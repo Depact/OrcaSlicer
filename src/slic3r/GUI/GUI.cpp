@@ -71,7 +71,7 @@ IOPMAssertionID assertionID;
 void disable_screensaver()
 {
     #if __APPLE__
-    CFStringRef reasonForActivity = CFstr("Slic3r");
+    CFStringRef reasonForActivity = CFSTR("Slic3r");
     [[maybe_unused]]IOReturn success = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
         kIOPMAssertionLevelOn, reasonForActivity, &assertionID);
     // ignore result: success == kIOReturnSuccess

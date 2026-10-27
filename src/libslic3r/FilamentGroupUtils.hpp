@@ -31,17 +31,17 @@ namespace Slic3r
         };
 
 
-        struct FilamentGroupInfo {
+        struct FilamentInfo {
             Color color;
             std::string type;
             bool is_support;
             // How this filament is used across the model. Orca's shipping grouping
-            // algorithm does not read it yet; defaulted so a default-built FilamentGroupInfo
+            // algorithm does not read it yet; defaulted so a default-built FilamentInfo
             // is deterministic. The nozzle-centric engine consumes it later.
             FilamentUsageType usage_type = FilamentUsageType::ModelOnly;
         };
 
-        struct MachineFilamentInfo: public FilamentGroupInfo {
+        struct MachineFilamentInfo: public FilamentInfo {
             int extruder_id;
             bool is_extended;
             bool operator<(const MachineFilamentInfo& other) const;

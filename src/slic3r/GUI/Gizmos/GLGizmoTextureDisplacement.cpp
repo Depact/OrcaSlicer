@@ -7312,7 +7312,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
         ImGui::AlignTextToFramePadding();
         heading(_L("Texture displacement"));
 
-        const std::string labels[2] = { TR_CONTEXT("Standard", "Mode"), _u8L("Pro") };
+        const std::string labels[2] = { _u8L_CONTEXT("Standard", "Mode"), _u8L("Pro") };
         const float       seg_pad   = m_imgui->scaled(0.5f);
         const float seg_w[2] = { ImGui::CalcTextSize(labels[0].c_str()).x + 2.f * seg_pad, ImGui::CalcTextSize(labels[1].c_str()).x + 2.f * seg_pad };
         ImGui::SameLine();
@@ -7940,7 +7940,7 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                 {
                     const float x0 = ImGui::GetCursorPosX();
                     ImGui::AlignTextToFramePadding();
-                    ImGui::TextDisabled("%s", TR_CONTEXT("Mapping", "Texture Displacement").c_str());
+                    ImGui::TextDisabled("%s", _u8L_CONTEXT("Mapping", "Texture Displacement").c_str());
                     ImGui::SameLine();
                     ImGui::SetCursorPosX(std::max(ImGui::GetCursorPosX(), x0 + label_w));
                     struct MappingIcon
@@ -8124,10 +8124,10 @@ void GLGizmoTextureDisplacement::on_render_input_window(float x, float y, float 
                     ImGui::TextDisabled("%s", _u8L("Blend").c_str());
                     ImGui::SameLine();
                     ImGui::SetCursorPosX(std::max(ImGui::GetCursorPosX(), x0 + label_w));
-                    const std::string blend_add      = TR_CONTEXT("Add", "Texture Displacement");
-                    const std::string blend_override  = TR_CONTEXT("Override", "Texture Displacement");
-                    const std::string blend_subtract = TR_CONTEXT("Subtract", "Texture Displacement");
-                    const std::string blend_multiply = TR_CONTEXT("Multiply", "Texture Displacement");
+                    const std::string blend_add      = _u8L_CONTEXT("Add", "Texture Displacement");
+                    const std::string blend_override  = _u8L_CONTEXT("Override", "Texture Displacement");
+                    const std::string blend_subtract = _u8L_CONTEXT("Subtract", "Texture Displacement");
+                    const std::string blend_multiply = _u8L_CONTEXT("Multiply", "Texture Displacement");
                     const std::string blend_divide   = _u8L("Divide");
                     const char *blend_items[] = { blend_add.c_str(), blend_override.c_str(), blend_subtract.c_str(),
                                                   blend_multiply.c_str(), blend_divide.c_str() };

@@ -38,9 +38,13 @@
 #include <optional>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/log/trivial.hpp>
+#include <boost/thread.hpp>
 #include <float.h>
 #include <string>
 #include <vector>
@@ -82,6 +86,9 @@ void ReplaceString(std::string &resource_str, const std::string &old_str, const 
 
 namespace Slic3r {
 
+//! macro used to mark string used at localization,
+//! return same string
+#define L(s) (s)
 #define _(s) Slic3r::I18N::translate(s)
 
 // Filament types are defined in MaterialType.
@@ -13295,9 +13302,9 @@ void DynamicPrintAndCLIConfig::handle_legacy(t_config_option_key &opt_key, std::
 
 // SlicingStatesConfigDefs
 
-// Create a new config definition with a label and tooltip.
-// Callers wrap user-visible text in L() so xgettext extracts it.
-#define new_def(OPT_KEY, TYPE, LABEL, TOOLTIP)         def = this->add(OPT_KEY, TYPE);         def->label = LABEL;         def->tooltip = TOOLTIP;
+// Create a new config definition with a label and tooltip
+// Note: the L() macro is already used for LABEL and TOOLTIP
+#define new_def(OPT_KEY, TYPE, LABEL, TOOLTIP)         def = this->add(OPT_KEY, TYPE);         def->label = L(LABEL);         def->tooltip = L(TOOLTIP);
 
 ReadOnlySlicingStatesConfigDef::ReadOnlySlicingStatesConfigDef()
 {

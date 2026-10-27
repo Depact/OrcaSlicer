@@ -6,7 +6,6 @@
 #include "libslic3r/TriangleMesh.hpp"
 #include "libslic3r/ExPolygon.hpp"
 #include "libslic3r/libslic3r.h"
-#include "libslic3r/I18N.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
@@ -26,6 +25,10 @@
 #include "libslic3r/ExtrusionEntity.hpp"
 #include "libslic3r/SLA/IndexedMesh.hpp"
 #include "libslic3r/SLA/JobController.hpp"
+
+//! macro used to mark string used at localization,
+//! return same string
+#define L(s) Slic3r::I18N::translate(s)
 
 namespace Slic3r {
 namespace sla {

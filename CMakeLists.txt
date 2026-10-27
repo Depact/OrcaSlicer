@@ -120,7 +120,6 @@ option(SLIC3R_MSVC_COMPILE_PARALLEL "Compile on Visual Studio in parallel" 1)
 option(SLIC3R_MSVC_PDB          "Generate PDB files on MSVC in Release mode" 1)
 option(SLIC3R_RELATIVE_DEBUG_PATHS "Record a relative compilation directory in debug info (clang-cl)" 0)
 option(SLIC3R_ASAN              "Enable ASan on Clang and GCC" 0)
-option(SLIC3R_UNITY_BUILD       "Enable unity builds for clang-cl + Ninja Multi-Config" 1)
 
 # Python stubgen module
 option(ORCA_BUILD_PYTHON_STUBGEN_MODULE "Build importable Python module for pybind11-stubgen" ON)
@@ -368,9 +367,6 @@ else ()
 endif ()
 
 if (MSVC)
-    # clang-cl (unlike cl.exe) does not enable C++ exception handling by default when
-    # /EH is absent, so /EHsc is required for throw/try in bundled deps (mcut, etc.).
-    add_compile_options(/EHsc)
     # CMP0092 only applies when the cache is created; an existing tree keeps its /W3,
     # which a silenced bundled target would then override (D9025, once per file).
     string(REGEX REPLACE "/W[0-4]" "" CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}")
@@ -699,7 +695,7 @@ include_directories(SYSTEM ${LIBDIR_BIN}/dev-utils/platform)
 include_directories(SYSTEM ${LIBDIR}/libigl)
 
 if(WIN32)
-    add_definitions(-D_USE_MATH_DEFINES -D_WIN32 -DWIN32 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)
+    add_definitions(-D_USE_MATH_DEFINES -D_WIN32 -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)
     if(MSVC)
         # BOOST_ALL_NO_LIB: Avoid the automatic linking of Boost libraries on Windows. Rather rely on explicit linking.
         add_definitions(-DBOOST_ALL_NO_LIB -DBOOST_USE_WINAPI_VERSION=0x602 -DBOOST_SYSTEM_USE_UTF8 )

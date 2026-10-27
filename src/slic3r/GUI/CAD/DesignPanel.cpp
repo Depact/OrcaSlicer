@@ -6769,7 +6769,7 @@ void DesignPanel::show_offer_menu(const wxPoint& screen_pos)
                     offer_trace("row=%d %s DISABLED (%s)", row, kOfferRowNames[row],
                                 v->refusal ? v->refusal : "blocked");
                     wxString s = I18N::translate(v->name, "Design");
-                    if (v->refusal) s += wxString::FromUTF8("   —   ") + _u8L(v->refusal);
+                    if (v->refusal) s += wxString::FromUTF8("   —   ") + tr(v->refusal);
                     append_offer_item(&menu, id, s, *v)->Enable(false);
                     bound.push_back(nullptr);
                 }
@@ -6781,7 +6781,7 @@ void DesignPanel::show_offer_menu(const wxPoint& screen_pos)
             menu.AppendSeparator();                     // between the flat items and the families
             flat_items = false;
         }
-        const wxString fam = _u8L(kOfferRowNames[row]);
+        const wxString fam = tr(kOfferRowNames[row]);
 
         if (live.empty()) {
             // DISABLED IN PLACE, with the reason. This is the row that makes the list worth
@@ -6800,7 +6800,7 @@ void DesignPanel::show_offer_menu(const wxPoint& screen_pos)
                 if ((v->accepts & bit) && v->refusal) { why = v->refusal; break; }
             wxString s = fam;
             if (why)
-                s += wxString::FromUTF8("   —   ") + _u8L(why);
+                s += wxString::FromUTF8("   —   ") + tr(why);
             else if (OfferSel(kind) == OfferSel::None)
                 s += wxString::FromUTF8("   —   ") + _L("select something first");
             offer_trace("row=%d %s DISABLED (%s)", row, kOfferRowNames[row],
@@ -6835,7 +6835,7 @@ void DesignPanel::show_offer_menu(const wxPoint& screen_pos)
                     if (it == groups.end()) {
                         auto* g = new wxMenu();
                         groups.emplace_back(v->family, g);
-                        sub->AppendSubMenu(g, _u8L(v->family));
+                        sub->AppendSubMenu(g, tr(v->family));
                         target = g;
                     } else {
                         target = it->second;
@@ -6844,7 +6844,7 @@ void DesignPanel::show_offer_menu(const wxPoint& screen_pos)
                 if (!ok) {
                     offer_trace("row=%d %s ~ %s BLOCKED", row, kOfferRowNames[row], v->id);
                     wxString s = I18N::translate(v->name, "Design");
-                    if (v->refusal) s += wxString::FromUTF8("   —   ") + _u8L(v->refusal);
+                    if (v->refusal) s += wxString::FromUTF8("   —   ") + tr(v->refusal);
                     append_offer_item(target, base + int(bound.size()), s, *v)->Enable(false);
                     bound.push_back(nullptr);
                     continue;

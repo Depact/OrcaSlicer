@@ -13,7 +13,7 @@
 
 #ifndef _L_CONTEXT
 #define _L_CONTEXT(s, ctx) 	 Slic3r::GUI::I18N::translate((s), (ctx))
-#define TR_CONTEXT(s, ctx) Slic3r::GUI::I18N::translate_utf8((s), (ctx))
+#define _u8L_CONTEXT(s, ctx) Slic3r::GUI::I18N::translate_utf8((s), (ctx))
 #endif /* _ */
 
 #ifndef L

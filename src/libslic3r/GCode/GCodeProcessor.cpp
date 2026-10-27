@@ -33,6 +33,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/nowide/fstream.hpp>
 #include <boost/nowide/cstdio.hpp>
+#include <boost/filesystem/path.hpp>
 
 #include <cstddef>
 #include <cmath>
@@ -72,6 +73,7 @@
     #include <utility>
 #endif
 
+#include <chrono>
 
 #include "Geometry/ArcWelder.hpp"
 #include "libslic3r/MultiNozzleUtils.hpp"

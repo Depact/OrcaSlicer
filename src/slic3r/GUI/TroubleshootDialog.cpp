@@ -460,7 +460,7 @@ wxString TroubleshootDialog::GetSysInfoAll()
 };
 
 /*
-wxString TroubleshootDialog::GetConfigstr()
+wxString TroubleshootDialog::GetConfigStr()
 {
     wxString config_path = wxGetApp().app_config->config_path();
     std::ifstream file(config_path.ToUTF8().data());

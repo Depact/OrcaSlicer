@@ -447,7 +447,7 @@ bool SupportTreeBuildsteps::connect_to_nearpillar(const Head &head,
             bridgestart(Z) -= zdiff;
             touchjp(Z) = Zdown;
 
-            double t = bridge_mesh_distance(headjp, SupportTreeConstants::DOWN, r);
+            double t = bridge_mesh_distance(headjp, DOWN, r);
 
             // We can't insert a pillar under the source head to connect
             // with the nearby pillar's starting junction
@@ -553,7 +553,7 @@ bool SupportTreeBuildsteps::create_ground_pillar(const Vec3d &hjp,
         Vec3d nexp = endp;
         double dlast = 0.;
         while (((dlast = std::sqrt(m_mesh.squared_distance(to_floor(nexp)))) < gap_dist ||
-                !std::isinf(bridge_mesh_distance(nexp, SupportTreeConstants::DOWN, radius))) && t < tmax) {
+                !std::isinf(bridge_mesh_distance(nexp, DOWN, radius))) && t < tmax) {
             t += radius;
             nexp = endp + t * d;
         }
@@ -569,7 +569,7 @@ bool SupportTreeBuildsteps::create_ground_pillar(const Vec3d &hjp,
             tmax = std::min(tmax, tmax2);
 
             while (((dlast = std::sqrt(m_mesh.squared_distance(to_floor(nexp)))) < gap_dist ||
-                    !std::isinf(bridge_mesh_distance(nexp, SupportTreeConstants::DOWN, radius))) && t < tmax) {
+                    !std::isinf(bridge_mesh_distance(nexp, DOWN, radius))) && t < tmax) {
                 t += radius;
                 nexp = endp + t * d;
             }
@@ -808,7 +808,7 @@ void SupportTreeBuildsteps::classify()
         Vec3d headjp = head.junction_point();
 
         // collision check
-        auto hit = bridge_mesh_intersect(headjp, SupportTreeConstants::DOWN, r);
+        auto hit = bridge_mesh_intersect(headjp, DOWN, r);
 
         if(std::isinf(hit.distance())) ground_head_indices.emplace_back(i);
         else if(m_cfg.ground_facing_only)  head.invalidate();
@@ -920,7 +920,7 @@ bool SupportTreeBuildsteps::connect_to_ground(Head &head, const Vec3d &dir)
     double d = 0, tdown = 0;
     t = std::min(t, m_cfg.max_bridge_length_mm * r / m_cfg.head_back_radius_mm);
 
-    while (d < t && !std::isinf(tdown = bridge_mesh_distance(hjp + d * dir, SupportTreeConstants::DOWN, r)))
+    while (d < t && !std::isinf(tdown = bridge_mesh_distance(hjp + d * dir, DOWN, r)))
         d += r;
 
     if(!std::isinf(tdown)) return false;
@@ -991,7 +991,7 @@ bool SupportTreeBuildsteps::connect_to_model_body(Head &head)
     else if (h <= 0.) return false;
 
     Vec3d endp{hjp(X), hjp(Y), hjp(Z) - hit.distance() + h};
-    auto center_hit = m_mesh.query_ray_hit(hjp, SupportTreeConstants::DOWN);
+    auto center_hit = m_mesh.query_ray_hit(hjp, DOWN);
 
     double hitdiff = center_hit.distance() - hit.distance();
     Vec3d hitp = std::abs(hitdiff) < 2*head.r_back_mm?
@@ -1235,7 +1235,7 @@ void SupportTreeBuildsteps::interconnect_pillars()
 
                 // Check the path vertically down
                 Vec3d check_from = s + Vec3d{0., 0., pillar().r};
-                auto hr = bridge_mesh_intersect(check_from, SupportTreeConstants::DOWN, pillar().r);
+                auto hr = bridge_mesh_intersect(check_from, DOWN, pillar().r);
                 Vec3d gndsp{s(X), s(Y), gnd};
 
                 // If the path is clear, check for pillar base collisions

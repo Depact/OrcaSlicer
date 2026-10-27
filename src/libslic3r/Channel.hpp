@@ -85,7 +85,7 @@ public:
 
     LockedConstPtr lock_read() const
     {
-        return LockedConstP_u8L(&m_queue, Unlocker<const Queue>(UniqueLock(m_mutex)));
+        return LockedConstPtr(&m_queue, Unlocker<const Queue>(UniqueLock(m_mutex)));
     }
 
     LockedPtr lock_rw()

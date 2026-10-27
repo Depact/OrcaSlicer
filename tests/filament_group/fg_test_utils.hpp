@@ -147,11 +147,11 @@ inline std::vector<std::vector<unsigned int>> generate_layer_filaments_uniform(
 }
 
 // Generate filament info
-inline std::vector<FilamentGroupUtils::FilamentGroupInfo> generate_filament_info(int count, TestRng& rng) {
+inline std::vector<FilamentGroupUtils::FilamentInfo> generate_filament_info(int count, TestRng& rng) {
     static const char* types[] = {"PLA", "ABS", "PETG", "TPU", "PA", "PLA-S"};
-    std::vector<FilamentGroupUtils::FilamentGroupInfo> infos;
+    std::vector<FilamentGroupUtils::FilamentInfo> infos;
     for (int i = 0; i < count; ++i) {
-        FilamentGroupUtils::FilamentGroupInfo fi;
+        FilamentGroupUtils::FilamentInfo fi;
         fi.color = FilamentGroupUtils::Color(
             (unsigned char)rng.rand_int(0, 255),
             (unsigned char)rng.rand_int(0, 255),

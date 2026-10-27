@@ -5376,7 +5376,7 @@ GLAD_API_CALL PFNGLWINDOWPOS3SVPROC glad_glWindowPos3sv;
 
 
 
-GLAD_API_CALL int gladLoadGLUserP_u8L( GLADuserptrloadfunc load, void *userptr);
+GLAD_API_CALL int gladLoadGLUserPtr( GLADuserptrloadfunc load, void *userptr);
 GLAD_API_CALL int gladLoadGL( GLADloadfunc load);
 
 

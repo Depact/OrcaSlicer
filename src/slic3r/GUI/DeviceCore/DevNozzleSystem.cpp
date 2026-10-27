@@ -63,7 +63,7 @@ NozzleVolumeType DevNozzle::ToNozzleVolumeType(const NozzleFlowType& type)
     }
 }
 
-wxString DevNozzle::GetNozzleFlowTypestr(NozzleFlowType type)
+wxString DevNozzle::GetNozzleFlowTypeStr(NozzleFlowType type)
 {
     switch (type) {
     case NozzleFlowType::H_FLOW: return _L("High Flow");
@@ -102,7 +102,7 @@ std::string DevNozzle::ToNozzleFlowString(const NozzleFlowType& type)
     }
 }
 
-wxString DevNozzle::GetNozzleTypestr(NozzleType type)
+wxString DevNozzle::GetNozzleTypeStr(NozzleType type)
 {
     switch (type) {
     case Slic3r::ntHardenedSteel:   return _L("Hardened Steel");

@@ -30,6 +30,7 @@
     #include <wx/rawbmp.h>
 #endif /* __WXGTK2__ */
 #include <glad/gl.h>
+#define NANOSVG_IMPLEMENTATION
 #include "nanosvg/nanosvg.h"
 #define NANOSVGRAST_IMPLEMENTATION
 #include "nanosvg/nanosvgrast.h"
@@ -283,14 +284,6 @@ wxBitmap* BitmapCache::load_png(const std::string &bitmap_name, unsigned width, 
         image = image.ConvertToGreyscale(m_gs, m_gs, m_gs);
 
     return this->insert(bitmap_key, wxImage_to_wxBitmap_with_alpha(std::move(image)));
-}
-
-// nanosvg internal: parse "#RRGGBB" hex string into 0xRRGGBB.
-static unsigned int nsvg__parseColorHex(const char* str)
-{
-    unsigned int r = 0, g = 0, b = 0;
-    sscanf(str, "#%x%x%x", &r, &g, &b);
-    return (r << 16) | (g << 8) | b;
 }
 
 NSVGimage* BitmapCache::nsvgParseFromFileWithReplace(const char* filename, const char* units, float dpi, const std::map<std::string, std::string>& replaces)

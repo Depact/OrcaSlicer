@@ -1619,7 +1619,7 @@ GLAD_API_CALL PFNGLWAITSYNCPROC glad_glWaitSync;
 
 
 
-GLAD_API_CALL int gladLoadGLES2UserP_u8L( GLADuserptrloadfunc load, void *userptr);
+GLAD_API_CALL int gladLoadGLES2UserPtr( GLADuserptrloadfunc load, void *userptr);
 GLAD_API_CALL int gladLoadGLES2( GLADloadfunc load);
 
 

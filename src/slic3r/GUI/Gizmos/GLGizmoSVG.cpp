@@ -2056,7 +2056,7 @@ void GLGizmoSVG::draw_model_type()
     ImGui::SameLine();
 
     std::string last_solid_part_hint = _u8L("You can't change a type of the last solid part of the object.");
-    if (ImGui::RadioButton(TR_CONTEXT(L_CONTEXT("Cut", "EmbossOperation"), "EmbossOperation").c_str(), type == negative))
+    if (ImGui::RadioButton(_u8L_CONTEXT(L_CONTEXT("Cut", "EmbossOperation"), "EmbossOperation").c_str(), type == negative))
         new_type = negative;
     else if (ImGui::IsItemHovered()) {
         if (is_last_solid_part)

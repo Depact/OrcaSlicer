@@ -62,7 +62,7 @@ namespace textconv_helper
 		}
 		~CA2W_() {}
 		operator LPCWSTR() { return m_pStr ? &m_vWideArray[0] : NULL; }
-		//operator LPOLEstr() { return m_pStr ? (LPOLESTR)&m_vWideArray[0] : (LPOLESTR)NULL; }
+		//operator LPOLESTR() { return m_pStr ? (LPOLESTR)&m_vWideArray[0] : (LPOLESTR)NULL; }
 
 	private:
 		CA2W_(const CA2W_&);
@@ -108,7 +108,7 @@ namespace textconv_helper
 	public:
 		CW2W_(LPCWSTR pWStr) : m_pWStr(pWStr) {}
 		operator LPCWSTR() { return const_cast<LPWSTR>(m_pWStr); }
-		//operator LPOLEstr() { return const_cast<LPOLESTR>(m_pWStr); }
+		//operator LPOLESTR() { return const_cast<LPOLESTR>(m_pWStr); }
 
 	private:
 		CW2W_(const CW2W_&);
@@ -135,7 +135,7 @@ namespace textconv_helper
 	public:
 		CW2BSTR_(LPCWSTR pWStr) { m_bstrString = ::SysAllocString(pWStr); }
 		~CW2BSTR_() { ::SysFreeString(m_bstrString); }
-		operator Bstr() { return m_bstrString; }
+		operator BSTR() { return m_bstrString; }
 
 	private:
 		CW2BSTR_(const CW2BSTR_&);
@@ -148,7 +148,7 @@ namespace textconv_helper
 	public:
 		CA2BSTR_(LPCSTR pStr) { m_bstrString = ::SysAllocString(textconv_helper::CA2W_(pStr)); }
 		~CA2BSTR_() { ::SysFreeString(m_bstrString); }
-		operator Bstr() { return m_bstrString; }
+		operator BSTR() { return m_bstrString; }
 
 	private:
 		CA2BSTR_(const CA2BSTR_&);

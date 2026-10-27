@@ -54,7 +54,7 @@
 
 #define USE_JSON_CONFIG
 
-using nlohmann::json;
+using namespace nlohmann;
 
 namespace Slic3r {
 

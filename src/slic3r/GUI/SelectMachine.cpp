@@ -1819,13 +1819,13 @@ bool SelectMachineDialog::CheckErrorSyncNozzleMappingResultV1(MachineObject* obj
         return false;
     }
 
-    if (obj_nozzle_mapping_ptr->GetResultstr() == "failed") {
+    if (obj_nozzle_mapping_ptr->GetResultStr() == "failed") {
         const auto& err_msg = wxString::Format(_L("Failed to receive nozzle auto-mapping table from printer { msg: %s }. Please refresh the printer information."), obj_nozzle_mapping_ptr->GetMqttReason());
         show_status(PrintDialogStatus::PrintStatusRackNozzleMappingError, {err_msg});
         return false;
     }
 
-    if (obj_nozzle_mapping_ptr->GetResultstr() == "fail") {
+    if (obj_nozzle_mapping_ptr->GetResultStr() == "fail") {
         const wxString& err_msg = wxString::Format(_L("The printer failed to build the nozzle auto-mapping table { code: %d }. Please refresh nozzle information."), obj_nozzle_mapping_ptr->GetErrno());
         show_status(PrintDialogStatus::PrintStatusRackNozzleMappingError, {err_msg});
         return false;
@@ -1894,13 +1894,13 @@ bool SelectMachineDialog::CheckErrorSyncNozzleMappingResultV0(MachineObject* obj
         return false;
     }
 
-    if (obj_nozzle_mapping_ptr->GetResultstr() == "failed") {
+    if (obj_nozzle_mapping_ptr->GetResultStr() == "failed") {
         const auto& err_msg = wxString::Format(_L("Failed to receive nozzle auto-mapping table from printer { msg: %s }. Please refresh the printer information."), obj_nozzle_mapping_ptr->GetMqttReason());
         show_status(PrintDialogStatus::PrintStatusRackNozzleMappingError, {err_msg});
         return false;
     }
 
-    if (obj_nozzle_mapping_ptr->GetResultstr() == "fail") {
+    if (obj_nozzle_mapping_ptr->GetResultStr() == "fail") {
         const wxString& err_msg = wxString::Format(_L("The printer failed to build the nozzle auto-mapping table { code: %d }. Please refresh nozzle information."), obj_nozzle_mapping_ptr->GetErrno());
         show_status(PrintDialogStatus::PrintStatusRackNozzleMappingError, {err_msg});
         return false;
@@ -4615,7 +4615,7 @@ bool SelectMachineDialog::CheckErrorExtruderNozzleWithSlicing(MachineObject* obj
             // a matching nozzle instead.
             if (slicing_ext_idx == MAIN_EXTRUDER_ID && nozzle_sys->GetNozzleRack()->IsSupported()) {
                 if (nozzle_sys->CollectNozzles(MAIN_EXTRUDER_ID, slicing_ext.nozzle_flow_type, slicing_ext.nozzle_diameter).empty()) {
-                    wxString slicing_nozzle_str = DevNozzle::GetNozzleFlowTypestr(slicing_ext.nozzle_flow_type);
+                    wxString slicing_nozzle_str = DevNozzle::GetNozzleFlowTypeStr(slicing_ext.nozzle_flow_type);
                     if (slicing_ext.nozzle_diameter > 0.0f)
                         slicing_nozzle_str += wxString::Format(" %.1fmm", slicing_ext.nozzle_diameter);
                     wxString msg = wxString::Format(_L("The printer has no nozzle matching the slicing file (%s)."), slicing_nozzle_str);
@@ -4662,8 +4662,8 @@ bool SelectMachineDialog::CheckErrorExtruderNozzleWithSlicing(MachineObject* obj
             {
                 if (obj_->is_nozzle_flow_type_supported() && slicing_ext.nozzle_flow_type != installed_ext_nozzle.GetNozzleFlowType()) {
                     const wxString& pos = _get_nozzle_name(ext_sys->GetTotalExtderCount(), slicing_ext_idx);
-                    const wxString& installed_nozzle_str = installed_ext_nozzle.GetNozzleFlowTypestr();
-                    const wxString& slicing_nozzle_str = DevNozzle::GetNozzleFlowTypestr(slicing_ext.nozzle_flow_type);
+                    const wxString& installed_nozzle_str = installed_ext_nozzle.GetNozzleFlowTypeStr();
+                    const wxString& slicing_nozzle_str = DevNozzle::GetNozzleFlowTypeStr(slicing_ext.nozzle_flow_type);
                     wxString error_message = wxString::Format(_L("The nozzle flow setting of %s(%s) doesn't match with the slicing file(%s). "
                         "Please make sure the nozzle installed matches with settings in printer, "
                         "then set the corresponding printer preset while slicing."),

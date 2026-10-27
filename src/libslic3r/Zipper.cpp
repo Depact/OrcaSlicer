@@ -11,6 +11,10 @@
 #include <utility>
 #include "I18N.hpp"
 
+//! macro used to mark string used at localization,
+//! return same string
+#define L(s) Slic3r::I18N::translate(s)
+
 #if defined(_MSC_VER) &&  _MSC_VER <= 1800 || __cplusplus < 201103L
     #define SLIC3R_NORETURN
 #elif __cplusplus >= 201103L
@@ -25,7 +29,7 @@ public:
 
     std::string formatted_errorstr() const
     {
-        return _u8L("Error in zip archive") + " " + m_zipname + ": " +
+        return L("Error in zip archive") + " " + m_zipname + ": " +
                get_errorstr();
     }
 

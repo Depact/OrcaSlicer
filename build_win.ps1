@@ -1,61 +1,8 @@
 <#
 .SYNOPSIS
     Build OrcaSlicer on Windows with clang-cl + Ninja (+ optional ccache).
-
 .DESCRIPTION
-    This is the only sanctioned Windows build entry point. Do not drive CMake
-    or Ninja directly: the Visual Studio environment, compiler discovery and
-    dependency build are all set up here.
-
-    With no arguments the script picks a build automatically:
-      build-clang-cache exists -> incremental x64-clang-cache (ccache)
-      otherwise                -> clean x64-clang
-
-    The build processes' CPU, core use and memory are sampled while the build
-    runs and rendered as an ASCII chart at the end when Python and rich are
-    available.
-
-    Examples:
-      .\build_win.ps1
-      .\build_win.ps1 -Preset x64-clang-cache -Clean
-      .\build_win.ps1 -UnityTest
-      .\build_win.ps1 -NoMetrics
-      .\build_win.ps1 -MaxJobs 8
-
-.PARAMETER Preset
-    CMake configure preset: x64-clang, x64-clang-cache or x64-clang-debug.
-    Defaults to the automatic choice described above.
-
-.PARAMETER Config
-    Build configuration. Defaults to Release.
-
-.PARAMETER Target
-    Build target. Defaults to all, or libslic3r with -UnityTest.
-
-.PARAMETER Clean
-    Delete the preset's build directory before configuring.
-
-.PARAMETER UnityTestLibslic3r
-    Configure with SLIC3R_UNITY_BUILD=ON and build only libslic3r (quick smoke test).
-
-.PARAMETER NoMetrics
-    Skip build-process CPU, core and memory sampling.
-
-.PARAMETER MetricsInterval
-    Seconds between reported resource samples. Defaults to 15. The sampler
-    itself polls every 2 seconds so short compiler processes are included.
-    For cached runs (x64-clang-cache), defaults to 3 seconds.
-
-.PARAMETER MaxJobs
-    Max parallel Ninja jobs. Passed as -j to Ninja via CMake. Defaults to
-    0 (let Ninja decide, usually logical core count).
-
-.NOTES
-    Requires Visual Studio 2022 or newer with the C++ toolset, clang-cl, CMake 3.21+,
-    Ninja and ccache on PATH. Individual tools can be overridden with
-    ORCA_CLANG_CL, ORCA_CMAKE, ORCA_NINJA and ORCA_CCACHE.
-    ccache is only needed for the cache presets. The resource chart needs
-    Python 3 with rich; without it the raw CSV path is printed instead.
+    Run with -Help for a one-page reference of every option.
 #>
 
 param(
@@ -64,13 +11,96 @@ param(
     [string]$Config = "Release",
     [string]$Target,
     [switch]$Clean,
+    [switch]$CleanDeps,
     [switch]$UnityTestLibslic3r,
     [switch]$NoMetrics,
+    [switch]$PackDeps,
+    [switch]$SkipDeps,
     [ValidateRange(1, 10)]
     [int]$MetricsInterval = 15,
     [ValidateRange(1, 64)]
-    [int]$MaxJobs = 0
+    [int]$MaxJobs = 0,
+    [switch]$Help
 )
+
+if ($Help) {
+    @'
+build_win.ps1 - Build OrcaSlicer on Windows (clang-cl + Ninja + optional ccache)
+
+USAGE
+  .\build_win.ps1 [options]
+  .\build_win.ps1 -Help
+
+OPTIONS
+  -Preset <name>
+      Which build tree to use.
+        x64-clang        clang-cl, no ccache          (build-clang)
+        x64-clang-cache  ccache, unity build          (build-clang-cache)
+        x64-clang-debug  debug configuration tree     (build-dbg-clang)
+      Omit it and the script picks x64-clang-cache when ccache is installed and
+      its dependency tree is complete, otherwise x64-clang.
+
+  -Config <name>
+      CMake configuration to build. Default: Release.
+
+  -Target <name>
+      Build one target instead of everything, for example libslic3r.
+      Default: all.
+
+  -Clean
+      Delete the active build directory before configuring, so it is set up
+      from scratch. Dependencies are left alone.
+
+  -CleanDeps
+      Delete deps/build-clang and deps/build-clang-cache so the next build
+      rebuilds every dependency. Slow; pair it with -Clean for a full reset.
+
+  -UnityTestLibslic3r
+      Force x64-clang-cache and build only libslic3r, using the unity build for
+      fast test-and-fix cycles.
+
+  -NoMetrics
+      Skip the CPU / cores / RAM sampler and the resource chart afterwards.
+
+  -PackDeps
+      Check and build the dependencies, write deps/OrcaSlicer_dep.zip, then
+      exit without building OrcaSlicer.
+
+  -SkipDeps
+      Trust whatever is already in deps/ and skip the dependency check.
+
+  -MetricsInterval <n>
+      Seconds between sampler rows (1-10). Default: 15, or 3 for the
+      x64-clang-cache preset.
+
+  -MaxJobs <n>
+      Cap parallel compile jobs (1-64). Default: 0, meaning auto.
+
+  -Help
+      Print this page and exit.
+
+ENVIRONMENT
+  ORCA_CLANG_CL   Path to clang-cl.exe (otherwise PATH or the VS LLVM bundle).
+  ORCA_CMAKE      Path to cmake.exe (otherwise PATH).
+  ORCA_NINJA      Path to ninja.exe (otherwise PATH).
+  ORCA_CCACHE     Path to ccache.exe (otherwise PATH).
+
+EXAMPLES
+  .\build_win.ps1
+      Build everything with the best preset available on this machine.
+
+  .\build_win.ps1 -Preset x64-clang-cache -Target libslic3r
+      Rebuild only the slicing library through ccache.
+
+  .\build_win.ps1 -CleanDeps -PackDeps
+      Rebuild the dependencies from scratch and pack them into a zip.
+
+  .\build_win.ps1 -NoMetrics -MaxJobs 8
+      Same build without the resource monitor, eight jobs at a time.
+'@ | Write-Host
+    exit 0
+}
+
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -81,7 +111,6 @@ $presetDirs = @{
     "x64-clang-debug" = "build-dbg-clang"
 }
 
-# Source all build units so their functions are available in this scope.
 . (Join-Path $UnitsDir "native.ps1")
 . (Join-Path $UnitsDir "toolchain.ps1")
 . (Join-Path $UnitsDir "vsenv.ps1")
@@ -90,61 +119,90 @@ $presetDirs = @{
 . (Join-Path $UnitsDir "build.ps1")
 . (Join-Path $UnitsDir "ccache_stats.ps1")
 
+# Locate PowerShell 7 for PwshSpectreConsole rich output (Python 'rich' is forbidden).
+$Pwsh7 = Join-Path $env:LOCALAPPDATA "opencode\pwsh7\pwsh.exe"
+if (-not (Test-Path $Pwsh7)) {
+    $Pwsh7 = $null
+    Write-Status "pwsh7" "PowerShell 7 not found; falling back to plain output." "Yellow"
+}
+$PwshRenderScript = Join-Path $UnitsDir "render.ps1"
+
 $started = Get-Date
 $global:BuildStarted = $started
 $metricsJob = $null
 $metricsCsv = $null
+
+$configureStr = "-"
+$buildStr     = "-"
+$totalStr     = "-"
+$buildSucceeded = $false
+
 Push-Location $RepoRoot
 
 try {
     function Get-TimeStamp {
         $span = (Get-Date) - $global:BuildStarted
         $h = [math]::Floor($span.TotalHours); $m = [math]::Floor($span.TotalMinutes) % 60; $s = [math]::Round($span.Seconds)
-        return "{0}h{1}m{2}s" -f $h, $m, $s
+        return "{0}:{1}:{2}" -f $h, $m, $s
     }
 
     function Write-Step {
         param([string]$Text)
         $ts = Get-TimeStamp
-        $python = Get-Command py -ErrorAction SilentlyContinue
-        if (-not $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
-        if ($python) {
-            & $python -c "
-from rich.console import Console
-from rich.rule import Rule
-import sys
-ts = sys.argv[1]
-text = sys.argv[2]
-console = Console()
-console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
-" $ts $Text
-        } else {
-            Write-Host "[$ts] $Text"
+        Write-Host "[$ts] $Text"
+    }
+
+    function Write-Status {
+        param(
+            [string]$Tag,
+            [string]$Text,
+            [string]$Color = "DarkGray"
+        )
+        Write-Host ("  {0,-9} {1}" -f "[$Tag]", $Text) -ForegroundColor $Color
+    }
+
+    # Spectre output has to be produced by PowerShell 7, then replayed through
+    # Write-Host: PowerShell 5.1 decodes native stdout with the console code page,
+    # which mangles the box-drawing glyphs unless it is switched to UTF-8 here.
+    function Invoke-SpectreHelper {
+        param([string]$Action, [object[]]$Arguments = @())
+        if (-not $Pwsh7) { return $false }
+        $previousEncoding = [Console]::OutputEncoding
+        try {
+            [Console]::OutputEncoding = [Text.Encoding]::UTF8
+            & $Pwsh7 -NoProfile -File $PwshRenderScript $Action @Arguments 2>&1 | ForEach-Object { Write-Host $_ }
+        } finally {
+            [Console]::OutputEncoding = $previousEncoding
+        }
+        return $true
+    }
+
+    function Show-BuildMetrics {
+        param([string]$CsvPath, [string]$Preset, [string]$Config)
+        if (-not $CsvPath -or -not (Test-Path $CsvPath)) { return }
+        if (-not (Invoke-SpectreHelper -Action "chart" -Arguments @($CsvPath))) {
+            Write-Status "metrics" "PowerShell 7 not found; skipping metrics chart." "Yellow"
         }
     }
 
-    function Ensure-RichInstalled {
-        $python = Get-Command py -ErrorAction SilentlyContinue
-        if (-not $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
-        if ($python) {
-            try {
-                & $python -c "import rich" -ErrorAction Stop
-            } catch {
-                Write-Host "  -> Installing 'rich' for enhanced output..." -ForegroundColor Yellow
-                & $python -m pip install rich -q
-            }
-        }
+    $fmt = {
+        param($t)
+        $h = [math]::Floor($t.TotalHours)
+        $m = [math]::Floor($t.TotalMinutes) % 60
+        $s = [math]::Round($t.Seconds)
+        if ($h) { "\{0\}:\{1:00\}:\{2:00\}" -f $h, $m, $s }
+        elseif ($m) { "{0}m {1:00}s" -f $m, $s }
+        else { "{0}s" -f $s }
     }
 
     # --- 1. Locate Visual Studio and the toolchain ---
-    Write-Step "[1/5] Locating Visual Studio and tools..."
-    Ensure-RichInstalled
+    Write-Step "[1/7] Locating Visual Studio and tools..."
 
     $vsInstall = Find-VsInstall
     if (-not $vsInstall) {
         throw "Visual Studio 2022 or newer with the C++ toolset was not found. Install the 'Desktop development with C++' workload."
     }
-    Write-Host "  -> Visual Studio: $vsInstall" -ForegroundColor Gray
+    Write-Status "vs"      $vsInstall
 
     $clangCl = $null
     if ($env:ORCA_CLANG_CL) {
@@ -181,45 +239,25 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
         }
     }
 
-    Write-Host "  -> clang-cl: $clangCl" -ForegroundColor Gray
-    Write-Host "  -> cmake:    $cmake" -ForegroundColor Gray
-    if ($ccache) { Write-Host "  -> ccache:   $ccache" -ForegroundColor Gray }
+    Write-Status "clang-cl" $clangCl
+    Write-Status "cmake"    $cmake
+    Write-Status "ninja"    $ninja
+    if ($ccache) { Write-Status "ccache" $ccache }
 
-    # --- 2. Capture the Visual Studio environment ---
-    Write-Step "[2/5] Setting up the Visual Studio environment..."
-    Capture-VsEnvironment -VsInstall $vsInstall
-
-    # Put the chosen tools first: VsDevCmd may otherwise expose a different clang.
-    $toolDirs = @($clangCl, $cmake, $ninja, $ccache) |
-        Where-Object { $_ } |
-        ForEach-Object { Split-Path -Parent $_ } |
-        Select-Object -Unique
-    $env:PATH = ($toolDirs -join ";") + ";" + $env:PATH
-
-    # Start metrics monitoring BEFORE dependency check so we capture full build activity
-    if (-not $NoMetrics) {
-        $metricsCsv = Join-Path $env:TEMP "orca-build-metrics-$PID.csv"
-        Remove-Item $metricsCsv -ErrorAction SilentlyContinue
-        Write-Host "  -> Sampling build-process CPU, cores and RAM every ${MetricsInterval}s (2s poll)..." -ForegroundColor Gray
-        try {
-            $metricsJob = Start-BuildMonitor -CsvPath $metricsCsv -IntervalSeconds $MetricsInterval
-        } catch {
-            Write-Host "  -> Resource sampling unavailable: $($_.Exception.Message)" -ForegroundColor Yellow
-            $metricsJob = $null
-        }
-    }
-
-    # --- 3. Ensure dependencies are built for clang-cl ---
-    Write-Step "[3/5] Checking dependencies..."
-    Check-Dependencies -Cmake $cmake -ClangCl $clangCl -Config $Config
-
-    # --- 4. Choose the preset and target ---
-    Write-Step "[4/5] Determining build configuration..."
+    # --- 2. Choose preset/target ---
+    Write-Step "[2/7] Determining build configuration..."
     if ($UnityTestLibslic3r) {
         $Preset = "x64-clang-cache"
         if (-not $Target) { $Target = "libslic3r" }
     } elseif (-not $Preset) {
-        if (Test-Path "build-clang-cache" -PathType Container) {
+        # Only use the cache preset when ccache is available AND its dependency
+        # tree is actually complete. Otherwise fall back to the plain clang build
+        # so a no-argument run just works.
+        $cacheManifest = Test-Path "deps\build-clang-cache\.deps-manifest"
+        $cachePrefix   = Test-Path "deps\build-clang-cache\OrcaSlicer_dep\usr\local"
+        $cacheStamps   = (Get-ChildItem "deps\build-clang-cache" -Filter "*-complete" -Name).Count -gt 0
+        $cacheDepsReady = $cacheManifest -and $cachePrefix -and $cacheStamps
+        if ((Test-Path "build-clang-cache" -PathType Container) -and $ccache -and $cacheDepsReady) {
             $Preset = "x64-clang-cache"
         } else {
             $Preset = "x64-clang"
@@ -227,73 +265,168 @@ console.print(Rule(f'[{ts}] {text}', style='cyan', align='left'))
     }
     if (-not $Target) { $Target = "all" }
     $buildDir = $presetDirs[$Preset]
-    Write-Host "  -> Preset: $Preset ($buildDir)" -ForegroundColor Green
-    Write-Host "  -> Target: $Target, configuration: $Config" -ForegroundColor Green
+
+    if ($Preset -eq "x64-clang-cache" -and -not $PSBoundParameters.ContainsKey("MetricsInterval")) {
+        $MetricsInterval = 3
+    }
+
+    Write-Status "preset"  "$Preset ($buildDir)"
+    Write-Status "target"  "$Target ($Config)"
+    Write-Status "jobs"    ($(if ($MaxJobs -gt 0) { "$MaxJobs" } else { "auto" }))
     if ($Preset -eq "x64-clang-cache" -and -not $ccache) {
         throw "ccache is required for the x64-clang-cache preset. Install it, add it to PATH, or set ORCA_CCACHE."
     }
 
-    # Use 3s sampling for cached runs (x64-clang-cache), 15s for clean builds
-    if ($Preset -eq "x64-clang-cache") {
-        $MetricsInterval = 3
+    if ($CleanDeps) {
+        foreach ($d in @("deps\build-clang", "deps\build-clang-cache")) {
+            if (Test-Path $d) {
+                Write-Status "clean" "Removing $d"
+                Remove-Item $d -Recurse -Force
+            }
+        }
     }
-
     if ($Clean -and (Test-Path $buildDir)) {
-        Write-Host "  -> Removing $buildDir" -ForegroundColor Yellow
+        Write-Status "clean" "Removing $buildDir"
         Remove-Item $buildDir -Recurse -Force
     }
 
-    # --- 5. Configure and build ---
-    Write-Step "[5/5] Configuring and building..."
-    $timing = Configure-Build -Cmake $cmake -Preset $Preset -BuildDir $buildDir -Config $Config -Target $Target -UnityTest:$UnityTestLibslic3r -MaxJobs $MaxJobs
+    # --- 3. Capture the Visual Studio environment ---
+    Write-Step "[3/7] Setting up the Visual Studio environment..."
+    Capture-VsEnvironment -VsInstall $vsInstall
 
-    # --- 6. Ccache statistics ---
-    Show-CcacheStats -Ccache $ccache -NoMetrics:$NoMetrics
+    $toolDirs = @($clangCl, $cmake, $ninja, $ccache) |
+        Where-Object { $_ } |
+        ForEach-Object { Split-Path -Parent $_ } |
+        Select-Object -Unique
+    $env:PATH = ($toolDirs -join ";") + ";" + $env:PATH
+    Write-Status "env" "VS x64 environment captured, tool dirs prepended to PATH"
 
-    $total = (Get-Date) - $started
-    Write-Host ""
-    Write-Host "==========================================" -ForegroundColor Green
-    if ($UnityTestLibslic3r) {
-        Write-Host "  Unity build test PASSED (libslic3r)" -ForegroundColor Green
+    # --- 4. Start metrics monitor ---
+    if (-not $NoMetrics) {
+        Write-Step "[4/7] Starting build-process resource monitor..."
+        $metricsCsv = Join-Path $env:TEMP "orca-build-metrics-$PID.csv"
+        Remove-Item $metricsCsv -ErrorAction SilentlyContinue
+        Write-Status "sampler" "Every ${MetricsInterval}s (polling every 2s)"
+        try {
+            $metricsJob = Start-BuildMonitor -CsvPath $metricsCsv -IntervalSeconds $MetricsInterval
+            Write-Status "sampler" "Job started (id $($metricsJob.Id))" "DarkGray"
+        } catch {
+            Write-Status "sampler" "Unavailable: $($_.Exception.Message)" "Yellow"
+            $metricsJob = $null
+        }
     } else {
-        Write-Host "  Build complete!" -ForegroundColor Green
+        Write-Step "[4/7] Resource monitoring disabled (-NoMetrics)"
     }
-    Write-Host ("  Configure: {0:mm\:ss}   Build: {1:mm\:ss}   Total: {2:hh\:mm\:ss}" -f $timing.ConfigureTime, $timing.BuildTime, $total) -ForegroundColor Green
-    if ($timing.BuildLog) {
-        Write-Host "  Build log: $($timing.BuildLog)" -ForegroundColor Green
+
+    # --- 5. Ensure dependencies are built ---
+    if ($SkipDeps) {
+        Write-Step "[5/7] Skipping dependencies (-SkipDeps)"
+    } else {
+        Write-Step "[5/7] Checking dependencies..."
+        $depsBuildDir = if ($Preset -eq "x64-clang-cache") { "deps/build-clang-cache" } else { "deps/build-clang" }
+        Check-Dependencies -Cmake $cmake -ClangCl $clangCl -Config $Config -DepsBuildDir $depsBuildDir
+
+        if ($PackDeps) {
+            Write-Step "[5.1/7] Packing dependencies..."
+            $zipPath = Pack-Dependencies -DepsBuildDir $depsBuildDir -OutputPath (Join-Path $RepoRoot "deps\OrcaSlicer_dep.zip")
+            Write-Host ""
+            if (Invoke-SpectreHelper -Action "rule") {
+                [void](Invoke-SpectreHelper -Action "step" -Arguments @("", "Dependencies packed successfully!"))
+                [void](Invoke-SpectreHelper -Action "step" -Arguments @("", "Archive: $zipPath"))
+                [void](Invoke-SpectreHelper -Action "rule")
+            } else {
+                Write-Host "==========================================" -ForegroundColor Green
+                Write-Host "  Dependencies packed successfully!"      -ForegroundColor Green
+                Write-Host "  Archive: $zipPath"
+                Write-Host "==========================================" -ForegroundColor Green
+            }
+            return
+        }
     }
-    Write-Host "==========================================" -ForegroundColor Green
+
+    # --- 6. Configure and build ---
+    Write-Step "[6/7] Configuring and building..."
+    $generator = "Ninja Multi-Config"
+    $compiler = $null
+    if ($Preset -in @("x64-clang", "x64-clang-cache", "x64-clang-debug")) {
+        $compiler = $clangCl
+    }
+    $cmakeArgs = @()
+    if ($Preset -eq "x64-clang-cache") { $cmakeArgs += "-DSLIC3R_UNITY_BUILD=ON" }
+    $timing = Configure-Build -Cmake $cmake -BuildDir $buildDir -Config $Config -Target $Target `
+                              -UnityTest:$UnityTestLibslic3r -MaxJobs $MaxJobs `
+                              -Generator $generator -Compiler $compiler -CMakeArgs $cmakeArgs
+
+    # --- 7. Build summary ---
+    Write-Host ""
+    Write-Host ""
+    Write-Step "[7/7] Build finished"
+
+    $ccacheLines = @(Show-CcacheStats -Ccache $ccache -NoMetrics:$NoMetrics)
+    if ($ccacheLines.Count -gt 0) {
+        $ccacheData = Join-Path $env:TEMP "orca-build-ccache.txt"
+        $ccacheLines | Set-Content -LiteralPath $ccacheData -Encoding UTF8
+        try {
+            if (-not (Invoke-SpectreHelper -Action "textpanel" -Arguments @($ccacheData, "Ccache statistics"))) {
+                $ccacheLines | ForEach-Object { Write-Host $_ }
+            }
+        } finally {
+            Remove-Item -LiteralPath $ccacheData -ErrorAction SilentlyContinue
+        }
+    }
+
+    # --- 8. Resource chart ---
+    if ($metricsJob) {
+        Stop-Job   $metricsJob -ErrorAction SilentlyContinue
+        Remove-Job $metricsJob -Force -ErrorAction SilentlyContinue
+        $metricsJob = $null
+    }
+    Show-BuildMetrics -CsvPath $metricsCsv -Preset $Preset -Config $Config
+
+    # --- 9. Success summary ---
+    $total = $timing.ConfigureTime + $timing.BuildTime
+    $configureStr = & $fmt $timing.ConfigureTime
+    $buildStr     = & $fmt $timing.BuildTime
+    $totalStr     = & $fmt $total
+
+    $summaryData = Join-Path $env:TEMP "orca-build-summary.txt"
+    @($totalStr, $configureStr, $buildStr) | Set-Content -LiteralPath $summaryData -Encoding ASCII
+    try {
+        $rendered = Invoke-SpectreHelper -Action "panel" -Arguments @($summaryData)
+    } finally {
+        Remove-Item -LiteralPath $summaryData -ErrorAction SilentlyContinue
+    }
+    if (-not $rendered) {
+        Write-Host ("  Total:     {0}" -f $totalStr)
+        Write-Host ("  Configure: {0}" -f $configureStr)
+        Write-Host ("  Build:     {0}" -f $buildStr)
+    }
+
+    $buildSucceeded = $true
 } catch {
+    if ($metricsJob) {
+        Stop-Job   $metricsJob -ErrorAction SilentlyContinue
+        Remove-Job $metricsJob -Force -ErrorAction SilentlyContinue
+        $metricsJob = $null
+    }
+    Show-BuildMetrics -CsvPath $metricsCsv -Preset $Preset -Config $Config
+
     Write-Host ""
     Write-Host "BUILD FAILED: $($_.Exception.Message)" -ForegroundColor Red
+    if ($_.ScriptStackTrace) {
+        Write-Host $_.ScriptStackTrace -ForegroundColor DarkRed
+    }
     exit 1
 } finally {
     if ($metricsJob) {
-        Stop-Job $metricsJob -ErrorAction SilentlyContinue
+        Stop-Job   $metricsJob -ErrorAction SilentlyContinue
         Remove-Job $metricsJob -Force -ErrorAction SilentlyContinue
-        if ($metricsCsv -and (Test-Path $metricsCsv)) {
-            $renderer = Join-Path $RepoRoot "scripts\build_metrics.py"
-            $python = Get-Command py -ErrorAction SilentlyContinue
-            if (-not $python) { $python = Get-Command python -ErrorAction SilentlyContinue }
-            if ($python -and (Test-Path $renderer)) {
-                Write-Host ""
-                $renderArgs = @()
-                if ($python.Name -match "^py(\.exe)?$") { $renderArgs += "-3" }
-                $renderArgs += $renderer
-                $renderArgs += $metricsCsv
-                $renderArgs += "--title"
-                $renderArgs += "OrcaSlicer build ($Preset, $Config)"
-                try {
-                    & $python.Source @renderArgs
-                } catch {
-                    Write-Host "  -> Could not render metrics: $($_.Exception.Message)" -ForegroundColor Yellow
-                }
-            } else {
-                Write-Host "  -> Metrics saved to $metricsCsv (install Python with rich for the chart)." -ForegroundColor Yellow
-            }
-        }
+        $metricsJob = $null
     }
     Pop-Location
 }
 
 exit 0
+
+
+
