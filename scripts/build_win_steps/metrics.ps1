@@ -24,24 +24,27 @@ function Start-BuildMonitor {
         param($Path, $Interval)
         $header = "timestamp,build_cpu_percent,build_cores,build_rss_gb,cores_compiler,cores_linker,cores_build,cores_ccache,cpu_compiler,cpu_linker,cpu_build,cpu_ccache,ram_compiler,ram_linker,ram_build,ram_ccache"
         Set-Content -LiteralPath $Path -Value $header -Encoding ASCII
+
+        # Names seen during a recorded compile, plus the MSVC equivalents.
         $toolCategory = @{
             "clang-cl" = "compiler"
             "clang"    = "compiler"
             "clang++"  = "compiler"
             "cl"       = "compiler"
+            "llvm-rc"  = "compiler"
             "lld-link" = "linker"
             "link"     = "linker"
+            "llvm-lib" = "linker"
             "ninja"    = "build"
             "cmake"    = "build"
             "msbuild"  = "build"
+            "git"      = "build"
+            "python"   = "build"
             "ccache"   = "ccache"
         }
         $categories = @("compiler", "linker", "build", "ccache")
         $logical = [Environment]::ProcessorCount
         $reportInterval = [math]::Max(1, $Interval)
-        # Poll faster than the reporting interval so compiler processes that
-        # live for only a few seconds still contribute their CPU time.
-        $pollInterval = [math]::Max(1, [math]::Min(2, $reportInterval))
 
         function Write-Sample($Time, $CpuPercent, $Cores, $RssGb, $CategoryCores, $CategoryCpu, $CategoryRss) {
             $categoryText = (@($CategoryCores) | ForEach-Object {
@@ -70,92 +73,87 @@ function Start-BuildMonitor {
         $accumulatedCpu = @{}
         foreach ($category in $categories) { $accumulatedCpu[$category] = 0.0 }
         $maxRss = 0.0
+        $maxRssCategories = @(0.0, 0.0, 0.0, 0.0)
         $previousCpu = @{}
-        $previousTime = $null
 
         while ($true) {
             try {
                 $now = Get-Date
+                $elapsedInWindow = ($now - $windowStart).TotalSeconds
                 $currentCpu = @{}
                 $currentCategory = @{}
                 $currentRss = @{}
-                $rss = 0.0
                 foreach ($name in $toolCategory.Keys) {
                     $category = $toolCategory[$name]
                     foreach ($process in @(Get-Process -Name $name -ErrorAction SilentlyContinue)) {
                         try {
-                            $cpuSeconds = if ($null -ne $process.CPU) { [double]$process.CPU } else { 0.0 }
                             $id = [int]$process.Id
+                            $cpuSeconds = if ($null -ne $process.CPU) { [double]$process.CPU } else { 0.0 }
                             $currentCpu[$id] = $cpuSeconds
                             $currentCategory[$id] = $category
                             $currentRss[$id] = [double]$process.WorkingSet64
-                            $rss += $currentRss[$id]
                         } catch {
                             # The process can exit between enumeration and reading its counters.
                         }
                     }
                 }
 
-                if ($null -ne $previousTime) {
-                    foreach ($id in $currentCpu.Keys) {
-                        $lastCpu = $previousCpu[$id]
-                        $delta = if ($null -eq $lastCpu -or $currentCpu[$id] -lt $lastCpu) {
-                            $currentCpu[$id]
-                        } else {
-                            $currentCpu[$id] - $lastCpu
-                        }
-                        if ($delta -gt 0) {
-                            $accumulatedCpu[$currentCategory[$id]] += $delta
-                        }
+                foreach ($id in $currentCpu.Keys) {
+                    $lastCpu = $previousCpu[$id]
+                    if ($null -eq $lastCpu) {
+                        # The process started after the window opened, so only the
+                        # part of its lifetime that falls inside the window counts.
+                        $delta = [math]::Min($currentCpu[$id], [math]::Max(0.0, $elapsedInWindow))
+                    } elseif ($currentCpu[$id] -ge $lastCpu) {
+                        $delta = $currentCpu[$id] - $lastCpu
+                    } else {
+                        $delta = 0.0
+                    }
+                    if ($delta -gt 0) {
+                        $accumulatedCpu[$currentCategory[$id]] += $delta
                     }
                 }
-                $maxRss = [math]::Max($maxRss, $rss)
 
-                $windowSeconds = ($now - $windowStart).TotalSeconds
-                if ($windowSeconds -ge $reportInterval) {
+                $rssNow = 0.0
+                $rssByCategory = @{}
+                foreach ($category in $categories) { $rssByCategory[$category] = 0.0 }
+                foreach ($id in $currentRss.Keys) {
+                    $rssNow += $currentRss[$id]
+                    $rssByCategory[$currentCategory[$id]] += $currentRss[$id]
+                }
+                if ($rssNow -gt $maxRss) {
+                    $maxRss = $rssNow
+                    # Freeze the split at the peak: taking it at report time would
+                    # compare category values from a different instant and the
+                    # stacked bars would not add up to the total.
+                    $maxRssCategories = @($categories | ForEach-Object { $rssByCategory[$_] })
+                }
+
+                if ($elapsedInWindow -ge $reportInterval) {
                     $categoryCores = @()
                     $categoryCpu = @()
-                    $categoryRss = @()
                     foreach ($category in $categories) {
-                        $categoryCores += [math]::Max(0.0, $accumulatedCpu[$category] / $windowSeconds)
-                        # Calculate per-process CPU% for this category
-                        $catProcesses = @($currentCpu.Keys | Where-Object { $currentCategory[$_] -eq $category })
-                        $catCpu = 0.0
-                        $catRss = 0.0
-                        foreach ($procId in $catProcesses) {
-                            $lastCpu = $previousCpu[$procId]
-                            $delta = if ($null -eq $lastCpu -or $currentCpu[$procId] -lt $lastCpu) {
-                                $currentCpu[$procId]
-                            } else {
-                                $currentCpu[$procId] - $lastCpu
-                            }
-                            $catCpu += if ($windowSeconds -gt 0) { $delta / $windowSeconds } else { 0.0 }
-                            $catRss += $currentRss[$procId]
-                        }
-                        $categoryCpu += $catCpu
-                        $categoryRss += $catRss / 1GB
+                        $coresValue = [math]::Max(0.0, $accumulatedCpu[$category] / $elapsedInWindow)
+                        $categoryCores += $coresValue
+                        $categoryCpu += if ($logical -gt 0) { 100.0 * $coresValue / $logical } else { 0.0 }
                     }
                     $cores = ($categoryCores | Measure-Object -Sum).Sum
-                    if ($cores -gt $logical -and $cores -gt 0) {
-                        # New processes can contribute their full CPU time on their
-                        # first sample. Keep the stacked total within the machine.
-                        $scale = $logical / $cores
-                        $categoryCores = @($categoryCores | ForEach-Object { $_ * $scale })
-                        $cores = [double]$logical
-                    }
-                    $cpuPercent = if ($logical -gt 0) { 100.0 * $cores / $logical } else { 0.0 }
+                    $cpuPercent = ($categoryCpu | Measure-Object -Sum).Sum
+                    $categoryRss = @($maxRssCategories | ForEach-Object { $_ / 1GB })
                     Write-Sample $now $cpuPercent $cores ($maxRss / 1GB) $categoryCores $categoryCpu $categoryRss
                     $windowStart = $now
                     foreach ($category in $categories) { $accumulatedCpu[$category] = 0.0 }
                     $maxRss = 0.0
+                    $maxRssCategories = @(0.0, 0.0, 0.0, 0.0)
                 }
 
                 $previousCpu = $currentCpu
-                $previousTime = $now
             } catch {
                 # Sampling must never fail the build.
             }
-            Start-Sleep -Seconds $pollInterval
+            # One second keeps short-lived compiler and linker processes in the
+            # accounting; the report interval only controls CSV size.
+            Start-Sleep -Seconds 1
         }
     }
     return Start-Job -ScriptBlock $worker -ArgumentList $CsvPath, $IntervalSeconds

@@ -48,7 +48,7 @@ switch ($action) {
         $maxRows = 15
         $groups = @()
         if ($rows.Count -le $maxRows) {
-            $groups = @(, $rows)
+            foreach ($row in $rows) { $groups += ,@($row) }
         } else {
             $size = [math]::Ceiling($rows.Count / $maxRows)
             for ($i = 0; $i -lt $rows.Count; $i += $size) {
@@ -64,13 +64,11 @@ switch ($action) {
         foreach ($metric in $metrics) {
             $samples = foreach ($group in $groups) {
                 $values = [ordered]@{}
-                $named = 0.0
                 foreach ($tool in $toolInfo) {
                     $column = "$($metric.Prefix)_$($tool.Name)"
                     $sum = 0.0
                     foreach ($row in $group) { $sum += [double]$row.$column }
                     $values[$tool.Name] = $sum / $group.Count
-                    $named += $values[$tool.Name]
                 }
                 $totalSum = 0.0
                 foreach ($row in $group) { $totalSum += [double]$row.($metric.Total) }
@@ -79,7 +77,6 @@ switch ($action) {
                     Sec    = [int]((([datetime]$group[0].timestamp) - $first).TotalSeconds)
                     Values = $values
                     Total  = $total
-                    Other  = [math]::Max(0.0, $total - $named)
                 }
             }
 
@@ -99,7 +96,7 @@ switch ($action) {
                 for ($i = 0; $i -lt $segments.Count; $i++) {
                     $tool = $segments[$i]
                     $value = $sample.Values[$tool.Name]
-                    if ($i -eq $segments.Count - 1 -and $sample.Other -le 0) {
+                    if ($i -eq $segments.Count - 1) {
                         $count = $remaining
                     } else {
                         $count = [math]::Round($value / $remainingValue * $remaining)
@@ -109,16 +106,13 @@ switch ($action) {
                     $remaining -= $count
                     $remainingValue -= $value
                 }
-                if ($remaining -gt 0 -and $sample.Other -gt 0) {
-                    $bar += "[grey]" + ([string][char]0x2591 * $remaining) + "[/]"
-                }
                 $elapsed = "{0}:{1:00}" -f [math]::Floor($sample.Sec / 60), ($sample.Sec % 60)
                 $valueText = Format-ShortNumber -Value $sample.Total
-                $blocks += [Spectre.Console.Markup]::new(("[grey]{0,5}[/] {1} {2}" -f $elapsed, $bar, $valueText))
+                $blocks += [Spectre.Console.Markup]::new(("[grey]{0,5}[/] {1} {2,5}" -f $elapsed, $bar, $valueText))
             }
         }
         if ($blocks.Count -eq 0) { return }
-        $blocks += [Spectre.Console.Markup]::new("[green3]$([char]0x2588)[/] compiler  [steelblue1]$([char]0x2588)[/] linker  [orange3]$([char]0x2588)[/] build  [mediumpurple]$([char]0x2588)[/] ccache  [grey]$([char]0x2591)[/] other")
+        $blocks += [Spectre.Console.Markup]::new("[green3]$([char]0x2588)[/] compiler  [steelblue1]$([char]0x2588)[/] linker  [orange3]$([char]0x2588)[/] build  [mediumpurple]$([char]0x2588)[/] ccache")
         $content = [Spectre.Console.Rows]::new([Spectre.Console.Rendering.IRenderable[]]$blocks)
         $panel = $content | Format-SpectrePanel -Header "Resource use" -Color Grey -Expand
         $console.Write($panel)
