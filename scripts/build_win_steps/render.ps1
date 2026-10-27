@@ -33,10 +33,10 @@ switch ($action) {
         if ($rows.Count -eq 0) { return }
 
         $toolInfo = @(
-            @{ Name = 'compiler'; Color = 'darkseagreen4' },
-            @{ Name = 'linker';   Color = 'steelblue1' },
-            @{ Name = 'build';    Color = 'orange3' },
-            @{ Name = 'ccache';   Color = 'mediumpurple' }
+            @{ Name = 'compiler'; Color = 'darkseagreen4'; Symbol = [char]0x2588 },
+            @{ Name = 'linker';   Color = 'steelblue1';   Symbol = [char]0x2588 },
+            @{ Name = 'build';    Color = 'orange3';    Symbol = [char]0x25A0 },  # Diamond symbol
+            @{ Name = 'ccache';   Color = 'mediumpurple'; Symbol = [char]0x2588 }
         )
         $metrics = @(
             @{ Title = 'CPU %'; Prefix = 'cpu';   Total = 'build_cpu_percent'; Unit = '%' },
@@ -102,7 +102,7 @@ switch ($action) {
                         $count = [math]::Round($value / $remainingValue * $remaining)
                         $count = [math]::Max(0, [math]::Min($count, $remaining))
                     }
-                    if ($count -gt 0) { $bar += "[$($tool.Color)]" + ([string][char]0x2588 * $count) + "[/]" }
+                    if ($count -gt 0) { $bar += "[$($tool.Color)]" + ([string]$tool.Symbol * $count) + "[/]" }
                     $remaining -= $count
                     $remainingValue -= $value
                 }
