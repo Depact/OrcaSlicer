@@ -40,6 +40,7 @@ $presetDirs = @{
 . (Join-Path $RepoRoot "scripts\OrcaBuildMetrics\private\OrcaBuildMetrics-Helpers.ps1")
 . (Join-Path $RepoRoot "scripts\OrcaBuildMetrics\public\Show-OrcaBuildMetrics.ps1")
 
+
 $started = Get-Date
 $global:BuildStarted = $started
 $metricsJob = $null
@@ -59,21 +60,10 @@ try {
         return "{0}h{1}m{2}s" -f $h, $m, $s
     }
 
-    function Get-Python {
-        $py = Get-Command py     -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($py) { return $py }
-        return Get-Command python -ErrorAction SilentlyContinue | Select-Object -First 1
-    }
-
     function Write-Step {
         param([string]$Text)
         $ts = Get-TimeStamp
-        $python = Get-Python
-        if ($python) {
-            & $python.Source "$RepoRoot\scripts\build_win_steps\rich_utils.py" step $ts $Text
-        } else {
-            Write-Host "[$ts] === $Text ===" -ForegroundColor Cyan
-        }
+        Write-Host "[$ts] === $Text ===" -ForegroundColor Cyan
     }
 
     function Write-Status {
@@ -83,16 +73,6 @@ try {
             [string]$Color = "DarkGray"
         )
         Write-Host ("  {0,-9} {1}" -f "[$Tag]", $Text) -ForegroundColor $Color
-    }
-
-    function Ensure-RichInstalled {
-        $python = Get-Python
-        if (-not $python) { return }
-        $null = & $python.Source -c "import rich" 2>$null
-        if ($LASTEXITCODE -ne 0) {
-            Write-Status "deps" "Installing 'rich' for enhanced output..." "Yellow"
-            try { $null = & $python.Source -m pip install rich -q 2>&1 } catch { }
-        }
     }
 
     function Show-BuildMetrics {
@@ -119,7 +99,6 @@ try {
 
     # --- 1. Locate Visual Studio and the toolchain ---
     Write-Step "[1/6] Locating Visual Studio and tools..."
-    Ensure-RichInstalled
 
     $vsInstall = Find-VsInstall
     if (-not $vsInstall) {
@@ -304,14 +283,7 @@ console.print(Rule(char="\u2501", style="green"))
     $buildStr     = & $fmt $timing.BuildTime
     $totalStr     = & $fmt $total
 
-    $python = Get-Python
-    $rule = {
-        param([string]$Style = "green")
-        if ($python) { & $python.Source "$RepoRoot\scripts\build_win_steps\rich_utils.py" rule $Style }
-        else         { Write-Host "==========================================" -ForegroundColor Green }
-    }
-
-    & $rule
+    Write-Host "==========================================" -ForegroundColor Green
     if ($UnityTestLibslic3r) {
         Write-Host "  Unity build test PASSED (libslic3r)" -ForegroundColor Green
     } else {
@@ -319,14 +291,10 @@ console.print(Rule(char="\u2501", style="green"))
     }
     Write-Host ""
 
-    if ($python) {
-        & $python.Source "$RepoRoot\scripts\build_win_steps\rich_utils.py" tree $totalStr $configureStr $buildStr
-    } else {
-        Write-Host ("  Total:     {0}" -f $totalStr)
-        Write-Host ("  Configure: {0}" -f $configureStr)
-        Write-Host ("  Build:     {0}" -f $buildStr)
-    }
-    & $rule
+    Write-Host ("  Total:     {0}" -f $totalStr)
+    Write-Host ("  Configure: {0}" -f $configureStr)
+    Write-Host ("  Build:     {0}" -f $buildStr)
+    Write-Host "==========================================" -ForegroundColor Green
 
     $buildSucceeded = $true
 } catch {
