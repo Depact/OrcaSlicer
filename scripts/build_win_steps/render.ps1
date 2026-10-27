@@ -86,6 +86,7 @@ switch ($action) {
             $peak = ($samples | Measure-Object -Property Total -Maximum).Maximum
             if ($peak -le 0) { continue }
             $peakText = Format-ShortNumber -Value $peak
+            if ($blocks.Count -gt 0) { $blocks += [Spectre.Console.Markup]::new("") }
             $blocks += [Spectre.Console.Markup]::new("[bold]$($metric.Title)[/] [grey]peak $peakText$($metric.Unit)[/]")
 
             foreach ($sample in $samples) {
@@ -115,8 +116,8 @@ switch ($action) {
                 $valueText = Format-ShortNumber -Value $sample.Total
                 $blocks += [Spectre.Console.Markup]::new(("[grey]{0,5}[/] {1} {2}" -f $elapsed, $bar, $valueText))
             }
-            $blocks += [Spectre.Console.Markup]::new("")
         }
+        if ($blocks.Count -eq 0) { return }
         $blocks += [Spectre.Console.Markup]::new("[green3]$([char]0x2588)[/] compiler  [steelblue1]$([char]0x2588)[/] linker  [orange3]$([char]0x2588)[/] build  [mediumpurple]$([char]0x2588)[/] ccache  [grey]$([char]0x2591)[/] other")
         $content = [Spectre.Console.Rows]::new([Spectre.Console.Rendering.IRenderable[]]$blocks)
         $panel = $content | Format-SpectrePanel -Header "Resource use" -Color Grey -Expand

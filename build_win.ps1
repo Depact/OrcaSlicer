@@ -11,6 +11,7 @@ param(
     [string]$Config = "Release",
     [string]$Target,
     [switch]$Clean,
+    [switch]$CleanDeps,
     [switch]$UnityTestLibslic3r,
     [switch]$NoMetrics,
     [switch]$PackDeps,
@@ -47,8 +48,12 @@ OPTIONS
       Default: all.
 
   -Clean
-      Delete deps/build-clang, deps/build-clang-cache and the active build
-      directory before configuring. Does not touch the source tree.
+      Delete the active build directory before configuring, so it is set up
+      from scratch. Dependencies are left alone.
+
+  -CleanDeps
+      Delete deps/build-clang and deps/build-clang-cache so the next build
+      rebuilds every dependency. Slow; pair it with -Clean for a full reset.
 
   -UnityTestLibslic3r
       Force x64-clang-cache and build only libslic3r, using the unity build for
@@ -87,7 +92,7 @@ EXAMPLES
   .\build_win.ps1 -Preset x64-clang-cache -Target libslic3r
       Rebuild only the slicing library through ccache.
 
-  .\build_win.ps1 -Clean -PackDeps
+  .\build_win.ps1 -CleanDeps -PackDeps
       Rebuild the dependencies from scratch and pack them into a zip.
 
   .\build_win.ps1 -NoMetrics -MaxJobs 8
@@ -272,6 +277,19 @@ try {
         throw "ccache is required for the x64-clang-cache preset. Install it, add it to PATH, or set ORCA_CCACHE."
     }
 
+    if ($CleanDeps) {
+        foreach ($d in @("deps\build-clang", "deps\build-clang-cache")) {
+            if (Test-Path $d) {
+                Write-Status "clean" "Removing $d"
+                Remove-Item $d -Recurse -Force
+            }
+        }
+    }
+    if ($Clean -and (Test-Path $buildDir)) {
+        Write-Status "clean" "Removing $buildDir"
+        Remove-Item $buildDir -Recurse -Force
+    }
+
     # --- 3. Capture the Visual Studio environment ---
     Write-Step "[3/7] Setting up the Visual Studio environment..."
     Capture-VsEnvironment -VsInstall $vsInstall
@@ -323,19 +341,6 @@ try {
                 Write-Host "==========================================" -ForegroundColor Green
             }
             return
-        }
-    }
-
-    if ($Clean) {
-        foreach ($d in @("deps\build-clang", "deps\build-clang-cache")) {
-            if (Test-Path $d) {
-                Write-Status "clean" "Removing $d"
-                Remove-Item $d -Recurse -Force
-            }
-        }
-        if (Test-Path $buildDir) {
-            Write-Status "clean" "Removing $buildDir"
-            Remove-Item $buildDir -Recurse -Force
         }
     }
 
