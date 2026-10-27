@@ -108,7 +108,9 @@ switch ($action) {
                 }
                 $elapsed = "{0}:{1:00}" -f [math]::Floor($sample.Sec / 60), ($sample.Sec % 60)
                 $valueText = Format-ShortNumber -Value $sample.Total
-                $blocks += [Spectre.Console.Markup]::new(("[grey]{0,5}[/] {1} {2,5}" -f $elapsed, $bar, $valueText))
+                # Pad to the full bar width so the closing rule stays in one column.
+                $padding = ' ' * [math]::Max(0, $barWidth - $chars)
+                $blocks += [Spectre.Console.Markup]::new(("[grey]{0,5}[/] {1}{2}[grey]{3}[/] {4,5}" -f $elapsed, $bar, $padding, [char]0x2502, $valueText))
             }
         }
         if ($blocks.Count -eq 0) { return }
