@@ -160,29 +160,13 @@ jobs:
             tar -czvf OrcaSlicer_dep_ubuntu_$(date +"%Y%m%d").tar.gz destdir
 
 
-      # Upload Artifacts
-      # - name: Upload Mac ${{ inputs.arch }} artifacts
-      #   if: runner.os == 'macOS'
-      #   uses: actions/upload-artifact@v6
-      #   with:
-      #     name: OrcaSlicer_dep_mac_${{ env.date }}
-      #     path: ${{ github.workspace }}/deps/build/OrcaSlicer_dep*.tar.gz
-
-      # - name: Upload Windows artifacts
-      #   if: runner.os == 'Windows'
-      #   uses: actions/upload-artifact@v6
-      #   with:
-      #     name: OrcaSlicer_dep_win64_${{ env.date }}
-      #     path: ${{ github.workspace }}/deps/build/OrcaSlicer_dep*.zip
-
-      # - name: Upload Ubuntu artifacts
-      #   if: runner.os == 'Linux' && !env.ACT
-      #   env:
-      #     ubuntu-ver: '2404'
-      #   uses: actions/upload-artifact@v6
-      #   with:
-      #     name: OrcaSlicer_dep_ubuntu_${{ env.ubuntu-ver }}_${{ env.date }}
-      #     path: ${{ github.workspace }}/deps/build/OrcaSlicer_dep_ubuntu_*.tar.gz
+      # Upload Windows deps artifact
+      - name: Upload Windows deps artifact
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v6
+        with:
+          name: OrcaSlicer_dep_win_${{ inputs.arch }}_${{ env.date }}
+          path: ${{ github.workspace }}/${{ inputs.cache-path }}/OrcaSlicer_dep/**
 
   build_orca:
     name: Build OrcaSlicer

@@ -468,6 +468,14 @@ jobs:
           path: ${{ runner.temp }}/nsis
           key: nsis-${{ env.NSIS_VERSION }}
 
+      - name: Download dep artifact (cold CI)
+        if: runner.os == 'Windows'
+        uses: actions/download-artifact@v8
+        with:
+          name: OrcaSlicer_dep_win_${{ inputs.arch || 'x64' }}_${{ env.date }}
+          path: ${{ github.workspace }}/${{ inputs.cache-path }}
+          if-no-files-found: ignore
+
       - name: Build slicer Win
         if: runner.os == 'Windows'
         working-directory: ${{ github.workspace }}
