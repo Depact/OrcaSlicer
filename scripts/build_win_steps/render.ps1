@@ -33,7 +33,7 @@ switch ($action) {
         if ($rows.Count -eq 0) { return }
 
         $toolInfo = @(
-            @{ Name = 'compiler'; Color = 'green3' },
+            @{ Name = 'compiler'; Color = 'darkseagreen4' },
             @{ Name = 'linker';   Color = 'steelblue1' },
             @{ Name = 'build';    Color = 'orange3' },
             @{ Name = 'ccache';   Color = 'mediumpurple' }
@@ -112,7 +112,7 @@ switch ($action) {
             }
         }
         if ($blocks.Count -eq 0) { return }
-        $blocks += [Spectre.Console.Markup]::new("[green3]$([char]0x2588)[/] compiler  [steelblue1]$([char]0x2588)[/] linker  [orange3]$([char]0x2588)[/] build  [mediumpurple]$([char]0x2588)[/] ccache")
+        $blocks += [Spectre.Console.Markup]::new("[darkseagreen4]$([char]0x2588)[/] compiler  [steelblue1]$([char]0x2588)[/] linker  [orange3]$([char]0x2588)[/] build  [mediumpurple]$([char]0x2588)[/] ccache")
         $content = [Spectre.Console.Rows]::new([Spectre.Console.Rendering.IRenderable[]]$blocks)
         $panel = $content | Format-SpectrePanel -Header "Resource use" -Color Grey -Expand
         $console.Write($panel)
