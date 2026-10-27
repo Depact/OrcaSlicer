@@ -37,9 +37,6 @@ $presetDirs = @{
 . (Join-Path $UnitsDir "ccache_stats.ps1")
 
 # Load the OrcaBuildMetrics module so Show-BuildMetrics can render without Python/rich.
-. (Join-Path $RepoRoot "scripts\OrcaBuildMetrics\private\OrcaBuildMetrics-Helpers.ps1")
-. (Join-Path $RepoRoot "scripts\OrcaBuildMetrics\public\Show-OrcaBuildMetrics.ps1")
-
 # Locate PowerShell 7 for PwshSpectreConsole rich output (Python 'rich' is forbidden).
 $Pwsh7 = Join-Path $env:LOCALAPPDATA "opencode\pwsh7\pwsh.exe"
 if (-not (Test-Path $Pwsh7)) {
@@ -55,7 +52,7 @@ switch ($action) {
     "step" {
         $ts = [Spectre.Console.Markup]::Escape($args[1])
         $text = [Spectre.Console.Markup]::Escape($args[2])
-        Write-SpectreHost -Message "[cyan]$ts $text[/]"
+        Write-SpectreHost -Message "$ts $text"
     }
     "rule" { Write-SpectreRule -Color Green }
     "tree" {
@@ -67,6 +64,22 @@ switch ($action) {
             )
         }
         Format-SpectreTree -Data $data -Color Green | Out-SpectreHost
+    }
+    "chart" {
+        $csvPath = $args[1]
+        $data = Import-Csv -Path $csvPath -Encoding UTF8
+        $last = $data[-1]
+
+        $items = @()
+        $items += New-SpectreChartItem -Label "CPU %"   -Value ([double]$last.build_cpu_percent)   -Color "Green"
+        $items += New-SpectreChartItem -Label "Cores"   -Value ([double]$last.build_cores)   -Color "Gold1"
+        $items += New-SpectreChartItem -Label "RAM GB"  -Value ([double]$last.build_rss_gb)  -Color "Cyan1"
+        $items += New-SpectreChartItem -Label "compiler" -Value ([double]$last.cores_compiler) -Color "Green"
+        $items += New-SpectreChartItem -Label "linker"   -Value ([double]$last.cores_linker)   -Color "Yellow"
+        $items += New-SpectreChartItem -Label "build"    -Value ([double]$last.cores_build)    -Color "Blue"
+        $items += New-SpectreChartItem -Label "ccache"   -Value ([double]$last.cores_ccache)   -Color "Magenta"
+
+        Format-SpectreBreakdownChart -Data $items | Out-SpectreHost
     }
 }
 '@ | Out-File -FilePath $PwshRichHelper -Encoding utf8
@@ -87,7 +100,7 @@ try {
     function Get-TimeStamp {
         $span = (Get-Date) - $global:BuildStarted
         $h = [math]::Floor($span.TotalHours); $m = [math]::Floor($span.TotalMinutes) % 60; $s = [math]::Round($span.Seconds)
-        return "{0}h{1}m{2}s" -f $h, $m, $s
+        return "{0}:{1}:{2}" -f $h, $m, $s
     }
 
     function Write-Step {
@@ -96,7 +109,7 @@ try {
         if ($Pwsh7) {
             & $Pwsh7 -NoProfile -File $PwshRichHelper step "$ts" "$Text" 2>&1
         } else {
-            Write-Host "[$ts] === $Text ===" -ForegroundColor Cyan
+            Write-Host "[$ts] $Text" -ForegroundColor Cyan
         }
     }
 
@@ -113,12 +126,12 @@ try {
         param([string]$CsvPath, [string]$Preset, [string]$Config)
         if (-not $CsvPath -or -not (Test-Path $CsvPath)) { return }
         Write-Host ""
-        $code = Show-OrcaBuildMetrics -CsvPath $CsvPath `
-            -Title "OrcaSlicer build ($Preset, $Config)"
-        Write-Host ""
-        if ($code -ne 0) {
-            Write-Status "metrics" "Could not render chart (exit $code)." "Yellow"
+        if ($Pwsh7) {
+            & $Pwsh7 -NoProfile -File $PwshRichHelper chart "$CsvPath" 2>&1
+        } else {
+            Write-Status "metrics" "PowerShell 7 not found; skipping metrics chart." "Yellow"
         }
+        Write-Host ""
     }
 
     $fmt = {
@@ -312,16 +325,13 @@ try {
     $totalStr     = & $fmt $total
 
     Write-Host ""
-    Write-Host "==========================================" -ForegroundColor Green
-    if ($UnityTestLibslic3r) {
-        Write-Host "  Unity build test PASSED (libslic3r)" -ForegroundColor Green
+    if ($Pwsh7) {
+        & $Pwsh7 -NoProfile -File $PwshRichHelper tree "Total: $totalStr" "Configure: $configureStr" "Build: $buildStr" 2>&1
     } else {
-        Write-Host "  Build complete!" -ForegroundColor Green
+        Write-Host ("  Total:     {0}" -f $totalStr)
+        Write-Host ("  Configure: {0}" -f $configureStr)
+        Write-Host ("  Build:     {0}" -f $buildStr)
     }
-    Write-Host ""
-    Write-Host ("  Total:     {0}" -f $totalStr)
-    Write-Host ("  Configure: {0}" -f $configureStr)
-    Write-Host ("  Build:     {0}" -f $buildStr)
     Write-Host "==========================================" -ForegroundColor Green
 
     $buildSucceeded = $true
