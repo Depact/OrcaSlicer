@@ -52,7 +52,7 @@ switch ($action) {
     "step" {
         $ts = [Spectre.Console.Markup]::Escape($args[1])
         $text = [Spectre.Console.Markup]::Escape($args[2])
-        Write-SpectreHost -Message "$ts $text"
+        Write-Host "$ts $text"
     }
     "rule" { Write-SpectreRule -Color Green }
     "tree" {
@@ -63,7 +63,7 @@ switch ($action) {
                 @{ Value = $args[3]; Children = @() }
             )
         }
-        Format-SpectreTree -Data $data -Color Green | Out-SpectreHost
+        Format-SpectreTree -Data $data -Color Green | Out-String | Write-Host
     }
     "chart" {
         $csvPath = $args[1]
@@ -79,7 +79,20 @@ switch ($action) {
         $items += New-SpectreChartItem -Label "build"    -Value ([double]$last.cores_build)    -Color "Blue"
         $items += New-SpectreChartItem -Label "ccache"   -Value ([double]$last.cores_ccache)   -Color "Magenta"
 
-        Format-SpectreBreakdownChart -Data $items | Out-SpectreHost
+        Format-SpectreBreakdownChart -Data $items | Out-String | Write-Host
+    }
+    "panel" {
+        $total   = [Spectre.Console.Markup]::Escape($args[1])
+        $configure = [Spectre.Console.Markup]::Escape($args[2])
+        $build   = [Spectre.Console.Markup]::Escape($args[3])
+        $data = @{
+            Value = $total
+            Children = @(
+                @{ Value = $configure; Children = @() }
+                @{ Value = $build; Children = @() }
+            )
+        }
+        Format-SpectrePanel -Title "Build complete!" -Data $data -Expand | Out-String | Write-Host
     }
 }
 '@ | Out-File -FilePath $PwshRichHelper -Encoding utf8
@@ -127,7 +140,8 @@ try {
         if (-not $CsvPath -or -not (Test-Path $CsvPath)) { return }
         Write-Host ""
         if ($Pwsh7) {
-            & $Pwsh7 -NoProfile -File $PwshRichHelper chart "$CsvPath" 2>&1
+            $chartOutput = & $Pwsh7 -NoProfile -File $PwshRichHelper chart "$CsvPath" 2>&1
+            if ($chartOutput) { $chartOutput | Write-Host }
         } else {
             Write-Status "metrics" "PowerShell 7 not found; skipping metrics chart." "Yellow"
         }
@@ -139,7 +153,7 @@ try {
         $h = [math]::Floor($t.TotalHours)
         $m = [math]::Floor($t.TotalMinutes) % 60
         $s = [math]::Round($t.Seconds)
-        if ($h) { "{0}h {1:00}m {2:00}s" -f $h, $m, $s }
+        if ($h) { "\{0\}:\{1:00\}:\{2:00\}" -f $h, $m, $s }
         elseif ($m) { "{0}m {1:00}s" -f $m, $s }
         else { "{0}s" -f $s }
     }
@@ -325,14 +339,9 @@ try {
     $totalStr     = & $fmt $total
 
     Write-Host ""
-    if ($Pwsh7) {
-        & $Pwsh7 -NoProfile -File $PwshRichHelper tree "Total: $totalStr" "Configure: $configureStr" "Build: $buildStr" 2>&1
-    } else {
-        Write-Host ("  Total:     {0}" -f $totalStr)
-        Write-Host ("  Configure: {0}" -f $configureStr)
-        Write-Host ("  Build:     {0}" -f $buildStr)
-    }
-    Write-Host "==========================================" -ForegroundColor Green
+    Write-Host ("  Total:     {0}" -f $totalStr)
+    Write-Host ("  Configure: {0}" -f $configureStr)
+    Write-Host ("  Build:     {0}" -f $buildStr)
 
     $buildSucceeded = $true
 } catch {
@@ -359,3 +368,6 @@ try {
 }
 
 exit 0
+
+
+
