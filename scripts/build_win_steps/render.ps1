@@ -40,7 +40,7 @@ switch ($action) {
         )
         $metrics = @(
             @{ Title = 'CPU %'; Prefix = 'cpu';   Total = 'build_cpu_percent'; Unit = '%' },
-            @{ Title = 'Cores'; Prefix = 'cores'; Total = 'build_cores';       Unit = '' },
+            @{ Title = 'CPU Cores'; Prefix = 'cores'; Total = 'build_cores';   Unit = '' },
             @{ Title = 'RAM';   Prefix = 'ram';   Total = 'build_rss_gb';      Unit = ' GB' }
         )
 
