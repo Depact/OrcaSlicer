@@ -40,6 +40,36 @@ $presetDirs = @{
 . (Join-Path $RepoRoot "scripts\OrcaBuildMetrics\private\OrcaBuildMetrics-Helpers.ps1")
 . (Join-Path $RepoRoot "scripts\OrcaBuildMetrics\public\Show-OrcaBuildMetrics.ps1")
 
+# Locate PowerShell 7 for PwshSpectreConsole rich output (Python 'rich' is forbidden).
+$Pwsh7 = Join-Path $env:LOCALAPPDATA "opencode\pwsh7\pwsh.exe"
+if (-not (Test-Path $Pwsh7)) {
+    $Pwsh7 = $null
+    Write-Status "pwsh7" "PowerShell 7 not found; falling back to plain output." "Yellow"
+}
+$PwshRichHelper = Join-Path $env:TEMP "orca_spectre_helper.ps1"
+@'
+$env:IgnoreSpectreEncoding = $true
+Import-Module PwshSpectreConsole
+$action = $args[0]
+switch ($action) {
+    "step" {
+        $ts = [Spectre.Console.Markup]::Escape($args[1])
+        $text = [Spectre.Console.Markup]::Escape($args[2])
+        Write-SpectreHost -Message "[cyan]$ts $text[/]"
+    }
+    "rule" { Write-SpectreRule -Color Green }
+    "tree" {
+        $data = @{
+            Value = $args[1]
+            Children = @(
+                @{ Value = $args[2]; Children = @() }
+                @{ Value = $args[3]; Children = @() }
+            )
+        }
+        Format-SpectreTree -Data $data -Color Green | Out-SpectreHost
+    }
+}
+'@ | Out-File -FilePath $PwshRichHelper -Encoding utf8
 
 $started = Get-Date
 $global:BuildStarted = $started
@@ -63,7 +93,11 @@ try {
     function Write-Step {
         param([string]$Text)
         $ts = Get-TimeStamp
-        Write-Host "[$ts] === $Text ===" -ForegroundColor Cyan
+        if ($Pwsh7) {
+            & $Pwsh7 -NoProfile -File $PwshRichHelper step "$ts" "$Text" 2>&1
+        } else {
+            Write-Host "[$ts] === $Text ===" -ForegroundColor Cyan
+        }
     }
 
     function Write-Status {
@@ -219,17 +253,11 @@ try {
             Write-Step "[5.1/6] Packing dependencies..."
             $zipPath = Pack-Dependencies -DepsBuildDir $depsBuildDir -OutputPath (Join-Path $RepoRoot "deps\OrcaSlicer_dep.zip")
             Write-Host ""
-            $python = Get-Python
-            if ($python) {
-                & $python.Source -c '
-from rich.console import Console
-from rich.rule import Rule
-import sys
-console = Console()
-console.print(Rule("Dependencies packed successfully", style="green"))
-console.print("Archive: " + sys.argv[1], style="green")
-console.print(Rule(char="\u2501", style="green"))
-' $zipPath
+            if ($Pwsh7) {
+                & $Pwsh7 -NoProfile -File $PwshRichHelper rule Green
+                & $Pwsh7 -NoProfile -File $PwshRichHelper step "" "Dependencies packed successfully!"
+                & $Pwsh7 -NoProfile -File $PwshRichHelper step "" "Archive: $zipPath"
+                & $Pwsh7 -NoProfile -File $PwshRichHelper rule Green
             } else {
                 Write-Host "==========================================" -ForegroundColor Green
                 Write-Host "  Dependencies packed successfully!"      -ForegroundColor Green
@@ -283,6 +311,7 @@ console.print(Rule(char="\u2501", style="green"))
     $buildStr     = & $fmt $timing.BuildTime
     $totalStr     = & $fmt $total
 
+    Write-Host ""
     Write-Host "==========================================" -ForegroundColor Green
     if ($UnityTestLibslic3r) {
         Write-Host "  Unity build test PASSED (libslic3r)" -ForegroundColor Green
@@ -290,7 +319,6 @@ console.print(Rule(char="\u2501", style="green"))
         Write-Host "  Build complete!" -ForegroundColor Green
     }
     Write-Host ""
-
     Write-Host ("  Total:     {0}" -f $totalStr)
     Write-Host ("  Configure: {0}" -f $configureStr)
     Write-Host ("  Build:     {0}" -f $buildStr)
