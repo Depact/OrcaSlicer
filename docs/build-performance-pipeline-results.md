@@ -196,4 +196,27 @@ Added `pr_full_test_observability` job that:
 ```
 ff35acc795 Fix CI pipeline: remove unsupported --preset flag from build_win.bat calls
  3 files changed, 10 insertions(+), 9 deletions(-)
+5892ae55d7 Document pipeline results and fixes for build optimization PR #16895
+20803d02bd Fix chart legend: use diamond symbol for build series to match chart bars
 ```
+
+### Specific Failure Reason: `--preset` Unsupported by `build_win.bat`
+
+**Root cause:** `build_win.bat` has no `--preset` argument in its parameter parsing (no `set preset=` line in `:handle_args`). Passing `--preset x64-clang` to `build_win.bat` either:
+
+- Causes the argument parser to treat `x64-clang` as the next positional argument (potentially consuming `--arch`), or
+- Is silently ignored, leaving `$preset` unused while flags from `@flags` are still passed
+
+Either way, the build produces wrong behavior and no output artifacts, contributing to the `action_required` / 0-jobs outcome.
+
+**Fix:** Removed `--preset $preset` from both `build_orca.yml` and `build_deps.yml` build commands. The `@flags` array from the matrix already contains all necessary flags (`-l -x`, `--msvc --ninja`, `--msvc --msbuild`, `-l -x --ccache --unity`), so `--preset` was redundant and unsupported.
+
+### Latest Commit Summary
+
+| Commit | Change |
+|--------|--------|
+| `20803d02bd` | Fixed render.ps1 chart legend to use diamond symbol (U+25A0) for build series |
+| `5892ae55d7` | Documented pipeline results and all fixes applied |
+| `ff35acc795` | Removed unsupported `--preset` from build_win.bat calls in CI workflows |
+
+All changes pushed to `depact/feat/build-performance` — next CI rerun should use fixed workflow files.
