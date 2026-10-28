@@ -22,7 +22,7 @@ function Get-DepsManifestHash {
 }
 
 function Check-Dependencies {
-    param([string]$Cmake, [string]$ClangCl, [string]$Config, [switch]$ForceRebuild, [string]$DepsBuildDir)
+    param([string]$Cmake, [string]$Compiler, [string]$Config, [switch]$ForceRebuild, [string]$DepsBuildDir)
     if (-not $DepsBuildDir) { $DepsBuildDir = "deps/build-clang" }
     $depsPrefix   = "$DepsBuildDir/OrcaSlicer_dep/usr/local"
     $depsManifest = "$DepsBuildDir/.deps-manifest"
@@ -38,10 +38,11 @@ function Check-Dependencies {
     }
 
     if ($needsRebuild) {
-        Write-Host "  [deps] Building dependencies for clang-cl + Ninja..."
-        Invoke-BuildStep -Label "Dependency configuration" -Command $Cmake -Arguments @(
-            "-S", "deps", "-B", $DepsBuildDir, "-G", "Ninja Multi-Config",
-            "-DCMAKE_C_COMPILER=$ClangCl", "-DCMAKE_CXX_COMPILER=$ClangCl")
+        $compilerArg = if ($Compiler) { "-DCMAKE_C_COMPILER=$Compiler -DCMAKE_CXX_COMPILER=$Compiler" } else { "" }
+        Write-Host "  [deps] Building dependencies..."
+        $depsConfigureArgs = @("-S", "deps", "-B", $DepsBuildDir, "-G", "Ninja Multi-Config")
+        if ($compilerArg) { $depsConfigureArgs += $compilerArg -split " " }
+        Invoke-BuildStep -Label "Dependency configuration" -Command $Cmake -Arguments $depsConfigureArgs
         Invoke-BuildStep -Label "Dependency build" -Command $Cmake -Arguments @(
             "--build", $DepsBuildDir, "--config", $Config, "--target", "deps", "--")
         $currentHash | Set-Content $depsManifest -Encoding ASCII

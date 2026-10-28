@@ -488,15 +488,21 @@ jobs:
           if (-not $flags) {
             $flags = if ("${{ inputs.compiler }}" -eq "clang") { "-l", "-x" } else { "--msvc", "--msbuild" }
           }
-          .\build_win.bat -s --tests -i --arch ${{ inputs.arch }} --build-dir $env:BUILD_DIR --deps-dir $deps @flags
+          # Convert build_win.bat flags to build_win.ps1 parameters
+          $useClangCl = $flags -contains "-l"
+          $useNinja   = $flags -contains "-x"
+          $useMsvc    = $flags -contains "--msvc"
+          $useMsbuild = $flags -contains "--msbuild"
+          $useCache   = if ($flags -contains "--ccache") { "ccache" } else { $null }
+          .\build_win.ps1 -Slicer -Tests -InstallSlicer -Arch ${{ inputs.arch }} -SlicerDir $env:BUILD_DIR -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache
         shell: pwsh
 
       - name: Build system preset cache (Windows)
         if: runner.os == 'Windows'
-        shell: cmd
+        shell: pwsh
         # Shipped into both the already-installed tree (portable zip, MSIX) and
         # the checkout cpack re-installs from when it builds the NSIS installer.
-        run: scripts\build_preset_cache.bat --prune-source "%BUILD_DIR%" "resources\profiles" "%BUILD_DIR%\OrcaSlicer\resources\profiles"
+        run: .\scripts\build_preset_cache.ps1 -PruneSource -BuildDir $env:BUILD_DIR -TargetDir "resources\profiles", "$env:BUILD_DIR\OrcaSlicer\resources\profiles"
 
       - name: Pack unit tests Win
         if: runner.os == 'Windows'

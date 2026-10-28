@@ -134,7 +134,13 @@ jobs:
             if (-not $flags) {
               $flags = if ("${{ inputs.compiler }}" -eq "clang") { "-l", "-x" } else { "--msvc", "--msbuild" }
             }
-            .\build_win.bat -d --arch ${{ inputs.arch }} --deps-dir $deps @flags
+            # Convert build_win.bat flags to build_win.ps1 parameters
+            $useClangCl = $flags -contains "-l"
+            $useNinja   = $flags -contains "-x"
+            $useMsvc    = $flags -contains "--msvc"
+            $useMsbuild = $flags -contains "--msbuild"
+            $useCache   = if ($flags -contains "--ccache") { "ccache" } else { $null }
+            .\build_win.ps1 -Deps -Arch ${{ inputs.arch }} -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache
         shell: pwsh
 
       - name: Build on Mac ${{ inputs.arch }}

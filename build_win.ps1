@@ -20,8 +20,72 @@ param(
     [int]$MetricsInterval = 15,
     [ValidateRange(1, 64)]
     [int]$MaxJobs = 0,
-    [switch]$Help
+    [switch]$Help,
+    [switch]$Deps,
+    [switch]$Slicer,
+    [switch]$Tests,
+    [switch]$RunTests,
+    [switch]$InstallDeps,
+    [string]$InstallVs,
+    [switch]$KillJobs,
+    [switch]$ClangCl,
+    [switch]$Ninja,
+    [switch]$Msvc,
+    [switch]$Msbuild,
+    [string]$Vs,
+    [string]$ClangPath,
+    [string]$Cache,
+    [switch]$NoPch,
+    [switch]$SlicerAsan,
+    [switch]$NoConfigure,
+    [switch]$NoGettext,
+    [switch]$InstallSlicer,
+    [string]$SlicerTarget,
+    [string]$DepsTarget,
+    [string]$DepsDir,
+    [string]$SlicerDir,
+    [string]$DepsArgs,
+    [string]$SlicerArgs,
+    [string]$Arch,
+    [switch]$Verbose,
+    [switch]$DryRun
 )
+
+# --- Actions (mirror build_win.bat) ---
+# -d        build dependencies
+# -s        build slicer
+# --tests   build unit tests
+# --run-tests build and run tests
+# -u        install deps via winget
+# --install-vs buildtools or ide
+# -k        kill compiler/linker processes
+
+# --- Toolchain ---
+# -l        use clang-cl (default when -x given)
+# -x        use Ninja Multi-Config
+# --msvc    use cl.exe
+# --msbuild use Visual Studio generator
+# --vs      2019, 2022, 2026
+# --clang-path path to clang-cl.exe
+# --cache   ccache, sccache, off
+# --no-pch  disable precompiled header
+
+# --- Build scope ---
+# -a        ASAN build
+# --no-configure skip CMake configure
+# --no-gettext skip translation regeneration
+# -i        install slicer into tree
+# --slicer-target one target name
+# --deps-target one dep target name
+# --deps-dir dependency tree path
+# --build-dir slicer build tree path
+# --deps-args extra CMake args for deps
+# --slicer-args extra CMake args for slicer
+
+# --- Tuning ---
+# --arch    x64 or arm64
+# -v        show compiler command lines
+# -D        dry run, print commands only
 
 if ($Help) {
     @'
@@ -101,15 +165,75 @@ EXAMPLES
     exit 0
 }
 
+# --- Derive toolchain from individual flags (mirror build_win.bat) ---
+# When Preset is given, translate it to flags. Otherwise flags stand alone.
+if ($Preset) {
+    switch ($Preset) {
+        "x64-clang"       { $ClangCl = $true; $Ninja = $true; $Arch = "x64" }
+        "x64-clang-cache" { $ClangCl = $true; $Ninja = $true; $Cache = "ccache"; $Arch = "x64" }
+        "x64-clang-debug" { $ClangCl = $true; $Ninja = $true; $Config = "Debug"; $Arch = "x64" }
+    }
+}
+
+# Defaults
+if (-not $Arch) { $Arch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "ARM64" } else { "x64" } }
+if (-not $Config) { $Config = "Release" }
+if (-not $DepsDir) { $DepsDir = "deps" }
+
+# Resolve actions: if none specified but Tests/RunTests given, build slicer
+$actions = @($Deps, $Slicer, $PackDeps, $InstallDeps, $InstallVs) | Where-Object { $_ }
+if (-not $actions) {
+    if ($Tests) { $Slicer = $true }
+    if ($RunTests) { $Slicer = $true }
+}
+if (-not $actions) {
+    Write-Host "Nothing to do. Pick an action: -d, -s, -p or -u. Run -h for the full list." -ForegroundColor Yellow
+    exit 1
+}
+
+# --- Validation ---
+if ($ClangCl -and $Msvc) {
+    throw "--clang-cl and --msvc select different compilers."
+}
+if ($Ninja -and $Msbuild) {
+    throw "--ninja and --msbuild select different generators."
+}
+if ($ClangPath -and -not $Ninja) {
+    throw "--clang-path needs the Ninja generator; add -x."
+}
+
+# clang-cl implies no PCH
+if ($ClangCl) { $NoPch = $true }
+
+# Cache only valid with clang-cl + Ninja
+if ($Cache -and $Cache -ne "off") {
+    if (-not $Ninja -or -not $ClangCl) {
+        throw "--cache needs clang-cl and Ninja; add -l -x."
+    }
+}
+
+# Default generator: Ninja unless Msbuild
+if (-not $Ninja -and -not $Msbuild) {
+    $Ninja = $true
+}
+
+# Default compiler: clang-cl when Ninja, MSVC when Msbuild
+if (-not $ClangCl -and -not $Msvc) {
+    if ($Ninja) { $ClangCl = $true }
+    else { $Msvc = $true }
+}
+
+# --vs only meaningful with MSBuild
+if ($Vs -and -not $Msbuild) {
+    Write-Host "Warning: --vs is only used with the Visual Studio generator (--msbuild)." -ForegroundColor Yellow
+}
+
+# Display preset name (derived from flags when Preset not given)
+$displayPreset = $Preset
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $UnitsDir = Join-Path $RepoRoot "scripts\build_win_steps"
-$presetDirs = @{
-    "x64-clang"       = "build-clang"
-    "x64-clang-cache" = "build-clang-cache"
-    "x64-clang-debug" = "build-dbg-clang"
-}
 
 . (Join-Path $UnitsDir "native.ps1")
 . (Join-Path $UnitsDir "toolchain.ps1")
@@ -204,32 +328,57 @@ try {
     }
     Write-Status "vs"      $vsInstall
 
+    # Resolve compiler
     $clangCl = $null
-    if ($env:ORCA_CLANG_CL) {
-        if (-not (Test-Path $env:ORCA_CLANG_CL)) { throw "ORCA_CLANG_CL points at '$env:ORCA_CLANG_CL', which does not exist." }
-        $clangCl = (Resolve-Path $env:ORCA_CLANG_CL).Path
-    } else {
-        $clangCmd = Get-Command clang-cl -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($clangCmd) {
-            $clangCl = $clangCmd.Source
+    $clExe   = $null
+    if ($ClangCl) {
+        if ($env:ORCA_CLANG_CL) {
+            if (-not (Test-Path $env:ORCA_CLANG_CL)) { throw "ORCA_CLANG_CL points at '$env:ORCA_CLANG_CL', which does not exist." }
+            $clangCl = (Resolve-Path $env:ORCA_CLANG_CL).Path
         } else {
-            $vsClang = Join-Path $vsInstall "VC\Tools\Llvm\x64\bin\clang-cl.exe"
-            if (Test-Path $vsClang) { $clangCl = $vsClang }
+            $clangCmd = Get-Command clang-cl -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($clangCmd) {
+                $clangCl = $clangCmd.Source
+            } else {
+                $vsClang = Join-Path $vsInstall "VC\Tools\Llvm\x64\bin\clang-cl.exe"
+                if (Test-Path $vsClang) { $clangCl = $vsClang }
+            }
         }
+        if (-not $clangCl) {
+            throw "clang-cl was not found. Install LLVM and add it to PATH, set ORCA_CLANG_CL, or install the C++ Clang tools for Windows component in Visual Studio."
+        }
+        Write-Status "clang-cl" $clangCl
     }
-    if (-not $clangCl) {
-        throw "clang-cl was not found. Install LLVM and add it to PATH, set ORCA_CLANG_CL, or install the C++ Clang tools for Windows component in Visual Studio."
+    if ($Msvc) {
+        $clExe = Get-Command cl -ErrorAction SilentlyContinue | Select-Object -First 1
+        if (-not $clExe) {
+            # Try VS toolset directly
+            $vsCl = Join-Path $vsInstall "VC\Tools\MSVC\*\bin\Host$($env:PROCESSOR_ARCHITECTURE)\$($env:PROCESSOR_ARCHITECTURE)\cl.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($vsCl) { $clExe = $vsCl.Source }
+        }
+        if (-not $clExe) {
+            throw "cl.exe was not found. Install Visual Studio with the C++ workload, or set --msvc with a valid VS installation."
+        }
+        Write-Status "cl" $clExe
     }
 
     $cmake = Resolve-Tool "cmake" "ORCA_CMAKE" "Install CMake 3.21 or newer and add it to PATH, or set ORCA_CMAKE."
-    $ninja = Resolve-Tool "ninja" "ORCA_NINJA" "Install Ninja and add it to PATH, or set ORCA_NINJA."
-    $ccache = $null
-    if ($env:ORCA_CCACHE) {
-        if (-not (Test-Path $env:ORCA_CCACHE)) { throw "ORCA_CCACHE points at '$env:ORCA_CCACHE', which does not exist." }
-        $ccache = (Resolve-Path $env:ORCA_CCACHE).Path
+    if ($Ninja) {
+        $ninja = Resolve-Tool "ninja" "ORCA_NINJA" "Install Ninja and add it to PATH, or set ORCA_NINJA."
     } else {
-        $ccacheCmd = Get-Command ccache -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($ccacheCmd) { $ccache = $ccacheCmd.Source }
+        $ninja = $null
+    }
+    $ccache = $null
+    if ($Cache -and $Cache -ne "off") {
+        if ($env:ORCA_CCACHE) {
+            if (-not (Test-Path $env:ORCA_CCACHE)) { throw "ORCA_CCACHE points at '$env:ORCA_CCACHE', which does not exist." }
+            $ccache = (Resolve-Path $env:ORCA_CCACHE).Path
+        } else {
+            $ccacheCmd = Get-Command ccache -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($ccacheCmd) { $ccache = $ccacheCmd.Source }
+        }
+        if (-not $ccache) { throw "ccache was not found. Install it, add it to PATH, or set ORCA_CCACHE." }
+        Write-Status "ccache" $ccache
     }
 
     $cmakeVersion = (& $cmake --version | Select-Object -First 1)
@@ -244,38 +393,56 @@ try {
     Write-Status "ninja"    $ninja
     if ($ccache) { Write-Status "ccache" $ccache }
 
-    # --- 2. Choose preset/target ---
+    # --- 2. Choose build tree and target ---
     Write-Step "[2/7] Determining build configuration..."
+
+    # Build tree names per configuration (mirrors build_win.bat cfg_dir_*)
+    $configDirs = @{
+        "release"         = "build"
+        "debug"           = "build-dbg"
+        "relwithdebinfo"  = "build-dbginfo"
+        "minsizerel"      = "build-minsize"
+    }
+    $configLower = $Config.ToLower()
+    if (-not $configDirs.ContainsKey($configLower)) {
+        throw "Unknown configuration '$Config'. Known configurations: release, debug, relwithdebinfo, minsizerel."
+    }
+    $treeName = $configDirs[$configLower]
+    $depName  = $configDirs[$configLower]
+
+    # Suffixes for compiler and architecture
+    if ($ClangCl) { $treeName += "-clang"; $depName += "-clang" }
+    if ($Arch -eq "ARM64") { $treeName += "-arm64"; $depName += "-arm64" }
+
+    $buildDir = $treeName
+    if ($SlicerDir) { $buildDir = $SlicerDir }
+
+    # Unity test preset forces clang-cl + cache
     if ($UnityTestLibslic3r) {
-        $Preset = "x64-clang-cache"
+        $ClangCl = $true; $Ninja = $true; $Cache = "ccache"
         if (-not $Target) { $Target = "libslic3r" }
-    } elseif (-not $Preset) {
-        # Only use the cache preset when ccache is available AND its dependency
-        # tree is actually complete. Otherwise fall back to the plain clang build
-        # so a no-argument run just works.
-        $cacheManifest = Test-Path "deps\build-clang-cache\.deps-manifest"
-        $cachePrefix   = Test-Path "deps\build-clang-cache\OrcaSlicer_dep\usr\local"
-        $cacheStamps   = (Get-ChildItem "deps\build-clang-cache" -Filter "*-complete" -Name).Count -gt 0
-        $cacheDepsReady = $cacheManifest -and $cachePrefix -and $cacheStamps
-        if ((Test-Path "build-clang-cache" -PathType Container) -and $ccache -and $cacheDepsReady) {
-            $Preset = "x64-clang-cache"
-        } else {
-            $Preset = "x64-clang"
-        }
     }
+
     if (-not $Target) { $Target = "all" }
-    $buildDir = $presetDirs[$Preset]
 
-    if ($Preset -eq "x64-clang-cache" -and -not $PSBoundParameters.ContainsKey("MetricsInterval")) {
-        $MetricsInterval = 3
+    # Cache preset name for display (from flags)
+    $displayPreset = if ($Preset) { $Preset }
+                     elseif ($ClangCl -and $Ninja -and $Cache -eq "ccache") { "x64-clang-cache" }
+                     elseif ($ClangCl -and $Ninja) { "x64-clang" }
+                     elseif ($Msvc -and $Ninja) { "x64-msvc" }
+                     elseif ($Msvc -and $Msbuild) { "x64-msbuild" }
+                     else { "custom" }
+
+    if ($Cache -eq "ccache" -and -not $ccache) {
+        throw "ccache is required for cache builds. Install it, add it to PATH, or set ORCA_CCACHE."
     }
 
-    Write-Status "preset"  "$Preset ($buildDir)"
+    Write-Status "preset"  "$displayPreset ($buildDir)"
     Write-Status "target"  "$Target ($Config)"
-    Write-Status "jobs"    ($(if ($MaxJobs -gt 0) { "$MaxJobs" } else { "auto" }))
-    if ($Preset -eq "x64-clang-cache" -and -not $ccache) {
-        throw "ccache is required for the x64-clang-cache preset. Install it, add it to PATH, or set ORCA_CCACHE."
-    }
+    Write-Status "arch"    $Arch
+    Write-Status "compiler" $(if ($ClangCl) { "clang-cl" } else { "cl" })
+    Write-Status "generator" $(if ($Ninja) { "Ninja" } else { "MSBuild" })
+    Write-Status "jobs"    $(if ($MaxJobs -gt 0) { "$MaxJobs" } else { "auto" })
 
     if ($CleanDeps) {
         foreach ($d in @("deps\build-clang", "deps\build-clang-cache")) {
@@ -292,14 +459,14 @@ try {
 
     # --- 3. Capture the Visual Studio environment ---
     Write-Step "[3/7] Setting up the Visual Studio environment..."
-    Capture-VsEnvironment -VsInstall $vsInstall
+    Capture-VsEnvironment -VsInstall $vsInstall -Arch $Arch
 
-    $toolDirs = @($clangCl, $cmake, $ninja, $ccache) |
+    $toolDirs = @($clangCl, $clExe, $cmake, $ninja, $ccache) |
         Where-Object { $_ } |
         ForEach-Object { Split-Path -Parent $_ } |
         Select-Object -Unique
     $env:PATH = ($toolDirs -join ";") + ";" + $env:PATH
-    Write-Status "env" "VS x64 environment captured, tool dirs prepended to PATH"
+    Write-Status "env" "VS $Arch environment captured, tool dirs prepended to PATH"
 
     # --- 4. Start metrics monitor ---
     if (-not $NoMetrics) {
@@ -323,8 +490,11 @@ try {
         Write-Step "[5/7] Skipping dependencies (-SkipDeps)"
     } else {
         Write-Step "[5/7] Checking dependencies..."
-        $depsBuildDir = if ($Preset -eq "x64-clang-cache") { "deps/build-clang-cache" } else { "deps/build-clang" }
-        Check-Dependencies -Cmake $cmake -ClangCl $clangCl -Config $Config -DepsBuildDir $depsBuildDir
+        # Deps tree name mirrors build tree naming (minus arch suffix for shared deps)
+        $depTreeName = $depName
+        $depsBuildDir = Join-Path "deps" $depTreeName
+        $depsCompiler = if ($ClangCl) { $clangCl } else { $clExe }
+        Check-Dependencies -Cmake $cmake -Compiler $depsCompiler -Config $Config -DepsBuildDir $depsBuildDir
 
         if ($PackDeps) {
             Write-Step "[5.1/7] Packing dependencies..."
@@ -344,72 +514,85 @@ try {
         }
     }
 
-    # --- 6. Configure and build ---
-    Write-Step "[6/7] Configuring and building..."
-    $generator = "Ninja Multi-Config"
-    $compiler = $null
-    if ($Preset -in @("x64-clang", "x64-clang-cache", "x64-clang-debug")) {
-        $compiler = $clangCl
-    }
-    $cmakeArgs = @()
-    if ($Preset -eq "x64-clang-cache") { $cmakeArgs += "-DSLIC3R_UNITY_BUILD=ON" }
-    $timing = Configure-Build -Cmake $cmake -BuildDir $buildDir -Config $Config -Target $Target `
-                              -UnityTest:$UnityTestLibslic3r -MaxJobs $MaxJobs `
-                              -Generator $generator -Compiler $compiler -CMakeArgs $cmakeArgs
-
-    # --- 7. Build summary ---
-    Write-Host ""
-    Write-Host ""
-    Write-Step "[7/7] Build finished"
-
-    $ccacheLines = @(Show-CcacheStats -Ccache $ccache -NoMetrics:$NoMetrics)
-    if ($ccacheLines.Count -gt 0) {
-        $ccacheData = Join-Path $env:TEMP "orca-build-ccache.txt"
-        $ccacheLines | Set-Content -LiteralPath $ccacheData -Encoding UTF8
-        try {
-            if (-not (Invoke-SpectreHelper -Action "textpanel" -Arguments @($ccacheData, "Ccache statistics"))) {
-                $ccacheLines | ForEach-Object { Write-Host $_ }
-            }
-        } finally {
-            Remove-Item -LiteralPath $ccacheData -ErrorAction SilentlyContinue
+    $timing = $null
+    if ($Slicer) {
+        # --- 6. Configure and build ---
+        Write-Step "[6/7] Configuring and building..."
+        $generator = if ($Msbuild) { "Visual Studio 17 2022" } else { "Ninja Multi-Config" }
+        $compiler = if ($ClangCl) { $clangCl } else { $clExe }
+        $cmakeArgs = @()
+        if ($Cache -eq "ccache") {
+            $cmakeArgs += "-DSLIC3R_UNITY_BUILD=ON"
         }
-    }
+        if ($Tests) {
+            $cmakeArgs += "-DBUILD_TESTS=ON"
+        }
+        # MSBuild + ARM64 needs -A arch
+        if ($Msbuild -and $Arch -eq "ARM64") {
+            $cmakeArgs += "-A", "ARM64"
+        }
+        # Ninja + clang-cl under VS generator needs ClangCL toolset
+        if (-not $Ninja -and $ClangCl) {
+            $cmakeArgs += "-T", "ClangCL"
+        }
+        $timing = Configure-Build -Cmake $cmake -BuildDir $buildDir -Config $Config -Target $Target `
+                                  -UnityTest:$UnityTestLibslic3r -MaxJobs $MaxJobs `
+                                  -Generator $generator -Compiler $compiler -CMakeArgs $cmakeArgs
 
-    # --- 8. Resource chart ---
-    if ($metricsJob) {
-        Stop-Job   $metricsJob -ErrorAction SilentlyContinue
-        Remove-Job $metricsJob -Force -ErrorAction SilentlyContinue
-        $metricsJob = $null
-    }
-    Show-BuildMetrics -CsvPath $metricsCsv -Preset $Preset -Config $Config
+        # --- 7. Build summary ---
+        Write-Host ""
+        Write-Host ""
+        Write-Step "[7/7] Build finished"
 
-    # --- 9. Success summary ---
-    $total = $timing.ConfigureTime + $timing.BuildTime
-    $configureStr = & $fmt $timing.ConfigureTime
-    $buildStr     = & $fmt $timing.BuildTime
-    $totalStr     = & $fmt $total
+        $ccacheLines = @(Show-CcacheStats -Ccache $ccache -NoMetrics:$NoMetrics)
+        if ($ccacheLines.Count -gt 0) {
+            $ccacheData = Join-Path $env:TEMP "orca-build-ccache.txt"
+            $ccacheLines | Set-Content -LiteralPath $ccacheData -Encoding UTF8
+            try {
+                if (-not (Invoke-SpectreHelper -Action "textpanel" -Arguments @($ccacheData, "Ccache statistics"))) {
+                    $ccacheLines | ForEach-Object { Write-Host $_ }
+                }
+            } finally {
+                Remove-Item -LiteralPath $ccacheData -ErrorAction SilentlyContinue
+            }
+        }
 
-    $summaryData = Join-Path $env:TEMP "orca-build-summary.txt"
-    @($totalStr, $configureStr, $buildStr) | Set-Content -LiteralPath $summaryData -Encoding ASCII
-    try {
-        $rendered = Invoke-SpectreHelper -Action "panel" -Arguments @($summaryData)
-    } finally {
-        Remove-Item -LiteralPath $summaryData -ErrorAction SilentlyContinue
-    }
-    if (-not $rendered) {
-        Write-Host ("  Total:     {0}" -f $totalStr)
-        Write-Host ("  Configure: {0}" -f $configureStr)
-        Write-Host ("  Build:     {0}" -f $buildStr)
-    }
+        # --- 8. Resource chart ---
+        if ($metricsJob) {
+            Stop-Job   $metricsJob -ErrorAction SilentlyContinue
+            Remove-Job $metricsJob -Force -ErrorAction SilentlyContinue
+            $metricsJob = $null
+        }
+        Show-BuildMetrics -CsvPath $metricsCsv -Preset $displayPreset -Config $Config
 
-    $buildSucceeded = $true
+        # --- 9. Success summary ---
+        $total = $timing.ConfigureTime + $timing.BuildTime
+        $configureStr = & $fmt $timing.ConfigureTime
+        $buildStr     = & $fmt $timing.BuildTime
+        $totalStr     = & $fmt $total
+
+        $summaryData = Join-Path $env:TEMP "orca-build-summary.txt"
+        @($totalStr, $configureStr, $buildStr) | Set-Content -LiteralPath $summaryData -Encoding ASCII
+        try {
+            $rendered = Invoke-SpectreHelper -Action "panel" -Arguments @($summaryData)
+        } finally {
+            Remove-Item -LiteralPath $summaryData -ErrorAction SilentlyContinue
+        }
+        if (-not $rendered) {
+            Write-Host ("  Total:     {0}" -f $totalStr)
+            Write-Host ("  Configure: {0}" -f $configureStr)
+            Write-Host ("  Build:     {0}" -f $buildStr)
+        }
+
+        $buildSucceeded = $true
+    }
 } catch {
     if ($metricsJob) {
         Stop-Job   $metricsJob -ErrorAction SilentlyContinue
         Remove-Job $metricsJob -Force -ErrorAction SilentlyContinue
         $metricsJob = $null
     }
-    Show-BuildMetrics -CsvPath $metricsCsv -Preset $Preset -Config $Config
+    Show-BuildMetrics -CsvPath $metricsCsv -Preset $displayPreset -Config $Config
 
     Write-Host ""
     Write-Host "BUILD FAILED: $($_.Exception.Message)" -ForegroundColor Red
