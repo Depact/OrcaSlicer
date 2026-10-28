@@ -237,13 +237,20 @@ Either way, the build produces wrong behavior and no output artifacts, contribut
 - **`deps.ps1`**: `Check-Dependencies` accepts `-Compiler` instead of `-ClangCl`
 - **`scripts/build_preset_cache.ps1`**: New PS1 replacement for `build_preset_cache.bat`
 - **CI workflows** (`build_all.yml`, `build_check_cache.yml`, `build_deps.yml`, `build_orca.yml`):
-  - Windows matrix duplicated: each config runs with `script: bat` (baseline) and `script: ps1` (candidate)
-  - Baseline jobs named with `(baseline)` suffix, `continue-on-error: true` so they don't block candidates
-  - Candidate jobs named with `(candidate)` suffix, required for downstream tests
+  - Windows matrix duplicated: each config runs with `script: bat` (baseline - current main) and `script: ps1` (candidate)
+  - Baseline jobs named with `(baseline - current main)` suffix, `continue-on-error: true` so they don't block candidates
+  - Top candidate job (x64-clang-cache + ps1) named with `(top candidate - ps1)` suffix
+  - Other candidate jobs named with `(candidate - ps1)` suffix, required for downstream tests
   - `script` input flows: `build_all.yml` → `build_check_cache.yml` → `build_deps.yml` → `build_orca.yml`
 
 **Job naming convention:**
-- `.bat` jobs: `Build Windows <arch> (<preset>) (baseline)`
-- `.ps1` jobs: `Build Windows <arch> (<preset>) (candidate)`
+- `.bat` jobs: `Build Windows <arch> (<preset>) (baseline - current main)`
+- `.ps1` x64-clang-cache job: `Build Windows x64 (x64-clang-cache) (top candidate - ps1)`
+- `.ps1` other jobs: `Build Windows <arch> (<preset>) (candidate - ps1)`
+
+**Markings:**
+- `(baseline - current main)`: build_win.bat — what's currently on main branch
+- `(top candidate - ps1)`: build_win.ps1 with x64-clang-cache (clang-cl + Ninja + ccache + unity) — primary performance candidate
+- `(candidate - ps1)`: build_win.ps1 with other presets — secondary candidates for perf comparison
 
 All changes pushed to `depact/feat/build-performance` — next CI rerun should use fixed workflow files.

@@ -111,7 +111,7 @@ jobs:
       build-deps-only: ${{ inputs.build-deps-only || false }}
     secrets: inherit
   build_windows:
-    name: Build Windows ${{ matrix.arch }} (${{ matrix.preset }})${{ matrix.script == 'bat' && ' (baseline)' || ' (candidate)' }}
+    name: Build Windows ${{ matrix.arch }} (${{ matrix.preset }})${{ matrix.script == 'bat' && ' (baseline - current main)' || matrix.preset == 'x64-clang-cache' && ' (top candidate - ps1)' || ' (candidate - ps1)' }}
     strategy:
       fail-fast: false
       # SELF_HOSTED skips arm64 (the self-hosted Windows server is x64-only).
