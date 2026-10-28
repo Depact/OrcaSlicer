@@ -220,9 +220,9 @@ Either way, the build produces wrong behavior and no output artifacts, contribut
 | `ff35acc795` | Removed unsupported `--preset` from build_win.bat calls in CI workflows |
 | `dc5508612f` | Replace .bat with .ps1 for full CI pipeline |
 
-### Fix 5: Eliminate `.bat` from CI — `build_win.ps1` is now fully sufficient
+### Fix 5: Baseline vs candidate jobs for `.bat` vs `.ps1` perf comparison
 
-**Problem:** CI workflows called `build_win.bat` which lacks PS1 features (rich output, metrics, per-tool charts) and `build_win.ps1` didn't support all build configurations.
+**Problem:** Need side-by-side performance data between `build_win.bat` (current main) and `build_win.ps1` (new candidate) to validate the PS1 migration.
 
 **Changes:**
 - **`build_win.ps1`**: Extended to support everything `build_win.bat` does:
@@ -236,8 +236,14 @@ Either way, the build produces wrong behavior and no output artifacts, contribut
 - **`vsenv.ps1`**: Added `-Arch` parameter for `x64_arm64` VS environment setup
 - **`deps.ps1`**: `Check-Dependencies` accepts `-Compiler` instead of `-ClangCl`
 - **`scripts/build_preset_cache.ps1`**: New PS1 replacement for `build_preset_cache.bat`
-- **CI workflows** (`build_deps.yml`, `build_orca.yml`): All `.bat` calls replaced with `.ps1`
+- **CI workflows** (`build_all.yml`, `build_check_cache.yml`, `build_deps.yml`, `build_orca.yml`):
+  - Windows matrix duplicated: each config runs with `script: bat` (baseline) and `script: ps1` (candidate)
+  - Baseline jobs named with `(baseline)` suffix, `continue-on-error: true` so they don't block candidates
+  - Candidate jobs named with `(candidate)` suffix, required for downstream tests
+  - `script` input flows: `build_all.yml` → `build_check_cache.yml` → `build_deps.yml` → `build_orca.yml`
 
-**No `.bat` calls remain in CI workflows.**
+**Job naming convention:**
+- `.bat` jobs: `Build Windows <arch> (<preset>) (baseline)`
+- `.ps1` jobs: `Build Windows <arch> (<preset>) (candidate)`
 
 All changes pushed to `depact/feat/build-performance` — next CI rerun should use fixed workflow files.
