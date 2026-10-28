@@ -277,7 +277,7 @@ jobs:
           failOnError: false
   pr_full_test_observability:
     name: PR Full Test + Observability
-    needs: [unit_tests_windows_x64_clang_cache, build_windows]
+    needs: [unit_tests_windows_x64_clang_cache]
     if: github.event_name == 'pull_request' && !cancelled()
     runs-on: windows-latest
     steps:
