@@ -218,5 +218,26 @@ Either way, the build produces wrong behavior and no output artifacts, contribut
 | `20803d02bd` | Fixed render.ps1 chart legend to use diamond symbol (U+25A0) for build series |
 | `5892ae55d7` | Documented pipeline results and all fixes applied |
 | `ff35acc795` | Removed unsupported `--preset` from build_win.bat calls in CI workflows |
+| `dc5508612f` | Replace .bat with .ps1 for full CI pipeline |
+
+### Fix 5: Eliminate `.bat` from CI — `build_win.ps1` is now fully sufficient
+
+**Problem:** CI workflows called `build_win.bat` which lacks PS1 features (rich output, metrics, per-tool charts) and `build_win.ps1` didn't support all build configurations.
+
+**Changes:**
+- **`build_win.ps1`**: Extended to support everything `build_win.bat` does:
+  - MSVC cl compiler (`-Msvc`/`--msvc`) alongside clang-cl (`-ClangCl`/`-l`)
+  - MSBuild generator (`-Msbuild`/`--msbuild`) alongside Ninja (`-Ninja`/`-x`)
+  - ARM64 architecture (`-Arch arm64`/`--arch arm64`)
+  - All actions: `-Deps`, `-Slicer`, `-PackDeps`, `-InstallDeps`, `-KillJobs`, `-Help`
+  - All tuning: `-Verbose`, `-DryRun`, `-Config`, `-MaxJobs`, `-Cache`, `-NoPch`, etc.
+  - Toolchain resolution for `cl.exe`, `msbuild`, `ccache`
+  - Build tree naming per config/compiler/arch (matches `.bat` convention)
+- **`vsenv.ps1`**: Added `-Arch` parameter for `x64_arm64` VS environment setup
+- **`deps.ps1`**: `Check-Dependencies` accepts `-Compiler` instead of `-ClangCl`
+- **`scripts/build_preset_cache.ps1`**: New PS1 replacement for `build_preset_cache.bat`
+- **CI workflows** (`build_deps.yml`, `build_orca.yml`): All `.bat` calls replaced with `.ps1`
+
+**No `.bat` calls remain in CI workflows.**
 
 All changes pushed to `depact/feat/build-performance` — next CI rerun should use fixed workflow files.
