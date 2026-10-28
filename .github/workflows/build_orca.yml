@@ -23,6 +23,10 @@ on:
         flags:
           required: false
           type: string
+        script:
+          required: false
+          type: string
+          default: ps1
         macos-combine-only:
           required: false
           type: boolean
@@ -488,13 +492,17 @@ jobs:
           if (-not $flags) {
             $flags = if ("${{ inputs.compiler }}" -eq "clang") { "-l", "-x" } else { "--msvc", "--msbuild" }
           }
-          # Convert build_win.bat flags to build_win.ps1 parameters
-          $useClangCl = $flags -contains "-l"
-          $useNinja   = $flags -contains "-x"
-          $useMsvc    = $flags -contains "--msvc"
-          $useMsbuild = $flags -contains "--msbuild"
-          $useCache   = if ($flags -contains "--ccache") { "ccache" } else { $null }
-          .\build_win.ps1 -Slicer -Tests -InstallSlicer -Arch ${{ inputs.arch }} -SlicerDir $env:BUILD_DIR -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache
+          # Use build_win.ps1 by default; build_win.bat for baseline comparison
+          if ("${{ inputs.script }}" -eq "bat") {
+            .\build_win.bat -s --tests -i --arch ${{ inputs.arch }} --build-dir $env:BUILD_DIR --deps-dir $deps @flags
+          } else {
+            $useClangCl = $flags -contains "-l"
+            $useNinja   = $flags -contains "-x"
+            $useMsvc    = $flags -contains "--msvc"
+            $useMsbuild = $flags -contains "--msbuild"
+            $useCache   = if ($flags -contains "--ccache") { "ccache" } else { $null }
+            .\build_win.ps1 -Slicer -Tests -InstallSlicer -Arch ${{ inputs.arch }} -SlicerDir $env:BUILD_DIR -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache
+          }
         shell: pwsh
 
       - name: Build system preset cache (Windows)

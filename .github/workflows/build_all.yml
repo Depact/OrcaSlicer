@@ -111,17 +111,20 @@ jobs:
       build-deps-only: ${{ inputs.build-deps-only || false }}
     secrets: inherit
   build_windows:
-    name: Build Windows ${{ matrix.arch }} (${{ matrix.preset }})
+    name: Build Windows ${{ matrix.arch }} (${{ matrix.preset }})${{ matrix.script == 'bat' && ' (baseline)' || ' (candidate)' }}
     strategy:
       fail-fast: false
       # SELF_HOSTED skips arm64 (the self-hosted Windows server is x64-only).
+      # Each config runs twice: once with build_win.bat (baseline) and once with
+      # build_win.ps1 (candidate) for perf comparison.
       matrix:
         include: ${{ fromJSON(vars.SELF_HOSTED
-          && '[{"arch":"x64","os":"orca-win-server","compiler":"clang","preset":"x64-clang-cache","flags":"-l -x --ccache --unity"},{"arch":"x64","os":"orca-win-server","compiler":"clang","preset":"x64-clang","flags":"-l -x"},{"arch":"x64","os":"orca-win-server","compiler":"msvc","preset":"x64-msvc","flags":"--msvc --ninja"},{"arch":"x64","os":"orca-win-server","compiler":"msvc","preset":"x64-msbuild","flags":"--msvc --msbuild"}]'
-          || '[{"arch":"x64","os":"windows-latest","compiler":"clang","preset":"x64-clang-cache","flags":"-l -x --ccache --unity"},{"arch":"x64","os":"windows-latest","compiler":"clang","preset":"x64-clang","flags":"-l -x"},{"arch":"x64","os":"windows-latest","compiler":"msvc","preset":"x64-msvc","flags":"--msvc --ninja"},{"arch":"x64","os":"windows-latest","compiler":"msvc","preset":"x64-msbuild","flags":"--msvc --msbuild"},{"arch":"arm64","os":"windows-11-vs2026-arm","compiler":"clang","preset":"arm64-clang","flags":"-l -x"}]') }}
+          && '[{"arch":"x64","os":"orca-win-server","compiler":"clang","preset":"x64-clang-cache","flags":"-l -x --ccache --unity","script":"ps1"},{"arch":"x64","os":"orca-win-server","compiler":"clang","preset":"x64-clang","flags":"-l -x","script":"ps1"},{"arch":"x64","os":"orca-win-server","compiler":"msvc","preset":"x64-msvc","flags":"--msvc --ninja","script":"ps1"},{"arch":"x64","os":"orca-win-server","compiler":"msvc","preset":"x64-msbuild","flags":"--msvc --msbuild","script":"ps1"},{"arch":"x64","os":"orca-win-server","compiler":"clang","preset":"x64-clang-cache","flags":"-l -x --ccache --unity","script":"bat","continue-on-error":true},{"arch":"x64","os":"orca-win-server","compiler":"clang","preset":"x64-clang","flags":"-l -x","script":"bat","continue-on-error":true},{"arch":"x64","os":"orca-win-server","compiler":"msvc","preset":"x64-msvc","flags":"--msvc --ninja","script":"bat","continue-on-error":true},{"arch":"x64","os":"orca-win-server","compiler":"msvc","preset":"x64-msbuild","flags":"--msvc --msbuild","script":"bat","continue-on-error":true}]'
+          || '[{"arch":"x64","os":"windows-latest","compiler":"clang","preset":"x64-clang-cache","flags":"-l -x --ccache --unity","script":"ps1"},{"arch":"x64","os":"windows-latest","compiler":"clang","preset":"x64-clang","flags":"-l -x","script":"ps1"},{"arch":"x64","os":"windows-latest","compiler":"msvc","preset":"x64-msvc","flags":"--msvc --ninja","script":"ps1"},{"arch":"x64","os":"windows-latest","compiler":"msvc","preset":"x64-msbuild","flags":"--msvc --msbuild","script":"ps1"},{"arch":"arm64","os":"windows-11-vs2026-arm","compiler":"clang","preset":"arm64-clang","flags":"-l -x","script":"ps1"},{"arch":"x64","os":"windows-latest","compiler":"clang","preset":"x64-clang-cache","flags":"-l -x --ccache --unity","script":"bat","continue-on-error":true},{"arch":"x64","os":"windows-latest","compiler":"clang","preset":"x64-clang","flags":"-l -x","script":"bat","continue-on-error":true},{"arch":"x64","os":"windows-latest","compiler":"msvc","preset":"x64-msvc","flags":"--msvc --ninja","script":"bat","continue-on-error":true},{"arch":"x64","os":"windows-latest","compiler":"msvc","preset":"x64-msbuild","flags":"--msvc --msbuild","script":"bat","continue-on-error":true},{"arch":"arm64","os":"windows-11-vs2026-arm","compiler":"clang","preset":"arm64-clang","flags":"-l -x","script":"bat","continue-on-error":true}]') }}
     needs: check_build_script
     # Don't run scheduled builds on forks:
     if: ${{ !cancelled() && needs.check_build_script.result == 'success' && (github.event_name != 'schedule' || github.repository == 'OrcaSlicer/OrcaSlicer') }}
+    continue-on-error: ${{ matrix.continue-on-error == 'true' }}
     uses: ./.github/workflows/build_check_cache.yml
     with:
       os: ${{ matrix.os }}
@@ -129,6 +132,7 @@ jobs:
       compiler: ${{ matrix.compiler }}
       preset: ${{ matrix.preset }}
       flags: ${{ matrix.flags }}
+      script: ${{ matrix.script }}
       build-deps-only: ${{ inputs.build-deps-only || false }}
       force-build: ${{ github.event_name == 'schedule' }}
     secrets: inherit
