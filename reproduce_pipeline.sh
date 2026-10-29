@@ -229,6 +229,31 @@ INNER
 echo "   OpenVDB/Blosc CMake configs created."
 echo ""
 
+# ---- Step 6.7: Build CGAL 6.2 from source (Ubuntu 24.04 only has 5.6) ----
+echo ">> Step 6.7: Building CGAL 6.2 from source..."
+if [[ ! -d /usr/local/include/CGAL ]]; then
+    cd /tmp
+    rm -rf CGAL-6.2 CGAL-6.2.tar.xz
+    wget -q https://github.com/CGAL/cgal/releases/download/v6.2/CGAL-6.2.tar.xz
+    tar xf CGAL-6.2.tar.xz
+    cd CGAL-6.2
+    cmake -S . -B build -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr/local \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DWITH_CGAL_Qt5=OFF \
+        -DWITH_CGAL_Qt6=OFF \
+        -DWITH_CGAL_ImageIO=OFF \
+        -DWITH_CGAL_Scip=OFF \
+        -DWITH_CGAL_Eigen3=ON \
+        2>&1 | tail -5
+    ninja -C build -j"$NUM_JOBS" install 2>&1 | tail -5
+    echo "   CGAL 6.2 installed to /usr/local"
+else
+    echo "   CGAL 6.2 already installed, skipping."
+fi
+echo ""
+
 # ---- Step 6.5: Build SLVS (SolveSpace constraint solver) ----
 echo ">> Step 6.5: Building SLVS from source..."
 if [[ ! -d /usr/local/include/slvs ]]; then
