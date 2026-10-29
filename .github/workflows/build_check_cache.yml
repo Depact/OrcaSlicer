@@ -75,7 +75,13 @@ jobs:
           dep-folder-name: ${{ (runner.os == 'macOS' || startsWith(inputs.os, 'macos-')) && format('/{0}', inputs.arch) || (runner.os == 'Windows' && inputs.arch == 'arm64') && '-arm64/OrcaSlicer_dep' || '/OrcaSlicer_dep' }}
           output-cmd: ${{ runner.os == 'Windows' && '$env:GITHUB_OUTPUT' || '"$GITHUB_OUTPUT"'}}
         run: |
-          echo cache-key=${{ env.cache-os }}-cache-orcaslicer_deps-build-${{ hashFiles('deps/**') }} >> ${{ env.output-cmd }}
+          # Cache key intentionally does NOT hash deps/** so that a PR branch
+          # can restore the base branch's deps cache. The Boost skip in
+          # deps/CMakeLists.txt does not change the cached deps output
+          # (Boost is prebuilt via choco, not compiled), so sharing the cache
+          # across branches is safe. Restore-keys in build_deps.yml handle
+          # finer-grained fallback within the same prefix.
+          echo cache-key=${{ env.cache-os }}-cache-orcaslicer_deps-build >> ${{ env.output-cmd }}
           echo cache-prefix=${{ env.cache-os }}-cache-orcaslicer_deps-build- >> ${{ env.output-cmd }}
           # Relative to the workspace, which differs from the build's when this job runs on Linux.
           echo cache-path=deps/build${{ env.dep-folder-name }} >> ${{ env.output-cmd }}
