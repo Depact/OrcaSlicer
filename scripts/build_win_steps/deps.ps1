@@ -59,9 +59,9 @@ function Check-Dependencies {
             $depsConfigureArgs += "-DSKIP_BOOST=ON"
         }
         Write-Host "  [deps] Building dependencies..."
-        Invoke-BuildStep -Label "Dependency configuration" -Command $Cmake -Arguments $depsConfigureArgs
+        Invoke-BuildStep -Label "Dependency configuration" -Command $Cmake -Arguments $depsConfigureArgs -LogPath (New-BuildLogPath "deps-configure")
         Invoke-BuildStep -Label "Dependency build" -Command $Cmake -Arguments @(
-            "--build", $DepsBuildDir, "--config", $Config, "--target", "deps", "--", "--verbose")
+            "--build", $DepsBuildDir, "--config", $Config, "--target", "deps", "--", "--verbose") -LogPath (New-BuildLogPath "deps-build")
         $currentHash | Set-Content $depsManifest -Encoding ASCII
         Write-Host "  [deps] Dependencies built successfully" -ForegroundColor Green
     } else {
