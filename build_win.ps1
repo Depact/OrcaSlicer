@@ -320,6 +320,8 @@ try {
     }
 
     # --- 1. Locate Visual Studio and the toolchain ---
+    Write-Host ("DEBUG bound: Deps=$Deps ClangCl=$ClangCl ($($ClangCl.GetType().Name)) Ninja=$Ninja Msvc=$Msvc Msbuild=$Msbuild Cache='$Cache' Arch='$Arch'") -ForegroundColor DarkGray
+    Write-Host ("DEBUG Resolve-Tool: " + (Get-Command Resolve-Tool -ErrorAction SilentlyContinue).CommandType) -ForegroundColor DarkGray
     Write-Step "[1/7] Locating Visual Studio and tools..."
 
     $vsInstall = Find-VsInstall
@@ -596,6 +598,12 @@ try {
 
     Write-Host ""
     Write-Host "BUILD FAILED: $($_.Exception.Message)" -ForegroundColor Red
+    if ($_.InvocationInfo) {
+        Write-Host ("COMMAND: " + $_.InvocationInfo.MyCommand) -ForegroundColor DarkRed
+        Write-Host ("INVOKED AS: " + $_.InvocationInfo.InvocationName) -ForegroundColor DarkRed
+        Write-Host ("AT LINE: " + $_.InvocationInfo.ScriptLineNumber + " -> " + "$($_.InvocationInfo.Line)".Trim()) -ForegroundColor DarkRed
+        Write-Host ("EXCEPTION: " + $_.Exception.GetType().FullName) -ForegroundColor DarkRed
+    }
     if ($_.ScriptStackTrace) {
         Write-Host $_.ScriptStackTrace -ForegroundColor DarkRed
     }
