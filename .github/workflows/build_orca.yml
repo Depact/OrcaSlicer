@@ -521,7 +521,7 @@ jobs:
             $ps1SkipBoost = if ($skipBoost) { "-SkipBoost" } else { @() }
             .\build_win.ps1 -Slicer -Tests -InstallSlicer -Arch ${{ inputs.arch }} -SlicerDir $env:BUILD_DIR -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache @ps1SkipBoost
           }
-        shell: pwsh
+        shell: powershell
 
       - name: Build system preset cache (Windows)
         if: runner.os == 'Windows'

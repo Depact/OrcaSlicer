@@ -156,7 +156,7 @@ jobs:
               $ps1SkipBoost = if ($skipBoost) { "-SkipBoost" } else { @() }
               .\build_win.ps1 -Deps -Arch ${{ inputs.arch }} -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache @ps1SkipBoost
             }
-        shell: pwsh
+        shell: powershell
 
       - name: Build on Mac ${{ inputs.arch }}
         if: runner.os == 'macOS'
