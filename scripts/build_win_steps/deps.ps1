@@ -38,10 +38,14 @@ function Check-Dependencies {
     }
 
     if ($needsRebuild) {
-        $compilerArg = if ($Compiler) { "-DCMAKE_C_COMPILER=$Compiler -DCMAKE_CXX_COMPILER=$Compiler" } else { "" }
-        Write-Host "  [deps] Building dependencies..."
         $depsConfigureArgs = @("-S", "deps", "-B", $DepsBuildDir, "-G", "Ninja Multi-Config")
-        if ($compilerArg) { $depsConfigureArgs += $compilerArg -split " " }
+        if ($Compiler) {
+            # Pass as separate array elements so paths with spaces (e.g.
+            # "C:\Program Files\LLVM\bin\clang-cl.exe") survive intact.
+            $depsConfigureArgs += "-DCMAKE_C_COMPILER=$Compiler"
+            $depsConfigureArgs += "-DCMAKE_CXX_COMPILER=$Compiler"
+        }
+        Write-Host "  [deps] Building dependencies..."
         Invoke-BuildStep -Label "Dependency configuration" -Command $Cmake -Arguments $depsConfigureArgs
         Invoke-BuildStep -Label "Dependency build" -Command $Cmake -Arguments @(
             "--build", $DepsBuildDir, "--config", $Config, "--target", "deps", "--")
