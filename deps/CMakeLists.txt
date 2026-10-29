@@ -373,8 +373,21 @@ if (NOT EXPAT_FOUND)
 endif ()
 
 # The order of includes respects the dependencies between libraries
-set(DEP_Boost_COMPONENTS system iostreams filesystem thread log locale regex date_time)
-include(Boost/Boost.cmake)
+if (NOT SKIP_BOOST)
+    set(DEP_Boost_COMPONENTS system iostreams filesystem thread log locale regex date_time)
+    include(Boost/Boost.cmake)
+else()
+    # Boost is pre-installed on the CI runner; create a dummy target so deps
+    # that DEPENDS dep_Boost (CGAL, Eigen, NanoSVG, OpenVDB) still resolve.
+    ExternalProject_Add(dep_Boost
+        EXCLUDE_FROM_ALL ON
+        INSTALL_DIR ${DESTDIR}
+        SOURCE_DIR ""
+        CMAKE_ARGS ""
+        BUILD_COMMAND ""
+        INSTALL_COMMAND ""
+    )
+endif()
 
 include(Cereal/Cereal.cmake)
 include(Qhull/Qhull.cmake)

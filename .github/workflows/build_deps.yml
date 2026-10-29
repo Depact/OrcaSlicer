@@ -134,6 +134,7 @@ jobs:
         run: |
             if (-not "${{ vars.SELF_HOSTED }}") {
               choco install strawberryperl
+              choco install boost
             }
             # cache-path is the install directory inside the deps build directory.
             $deps = (Split-Path "${{ github.workspace }}/${{ inputs.cache-path }}").Replace('\', '/')
@@ -144,14 +145,14 @@ jobs:
             }
             # Use build_win.ps1 by default; build_win.bat for baseline comparison
             if ("${{ inputs.script }}" -eq "bat") {
-              .\build_win.bat -d --arch ${{ inputs.arch }} --deps-dir $deps @flags
+              .\build_win.bat -d --arch ${{ inputs.arch }} --deps-dir $deps @flags --deps-args "-DSKIP_BOOST=ON"
             } else {
               $useClangCl = $flags -contains "-l"
               $useNinja   = $flags -contains "-x"
               $useMsvc    = $flags -contains "--msvc"
               $useMsbuild = $flags -contains "--msbuild"
               $useCache   = if ($flags -contains "--ccache") { "ccache" } else { $null }
-              .\build_win.ps1 -Deps -Arch ${{ inputs.arch }} -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache
+              .\build_win.ps1 -Deps -Arch ${{ inputs.arch }} -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache -SkipBoost
             }
         shell: pwsh
 

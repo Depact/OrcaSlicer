@@ -22,7 +22,7 @@ function Get-DepsManifestHash {
 }
 
 function Check-Dependencies {
-    param([string]$Cmake, [string]$Compiler, [string]$Config, [switch]$ForceRebuild, [string]$DepsBuildDir)
+    param([string]$Cmake, [string]$Compiler, [string]$Config, [switch]$ForceRebuild, [string]$DepsBuildDir, [switch]$SkipBoost)
     if (-not $DepsBuildDir) { $DepsBuildDir = "deps/build-clang" }
     $depsPrefix   = "$DepsBuildDir/OrcaSlicer_dep/usr/local"
     $depsManifest = "$DepsBuildDir/.deps-manifest"
@@ -51,6 +51,12 @@ function Check-Dependencies {
             if ($ml64) {
                 $depsConfigureArgs += "-DCMAKE_ASM_MASM_COMPILER=$($ml64.Source)"
             }
+        }
+        if ($SkipBoost) {
+            # Skip Boost ExternalProject build; Boost is pre-installed on the
+            # CI runner and found via find_package(Boost) without
+            # Boost_NO_SYSTEM_PATHS.
+            $depsConfigureArgs += "-DSKIP_BOOST=ON"
         }
         Write-Host "  [deps] Building dependencies..."
         Invoke-BuildStep -Label "Dependency configuration" -Command $Cmake -Arguments $depsConfigureArgs

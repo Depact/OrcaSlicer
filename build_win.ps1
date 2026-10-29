@@ -16,6 +16,7 @@ param(
     [switch]$NoMetrics,
     [switch]$PackDeps,
     [switch]$SkipDeps,
+    [switch]$SkipBoost,
     [ValidateRange(1, 10)]
     [int]$MetricsInterval = 15,
     [ValidateRange(1, 64)]
@@ -494,7 +495,7 @@ try {
         $depTreeName = $depName
         $depsBuildDir = Join-Path "deps" $depTreeName
         $depsCompiler = if ($ClangCl) { $clangClExe } else { $clExe }
-        Check-Dependencies -Cmake $cmake -Compiler $depsCompiler -Config $Config -DepsBuildDir $depsBuildDir
+        Check-Dependencies -Cmake $cmake -Compiler $depsCompiler -Config $Config -DepsBuildDir $depsBuildDir -SkipBoost:$SkipBoost
 
         if ($PackDeps) {
             Write-Step "[5.1/7] Packing dependencies..."
@@ -534,6 +535,9 @@ try {
         # Ninja + clang-cl under VS generator needs ClangCL toolset
         if (-not $Ninja -and $ClangCl) {
             $cmakeArgs += "-T", "ClangCL"
+        }
+        if ($SkipBoost) {
+            $cmakeArgs += "-DSKIP_BOOST=ON"
         }
         $timing = Configure-Build -Cmake $cmake -BuildDir $buildDir -Config $Config -Target $Target `
                                   -UnityTest:$UnityTestLibslic3r -MaxJobs $MaxJobs `
