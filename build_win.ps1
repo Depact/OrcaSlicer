@@ -320,8 +320,6 @@ try {
     }
 
     # --- 1. Locate Visual Studio and the toolchain ---
-    Write-Host ("DEBUG bound: Deps=$Deps ClangCl=$ClangCl ($($ClangCl.GetType().Name)) Ninja=$Ninja Msvc=$Msvc Msbuild=$Msbuild Cache='$Cache' Arch='$Arch'") -ForegroundColor DarkGray
-    Write-Host ("DEBUG Resolve-Tool: " + (Get-Command Resolve-Tool -ErrorAction SilentlyContinue).CommandType) -ForegroundColor DarkGray
     Write-Step "[1/7] Locating Visual Studio and tools..."
 
     $vsInstall = Find-VsInstall
@@ -331,25 +329,25 @@ try {
     Write-Status "vs"      $vsInstall
 
     # Resolve compiler
-    $clangCl = $null
+    $clangClExe = $null
     $clExe   = $null
     if ($ClangCl) {
         if ($env:ORCA_CLANG_CL) {
             if (-not (Test-Path $env:ORCA_CLANG_CL)) { throw "ORCA_CLANG_CL points at '$env:ORCA_CLANG_CL', which does not exist." }
-            $clangCl = (Resolve-Path $env:ORCA_CLANG_CL).Path
+            $clangClExe = (Resolve-Path $env:ORCA_CLANG_CL).Path
         } else {
             $clangCmd = Get-Command clang-cl -ErrorAction SilentlyContinue | Select-Object -First 1
             if ($clangCmd) {
-                $clangCl = $clangCmd.Source
+                $clangClExe = $clangCmd.Source
             } else {
                 $vsClang = Join-Path $vsInstall "VC\Tools\Llvm\x64\bin\clang-cl.exe"
-                if (Test-Path $vsClang) { $clangCl = $vsClang }
+                if (Test-Path $vsClang) { $clangClExe = $vsClang }
             }
         }
-        if (-not $clangCl) {
+        if (-not $clangClExe) {
             throw "clang-cl was not found. Install LLVM and add it to PATH, set ORCA_CLANG_CL, or install the C++ Clang tools for Windows component in Visual Studio."
         }
-        Write-Status "clang-cl" $clangCl
+        Write-Status "clang-cl" $clangClExe
     }
     if ($Msvc) {
         $clExe = Get-Command cl -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -366,21 +364,21 @@ try {
 
     $cmake = Resolve-Tool "cmake" "ORCA_CMAKE" "Install CMake 3.21 or newer and add it to PATH, or set ORCA_CMAKE."
     if ($Ninja) {
-        $ninja = Resolve-Tool "ninja" "ORCA_NINJA" "Install Ninja and add it to PATH, or set ORCA_NINJA."
+        $ninjaExe = Resolve-Tool "ninja" "ORCA_NINJA" "Install Ninja and add it to PATH, or set ORCA_NINJA."
     } else {
-        $ninja = $null
+        $ninjaExe = $null
     }
-    $ccache = $null
+    $ccacheExe = $null
     if ($Cache -and $Cache -ne "off") {
         if ($env:ORCA_CCACHE) {
             if (-not (Test-Path $env:ORCA_CCACHE)) { throw "ORCA_CCACHE points at '$env:ORCA_CCACHE', which does not exist." }
-            $ccache = (Resolve-Path $env:ORCA_CCACHE).Path
+            $ccacheExe = (Resolve-Path $env:ORCA_CCACHE).Path
         } else {
             $ccacheCmd = Get-Command ccache -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($ccacheCmd) { $ccache = $ccacheCmd.Source }
+            if ($ccacheCmd) { $ccacheExe = $ccacheCmd.Source }
         }
-        if (-not $ccache) { throw "ccache was not found. Install it, add it to PATH, or set ORCA_CCACHE." }
-        Write-Status "ccache" $ccache
+        if (-not $ccacheExe) { throw "ccache was not found. Install it, add it to PATH, or set ORCA_CCACHE." }
+        Write-Status "ccache" $ccacheExe
     }
 
     $cmakeVersion = (& $cmake --version | Select-Object -First 1)
@@ -390,10 +388,10 @@ try {
         }
     }
 
-    Write-Status "clang-cl" $clangCl
+    Write-Status "clang-cl" $clangClExe
     Write-Status "cmake"    $cmake
-    Write-Status "ninja"    $ninja
-    if ($ccache) { Write-Status "ccache" $ccache }
+    Write-Status "ninja"    $ninjaExe
+    if ($ccacheExe) { Write-Status "ccache" $ccacheExe }
 
     # --- 2. Choose build tree and target ---
     Write-Step "[2/7] Determining build configuration..."
@@ -435,7 +433,7 @@ try {
                      elseif ($Msvc -and $Msbuild) { "x64-msbuild" }
                      else { "custom" }
 
-    if ($Cache -eq "ccache" -and -not $ccache) {
+    if ($Cache -eq "ccache" -and -not $ccacheExe) {
         throw "ccache is required for cache builds. Install it, add it to PATH, or set ORCA_CCACHE."
     }
 
@@ -463,7 +461,7 @@ try {
     Write-Step "[3/7] Setting up the Visual Studio environment..."
     Capture-VsEnvironment -VsInstall $vsInstall -Arch $Arch
 
-    $toolDirs = @($clangCl, $clExe, $cmake, $ninja, $ccache) |
+    $toolDirs = @($clangClExe, $clExe, $cmake, $ninjaExe, $ccacheExe) |
         Where-Object { $_ } |
         ForEach-Object { Split-Path -Parent $_ } |
         Select-Object -Unique
@@ -495,7 +493,7 @@ try {
         # Deps tree name mirrors build tree naming (minus arch suffix for shared deps)
         $depTreeName = $depName
         $depsBuildDir = Join-Path "deps" $depTreeName
-        $depsCompiler = if ($ClangCl) { $clangCl } else { $clExe }
+        $depsCompiler = if ($ClangCl) { $clangClExe } else { $clExe }
         Check-Dependencies -Cmake $cmake -Compiler $depsCompiler -Config $Config -DepsBuildDir $depsBuildDir
 
         if ($PackDeps) {
@@ -521,7 +519,7 @@ try {
         # --- 6. Configure and build ---
         Write-Step "[6/7] Configuring and building..."
         $generator = if ($Msbuild) { "Visual Studio 17 2022" } else { "Ninja Multi-Config" }
-        $compiler = if ($ClangCl) { $clangCl } else { $clExe }
+        $compiler = if ($ClangCl) { $clangClExe } else { $clExe }
         $cmakeArgs = @()
         if ($Cache -eq "ccache") {
             $cmakeArgs += "-DSLIC3R_UNITY_BUILD=ON"
@@ -546,7 +544,7 @@ try {
         Write-Host ""
         Write-Step "[7/7] Build finished"
 
-        $ccacheLines = @(Show-CcacheStats -Ccache $ccache -NoMetrics:$NoMetrics)
+        $ccacheLines = @(Show-CcacheStats -Ccache $ccacheExe -NoMetrics:$NoMetrics)
         if ($ccacheLines.Count -gt 0) {
             $ccacheData = Join-Path $env:TEMP "orca-build-ccache.txt"
             $ccacheLines | Set-Content -LiteralPath $ccacheData -Encoding UTF8
