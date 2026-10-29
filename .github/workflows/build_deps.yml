@@ -134,7 +134,7 @@ jobs:
             # cache-path is the install directory inside the deps build directory.
             $deps = (Split-Path "${{ github.workspace }}/${{ inputs.cache-path }}").Replace('\', '/')
             # Use flags from matrix if provided, otherwise fall back to compiler-based logic
-            $flags = @(${{ inputs.flags }})
+            $flags = @("${{ inputs.flags }}" -split '\s+' | Where-Object { $_ })
             if (-not $flags) {
               $flags = if ("${{ inputs.compiler }}" -eq "clang") { "-l", "-x" } else { "--msvc", "--msbuild" }
             }
