@@ -44,6 +44,13 @@ function Check-Dependencies {
             # "C:\Program Files\LLVM\bin\clang-cl.exe") survive intact.
             $depsConfigureArgs += "-DCMAKE_C_COMPILER=$Compiler"
             $depsConfigureArgs += "-DCMAKE_CXX_COMPILER=$Compiler"
+            # Ensure MASM assembler is findable for Boost.build. cmake's
+            # auto-detection can find a stale/wrong ml64.exe path; pass the
+            # one from the active VS environment explicitly.
+            $ml64 = Get-Command ml64.exe -ErrorAction SilentlyContinue
+            if ($ml64) {
+                $depsConfigureArgs += "-DCMAKE_ASM_MASM_COMPILER=$($ml64.Source)"
+            }
         }
         Write-Host "  [deps] Building dependencies..."
         Invoke-BuildStep -Label "Dependency configuration" -Command $Cmake -Arguments $depsConfigureArgs

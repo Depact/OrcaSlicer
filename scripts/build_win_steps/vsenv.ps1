@@ -23,6 +23,17 @@ function Capture-VsEnvironment {
             }
         }
 
+        # Ensure ml64.exe (MASM assembler) is in PATH for cmake's Boost build.
+        # vcvarsall.bat should put it there, but make it explicit so cmake's
+        # auto-detection can't find a stale/wrong path instead.
+        $ml64 = Get-Command ml64.exe -ErrorAction SilentlyContinue
+        if ($ml64) {
+            $ml64Dir = Split-Path -Parent $ml64.Source
+            if (-not ($env:PATH -split ';' | Where-Object { $_ -eq $ml64Dir })) {
+                $env:PATH = "$ml64Dir;$env:PATH"
+            }
+        }
+
         # vcvarsall prints a benign VsDevCmd error and can still end up with an
         # x86-only LIB. Catch that here instead of at link time.
         $archPattern = if ($Arch -eq "ARM64") { "arm64" } else { "x64" }
