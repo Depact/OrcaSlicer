@@ -80,7 +80,7 @@ jobs:
       - name: Get the date on Windows
         if: runner.os == 'Windows'
         run: echo "date=$(Get-Date -Format 'yyyyMMdd')" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
-        shell: pwsh
+        shell: powershell
 
 
       - name: Install MSYS2 (clangarm64) with GMP/MPFR and LLVM tools
