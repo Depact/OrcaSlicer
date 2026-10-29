@@ -48,7 +48,7 @@ function Check-Dependencies {
         Write-Host "  [deps] Building dependencies..."
         Invoke-BuildStep -Label "Dependency configuration" -Command $Cmake -Arguments $depsConfigureArgs
         Invoke-BuildStep -Label "Dependency build" -Command $Cmake -Arguments @(
-            "--build", $DepsBuildDir, "--config", $Config, "--target", "deps", "--")
+            "--build", $DepsBuildDir, "--config", $Config, "--target", "deps", "--", "--verbose")
         $currentHash | Set-Content $depsManifest -Encoding ASCII
         Write-Host "  [deps] Dependencies built successfully" -ForegroundColor Green
     } else {
