@@ -146,7 +146,7 @@ jobs:
             $skipBoost = "${{ vars.SELF_HOSTED }}" -eq "true"
             if ("${{ inputs.script }}" -eq "bat") {
               $batSkipBoostArgs = if ($skipBoost) { "--deps-args", "-DSKIP_BOOST=ON" } else { @() }
-              .\build_win.bat -d --arch ${{ inputs.arch }} --deps-dir $deps @flags @batSkipBoostArgs
+              & "${{ github.workspace }}\build_win.bat" -d --arch ${{ inputs.arch }} --deps-dir $deps @flags @batSkipBoostArgs
             } else {
               $useClangCl = $flags -contains "-l"
               $useNinja   = $flags -contains "-x"
@@ -154,7 +154,7 @@ jobs:
               $useMsbuild = $flags -contains "--msbuild"
               $useCache   = if ($flags -contains "--ccache") { "ccache" } else { $null }
               $ps1SkipBoost = if ($skipBoost) { "-SkipBoost" } else { @() }
-              .\build_win.ps1 -Deps -Arch ${{ inputs.arch }} -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache @ps1SkipBoost
+              & "${{ github.workspace }}\build_win.ps1" -Deps -Arch ${{ inputs.arch }} -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache @ps1SkipBoost
             }
         shell: powershell
 
