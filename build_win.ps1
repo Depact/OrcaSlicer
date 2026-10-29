@@ -243,6 +243,15 @@ $UnitsDir = Join-Path $RepoRoot "scripts\build_win_steps"
 . (Join-Path $UnitsDir "build.ps1")
 . (Join-Path $UnitsDir "ccache_stats.ps1")
 
+function Write-Status {
+    param(
+        [string]$Tag,
+        [string]$Text,
+        [string]$Color = "DarkGray"
+    )
+    Write-Host ("  {0,-9} {1}" -f "[$Tag]", $Text) -ForegroundColor $Color
+}
+
 # Locate PowerShell 7 for PwshSpectreConsole rich output (Python 'rich' is forbidden).
 $Pwsh7 = Join-Path $env:LOCALAPPDATA "opencode\pwsh7\pwsh.exe"
 if (-not (Test-Path $Pwsh7)) {
@@ -274,15 +283,6 @@ try {
         param([string]$Text)
         $ts = Get-TimeStamp
         Write-Host "[$ts] $Text"
-    }
-
-    function Write-Status {
-        param(
-            [string]$Tag,
-            [string]$Text,
-            [string]$Color = "DarkGray"
-        )
-        Write-Host ("  {0,-9} {1}" -f "[$Tag]", $Text) -ForegroundColor $Color
     }
 
     # Spectre output has to be produced by PowerShell 7, then replayed through
