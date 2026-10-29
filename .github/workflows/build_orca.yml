@@ -4,6 +4,9 @@ on:
         cache-key:
           required: false
           type: string
+        cache-prefix:
+          required: false
+          type: string
         cache-path:
           required: false
           type: string
@@ -58,7 +61,7 @@ jobs:
         with:
           path: ${{ github.workspace }}/${{ inputs.cache-path }}
           key: ${{ inputs.cache-key }}
-          restore-keys: ${{ inputs.cache-key }}
+          restore-keys: ${{ inputs.cache-prefix }}
           fail-on-cache-miss: true
 
       - uses: lukka/get-cmake@latest
