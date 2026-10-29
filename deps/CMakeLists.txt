@@ -379,14 +379,7 @@ if (NOT SKIP_BOOST)
 else()
     # Boost is pre-installed on the CI runner; create a dummy target so deps
     # that DEPENDS dep_Boost (CGAL, Eigen, NanoSVG, OpenVDB) still resolve.
-    ExternalProject_Add(dep_Boost
-        EXCLUDE_FROM_ALL ON
-        INSTALL_DIR ${DESTDIR}
-        SOURCE_DIR ""
-        CMAKE_ARGS ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND ""
-    )
+    add_custom_target(dep_Boost)
 endif()
 
 include(Cereal/Cereal.cmake)
