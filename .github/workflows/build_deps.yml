@@ -132,6 +132,8 @@ jobs:
         if: runner.os == 'Windows'
         working-directory: ${{ github.workspace }}
         run: |
+            Write-Host "Workspace path: ${{ github.workspace }}"
+            Get-ChildItem ${{ github.workspace }} | Format-Table
             if (-not "${{ vars.SELF_HOSTED }}") {
               choco install strawberryperl
             }
