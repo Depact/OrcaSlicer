@@ -545,9 +545,22 @@ try {
         }
         # Point CMake at the deps install dir so find_package(JPEG) etc. find
         # libjpeg-turbo (with JCS_EXT_RGBA) from deps instead of system libjpeg.
+        # Strawberry Perl's c\include is added to the compiler include path and
+        # contains an older jpeglib.h (no JCS_EXT_RGBA) that wins over deps'
+        # libjpeg-turbo due to include-path ordering. Explicitly pin JPEG to deps.
         $depsInstallDir = Join-Path $DepsDir "OrcaSlicer_dep/usr/local"
         if (Test-Path $depsInstallDir -PathType Container) {
             $cmakeArgs += "-DCMAKE_PREFIX_PATH=$depsInstallDir"
+            $cmakeArgs += "-DJPEG_INCLUDE_DIR=$depsInstallDir/include"
+            $jpegLib = Join-Path $depsInstallDir "lib/jpeg.lib"
+            if (Test-Path $jpegLib -PathType Leaf) {
+                $cmakeArgs += "-DJPEG_LIBRARY=$jpegLib"
+            }
+        }
+        # Strip Strawberry Perl's MinGW include dir from INCLUDE env var so it
+        # can't shadow deps' libjpeg-turbo headers during compilation.
+        if ($env:INCLUDE) {
+            $env:INCLUDE = ($env:INCLUDE -split ';' | Where-Object { $_ -notlike '*Strawberry*' }) -join ';'
         }
         $timing = Configure-Build -Cmake $cmake -BuildDir $buildDir -Config $Config -Target $Target `
                                   -UnityTest:$UnityTestLibslic3r -MaxJobs $MaxJobs `
