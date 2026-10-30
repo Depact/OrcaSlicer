@@ -173,6 +173,9 @@ jobs:
             Add-Content -LiteralPath $env:GITHUB_PATH -Value (Join-Path $spDest 'c\bin')
             # NASM for OpenSSL SIMD (warning only if missing, but nice to have)
             choco install nasm -y 2>$null | Out-Null
+            # Prepend Strawberry Perl to PATH for THIS step so build_win.ps1 finds
+            # it before Git for Windows' cygwin perl (which shadows it).
+            $env:PATH = (Join-Path $spDest 'perl\bin') + ';' + (Join-Path $spDest 'c\bin') + ';' + $env:PATH
             # cache-path is the install directory inside the deps build directory.
             $deps = (Split-Path "${{ github.workspace }}/${{ inputs.cache-path }}").Replace('\', '/')
             # Use flags from matrix if provided, otherwise fall back to compiler-based logic
