@@ -161,14 +161,16 @@ jobs:
             # ships a cygwin perl that shadows Strawberry Perl on PATH, so we
             # explicitly prepend Strawberry's bins after installing. Chocolatey
             # has permission issues on this self-hosted runner, so download the
-            # portable zip directly instead.
+            # portable zip directly and extract to the runner temp dir (C: is
+            # not writable on this runner).
             $spUrl = "https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/SP_54221_64bit/strawberry-perl-5.42.2.1-64bit-portable.zip"
             $spZip = "$env:TEMP\strawberry-perl.zip"
             Invoke-WebRequest -Uri $spUrl -OutFile $spZip -TimeoutSec 300
-            Expand-Archive -Path $spZip -DestinationPath C:\ -Force
+            $spDest = Join-Path $env:RUNNER_TEMP 'Strawberry'
+            Expand-Archive -Path $spZip -DestinationPath $spDest -Force
             Remove-Item $spZip -Force
-            Add-Content -LiteralPath $env:GITHUB_PATH -Value 'C:\Strawberry\perl\bin'
-            Add-Content -LiteralPath $env:GITHUB_PATH -Value 'C:\Strawberry\c\bin'
+            Add-Content -LiteralPath $env:GITHUB_PATH -Value (Join-Path $spDest 'perl\bin')
+            Add-Content -LiteralPath $env:GITHUB_PATH -Value (Join-Path $spDest 'c\bin')
             # NASM for OpenSSL SIMD (warning only if missing, but nice to have)
             choco install nasm -y 2>$null | Out-Null
             # cache-path is the install directory inside the deps build directory.
