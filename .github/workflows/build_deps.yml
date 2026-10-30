@@ -157,9 +157,13 @@ jobs:
         run: |
             Write-Host "Workspace path: ${{ github.workspace }}"
             Get-ChildItem ${{ github.workspace }} | Format-Table
-            if (-not "${{ vars.SELF_HOSTED }}") {
-              choco install strawberryperl
-            }
+            # Strawberry Perl is required by OpenSSL's Configure. Git for Windows
+            # ships a cygwin perl that shadows Strawberry Perl on PATH, so we
+            # explicitly prepend Strawberry's bins after installing.
+            choco install strawberryperl -y
+            choco install nasm -y
+            Add-Content -LiteralPath $env:GITHUB_PATH -Value 'C:\Strawberry\perl\bin'
+            Add-Content -LiteralPath $env:GITHUB_PATH -Value 'C:\Strawberry\c\bin'
             # cache-path is the install directory inside the deps build directory.
             $deps = (Split-Path "${{ github.workspace }}/${{ inputs.cache-path }}").Replace('\', '/')
             # Use flags from matrix if provided, otherwise fall back to compiler-based logic
