@@ -55,6 +55,13 @@ jobs:
         with:
           lfs: 'false'
 
+      # A reused self-hosted workspace keeps .git/info/sparse-checkout from an earlier
+      # job, so the checkout above only materialises those paths. Clear it and expand
+      # the working tree, or build_win.ps1's dot-sourced steps are missing.
+      - name: Disable stale sparse-checkout
+        continue-on-error: true
+        run: git sparse-checkout disable
+
       - name: load cached deps
         if: ${{ !(runner.os == 'macOS' && inputs.macos-combine-only) }}
         uses: actions/cache@v6
