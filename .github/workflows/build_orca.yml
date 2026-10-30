@@ -62,6 +62,16 @@ jobs:
         continue-on-error: true
         run: git sparse-checkout disable
 
+      # Same as build_deps: actions/cache needs gzip on PATH to archive on Windows.
+      - name: Put gzip on PATH for the cache archive
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $gitUsrBin = Join-Path $env:ProgramFiles 'Git\usr\bin'
+          if (Test-Path (Join-Path $gitUsrBin 'gzip.exe')) {
+            Add-Content -LiteralPath $env:GITHUB_PATH -Value $gitUsrBin
+          }
+
       - name: load cached deps
         if: ${{ !(runner.os == 'macOS' && inputs.macos-combine-only) }}
         uses: actions/cache@v6

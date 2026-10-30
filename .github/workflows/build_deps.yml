@@ -62,6 +62,18 @@ jobs:
         continue-on-error: true
         run: git sparse-checkout disable
 
+      # actions/cache archives with `tar -z`, which shells out to gzip. The runner
+      # service PATH has no gzip, so every deps cache save died with exit code 2 and
+      # the slicing job then failed its fail-on-cache-miss restore.
+      - name: Put gzip on PATH for the cache archive
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $gitUsrBin = Join-Path $env:ProgramFiles 'Git\usr\bin'
+          if (Test-Path (Join-Path $gitUsrBin 'gzip.exe')) {
+            Add-Content -LiteralPath $env:GITHUB_PATH -Value $gitUsrBin
+          }
+
       - name: load cached deps
         uses: actions/cache@v6
         with:
@@ -199,7 +211,8 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: OrcaSlicer_dep_win_${{ inputs.arch }}_${{ env.date }}
-          path: ${{ github.workspace }}/${{ inputs.cache-path }}/OrcaSlicer_dep/**
+          # cache-path already points at OrcaSlicer_dep; appending it again matched nothing.
+          path: ${{ github.workspace }}/${{ inputs.cache-path }}/**
 
   build_orca:
     name: Build OrcaSlicer
