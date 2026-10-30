@@ -521,8 +521,22 @@ jobs:
       - name: Build slicer Win
         if: runner.os == 'Windows'
         working-directory: ${{ github.workspace }}
-        # --tests builds the unit tests too; the unit_tests_windows_* jobs run them.
+        # Strawberry Perl is required by OpenSSL's Configure. Git for Windows
+        # ships a cygwin perl that shadows Strawberry Perl on PATH. Chocolatey
+        # has permission issues on this self-hosted runner, so download the
+        # portable zip directly and extract to the runner temp dir.
         run: |
+          $spUrl = "https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/SP_54221_64bit/strawberry-perl-5.42.2.1-64bit-portable.zip"
+          $spZip = "$env:TEMP\strawberry-perl.zip"
+          $spDest = Join-Path $env:RUNNER_TEMP 'Strawberry'
+          if (-not (Test-Path (Join-Path $spDest 'perl\bin\perl.exe'))) {
+            Invoke-WebRequest -Uri $spUrl -OutFile $spZip -TimeoutSec 300
+            Expand-Archive -Path $spZip -DestinationPath $spDest -Force
+            Remove-Item $spZip -Force
+          }
+          # Prepend Strawberry Perl to PATH for THIS step so build_win.ps1 finds
+          # it before Git for Windows' cygwin perl.
+          $env:PATH = (Join-Path $spDest 'perl\bin') + ';' + (Join-Path $spDest 'c\bin') + ';' + $env:PATH
           # cache-path is the install directory inside the deps build directory.
           $deps = (Split-Path "${{ github.workspace }}/${{ inputs.cache-path }}").Replace('\', '/')
           # Use flags from matrix if provided, otherwise fall back to compiler-based logic
