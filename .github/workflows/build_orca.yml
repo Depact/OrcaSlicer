@@ -510,16 +510,18 @@ jobs:
           }
           # Use build_win.ps1 by default; build_win.bat for baseline comparison
           if ("${{ inputs.script }}" -eq "bat") {
-            $batSkipBoostArgs = if ($skipBoost) { "--deps-args", "-DSKIP_BOOST=ON" } else { @() }
-            & "${{ github.workspace }}\build_win.bat" -s --tests -i --arch ${{ inputs.arch }} --build-dir $env:BUILD_DIR --deps-dir $deps @flags @batSkipBoostArgs
+            $batArgs = @("-s", "--tests", "-i", "--arch", "${{ inputs.arch }}", "--build-dir", $env:BUILD_DIR, "--deps-dir", $deps) + $flags
+            if ($skipBoost) { $batArgs += @("--deps-args", "-DSKIP_BOOST=ON") }
+            & "${{ github.workspace }}\build_win.bat" @batArgs
           } else {
             $useClangCl = $flags -contains "-l"
             $useNinja   = $flags -contains "-x"
             $useMsvc    = $flags -contains "--msvc"
             $useMsbuild = $flags -contains "--msbuild"
             $useCache   = if ($flags -contains "--ccache") { "ccache" } else { $null }
-            $ps1SkipBoost = if ($skipBoost) { "-SkipBoost" } else { @() }
-            & "${{ github.workspace }}\build_win.ps1" -Slicer -Tests -InstallSlicer -Arch ${{ inputs.arch }} -SlicerDir $env:BUILD_DIR -DepsDir $deps -Preset ${{ inputs.preset }} -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache @ps1SkipBoost
+            # Bind the switch directly: splatting a string binds it positionally and breaks
+            # parameter binding on build_win.ps1.
+            & "${{ github.workspace }}\build_win.ps1" -Slicer -Tests -InstallSlicer -Arch ${{ inputs.arch }} -SlicerDir $env:BUILD_DIR -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache -SkipBoost:$skipBoost
           }
         shell: powershell
 
