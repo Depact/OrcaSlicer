@@ -543,6 +543,12 @@ try {
         if (-not $Ninja -and $ClangCl) {
             $cmakeArgs += "-T", "ClangCL"
         }
+        # Point CMake at the deps install dir so find_package(JPEG) etc. find
+        # libjpeg-turbo (with JCS_EXT_RGBA) from deps instead of system libjpeg.
+        $depsInstallDir = Join-Path $DepsDir "OrcaSlicer_dep/usr/local"
+        if (Test-Path $depsInstallDir -PathType Container) {
+            $cmakeArgs += "-DCMAKE_PREFIX_PATH=$depsInstallDir"
+        }
         $timing = Configure-Build -Cmake $cmake -BuildDir $buildDir -Config $Config -Target $Target `
                                   -UnityTest:$UnityTestLibslic3r -MaxJobs $MaxJobs `
                                   -Generator $generator -Compiler $compiler -CMakeArgs $cmakeArgs
