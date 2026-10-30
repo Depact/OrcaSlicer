@@ -511,6 +511,7 @@ jobs:
 
       - name: Download dep artifact (cold CI)
         if: runner.os == 'Windows'
+        continue-on-error: true
         uses: actions/download-artifact@v8
         with:
           name: OrcaSlicer_dep_win_${{ inputs.arch || 'x64' }}_${{ env.date }}
