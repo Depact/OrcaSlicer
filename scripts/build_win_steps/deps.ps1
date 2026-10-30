@@ -22,7 +22,7 @@ function Get-DepsManifestHash {
 }
 
 function Check-Dependencies {
-    param([string]$Cmake, [string]$Compiler, [string]$Config, [switch]$ForceRebuild, [string]$DepsBuildDir, [switch]$SkipBoost)
+    param([string]$Cmake, [string]$Compiler, [string]$Config, [switch]$ForceRebuild, [string]$DepsBuildDir)
     if (-not $DepsBuildDir) { $DepsBuildDir = "deps/build-clang" }
     $depsPrefix   = "$DepsBuildDir/OrcaSlicer_dep/usr/local"
     $depsManifest = "$DepsBuildDir/.deps-manifest"
@@ -32,6 +32,11 @@ function Check-Dependencies {
     if (Test-Path $depsManifest) { $storedHash = Get-Content $depsManifest -TotalCount 1 }
 
     $needsRebuild = $ForceRebuild -or -not (Test-Path $depsPrefix -PathType Container)
+    if (-not $needsRebuild -and -not $storedHash) {
+        # No manifest means the tree was never completed, e.g. an interrupted build or
+        # a restored partial cache. Trusting it would skip Boost and fail at link time.
+        $needsRebuild = $true
+    }
     if (-not $needsRebuild -and $storedHash -and $currentHash -ne $storedHash) {
         $needsRebuild = $true
         Write-Host "  [deps] Dependency source changed since last build; rebuilding..."
@@ -51,12 +56,6 @@ function Check-Dependencies {
             if ($ml64) {
                 $depsConfigureArgs += "-DCMAKE_ASM_MASM_COMPILER=$($ml64.Source)"
             }
-        }
-        if ($SkipBoost) {
-            # Skip Boost ExternalProject build; Boost is pre-installed on the
-            # CI runner and found via find_package(Boost) without
-            # Boost_NO_SYSTEM_PATHS.
-            $depsConfigureArgs += "-DSKIP_BOOST=ON"
         }
         Write-Host "  [deps] Building dependencies..."
         Invoke-BuildStep -Label "Dependency configuration" -Command $Cmake -Arguments $depsConfigureArgs -LogPath (New-BuildLogPath "deps-configure")

@@ -507,7 +507,6 @@ jobs:
         working-directory: ${{ github.workspace }}
         # --tests builds the unit tests too; the unit_tests_windows_* jobs run them.
         run: |
-          $skipBoost = "${{ vars.SELF_HOSTED }}" -eq "true"
           # cache-path is the install directory inside the deps build directory.
           $deps = (Split-Path "${{ github.workspace }}/${{ inputs.cache-path }}").Replace('\', '/')
           # Use flags from matrix if provided, otherwise fall back to compiler-based logic
@@ -518,7 +517,6 @@ jobs:
           # Use build_win.ps1 by default; build_win.bat for baseline comparison
           if ("${{ inputs.script }}" -eq "bat") {
             $batArgs = @("-s", "--tests", "-i", "--arch", "${{ inputs.arch }}", "--build-dir", $env:BUILD_DIR, "--deps-dir", $deps) + $flags
-            if ($skipBoost) { $batArgs += @("--deps-args", "-DSKIP_BOOST=ON") }
             & "${{ github.workspace }}\build_win.bat" @batArgs
           } else {
             $useClangCl = $flags -contains "-l"
@@ -528,7 +526,7 @@ jobs:
             $useCache   = if ($flags -contains "--ccache") { "ccache" } else { $null }
             # Bind the switch directly: splatting a string binds it positionally and breaks
             # parameter binding on build_win.ps1.
-            & "${{ github.workspace }}\build_win.ps1" -Slicer -Tests -InstallSlicer -Arch ${{ inputs.arch }} -SlicerDir $env:BUILD_DIR -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache -SkipBoost:$skipBoost
+            & "${{ github.workspace }}\build_win.ps1" -Slicer -Tests -InstallSlicer -Arch ${{ inputs.arch }} -SlicerDir $env:BUILD_DIR -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache
           }
         shell: powershell
 

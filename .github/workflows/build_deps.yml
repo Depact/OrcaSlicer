@@ -152,10 +152,8 @@ jobs:
               $flags = if ("${{ inputs.compiler }}" -eq "clang") { "-l", "-x" } else { "--msvc", "--msbuild" }
             }
             # Use build_win.ps1 by default; build_win.bat for baseline comparison
-            $skipBoost = "${{ vars.SELF_HOSTED }}" -eq "true"
             if ("${{ inputs.script }}" -eq "bat") {
               $batArgs = @("-d", "--arch", "${{ inputs.arch }}", "--deps-dir", $deps) + $flags
-              if ($skipBoost) { $batArgs += @("--deps-args", "-DSKIP_BOOST=ON") }
               & "${{ github.workspace }}\build_win.bat" @batArgs
             } else {
               $useClangCl = $flags -contains "-l"
@@ -165,7 +163,7 @@ jobs:
               $useCache   = if ($flags -contains "--ccache") { "ccache" } else { $null }
               # Bind the switch directly: splatting a string binds it positionally and breaks
               # parameter binding on build_win.ps1.
-              & "${{ github.workspace }}\build_win.ps1" -Deps -Arch ${{ inputs.arch }} -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache -SkipBoost:$skipBoost
+              & "${{ github.workspace }}\build_win.ps1" -Deps -Arch ${{ inputs.arch }} -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache
             }
         shell: powershell
 
