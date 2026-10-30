@@ -61,6 +61,8 @@ jobs:
           sparse-checkout: |
             /deps/
             /scripts/ci_deps_cache.sh
+            /build_win.ps1
+            /build_win.bat
           sparse-checkout-cone-mode: false
         
       - name: set outputs
