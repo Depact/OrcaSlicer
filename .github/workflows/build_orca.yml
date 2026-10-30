@@ -62,15 +62,20 @@ jobs:
         continue-on-error: true
         run: git sparse-checkout disable
 
-      # Same as build_deps: actions/cache needs gzip on PATH to archive on Windows.
+      # Same as build_deps: actions/cache needs gzip, copied alone so Git's cygwin
+      # perl never lands on PATH ahead of Strawberry Perl.
       - name: Put gzip on PATH for the cache archive
         if: runner.os == 'Windows'
         shell: powershell
         run: |
-          $gitUsrBin = Join-Path $env:ProgramFiles 'Git\usr\bin'
-          if (Test-Path (Join-Path $gitUsrBin 'gzip.exe')) {
-            Add-Content -LiteralPath $env:GITHUB_PATH -Value $gitUsrBin
+          $src = Join-Path $env:ProgramFiles 'Git\usr\bin'
+          $dst = Join-Path $env:RUNNER_TEMP 'cache-gzip'
+          New-Item -ItemType Directory -Path $dst -Force | Out-Null
+          foreach ($f in 'gzip.exe', 'msys-2.0.dll') {
+            $p = Join-Path $src $f
+            if (Test-Path $p) { Copy-Item $p $dst -Force }
           }
+          Add-Content -LiteralPath $env:GITHUB_PATH -Value $dst
 
       - name: load cached deps
         if: ${{ !(runner.os == 'macOS' && inputs.macos-combine-only) }}

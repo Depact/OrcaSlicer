@@ -62,17 +62,21 @@ jobs:
         continue-on-error: true
         run: git sparse-checkout disable
 
-      # actions/cache archives with `tar -z`, which shells out to gzip. The runner
-      # service PATH has no gzip, so every deps cache save died with exit code 2 and
-      # the slicing job then failed its fail-on-cache-miss restore.
+      # actions/cache archives with `tar -z`, which shells out to gzip, and the runner
+      # service PATH has none. Copying gzip alone keeps Git's usr/bin off PATH: that
+      # directory also holds a cygwin perl, which OpenSSL's Configure rejects.
       - name: Put gzip on PATH for the cache archive
         if: runner.os == 'Windows'
         shell: powershell
         run: |
-          $gitUsrBin = Join-Path $env:ProgramFiles 'Git\usr\bin'
-          if (Test-Path (Join-Path $gitUsrBin 'gzip.exe')) {
-            Add-Content -LiteralPath $env:GITHUB_PATH -Value $gitUsrBin
+          $src = Join-Path $env:ProgramFiles 'Git\usr\bin'
+          $dst = Join-Path $env:RUNNER_TEMP 'cache-gzip'
+          New-Item -ItemType Directory -Path $dst -Force | Out-Null
+          foreach ($f in 'gzip.exe', 'msys-2.0.dll') {
+            $p = Join-Path $src $f
+            if (Test-Path $p) { Copy-Item $p $dst -Force }
           }
+          Add-Content -LiteralPath $env:GITHUB_PATH -Value $dst
 
       - name: load cached deps
         uses: actions/cache@v6
