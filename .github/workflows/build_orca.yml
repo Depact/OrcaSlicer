@@ -519,7 +519,7 @@ jobs:
             $useMsbuild = $flags -contains "--msbuild"
             $useCache   = if ($flags -contains "--ccache") { "ccache" } else { $null }
             $ps1SkipBoost = if ($skipBoost) { "-SkipBoost" } else { @() }
-            & "${{ github.workspace }}\build_win.ps1" -Slicer -Tests -InstallSlicer -Arch ${{ inputs.arch }} -SlicerDir $env:BUILD_DIR -DepsDir $deps -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache @ps1SkipBoost
+            & "${{ github.workspace }}\build_win.ps1" -Slicer -Tests -InstallSlicer -Arch ${{ inputs.arch }} -SlicerDir $env:BUILD_DIR -DepsDir $deps -Preset ${{ inputs.preset }} -ClangCl:$useClangCl -Ninja:$useNinja -Msvc:$useMsvc -Msbuild:$useMsbuild -Cache:$useCache @ps1SkipBoost
           }
         shell: powershell
 

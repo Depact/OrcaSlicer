@@ -6,7 +6,7 @@
 #>
 
 param(
-    [ValidateSet("x64-clang", "x64-clang-cache", "x64-clang-debug")]
+    [ValidateSet("x64-clang", "x64-clang-cache", "x64-clang-debug", "x64-msvc", "x64-msbuild")]
     [string]$Preset,
     [string]$Config = "Release",
     [string]$Target,
@@ -173,6 +173,8 @@ if ($Preset) {
         "x64-clang"       { $ClangCl = $true; $Ninja = $true; $Arch = "x64" }
         "x64-clang-cache" { $ClangCl = $true; $Ninja = $true; $Cache = "ccache"; $Arch = "x64" }
         "x64-clang-debug" { $ClangCl = $true; $Ninja = $true; $Config = "Debug"; $Arch = "x64" }
+        "x64-msvc"        { $Msvc = $true; $Ninja = $true; $Arch = "x64" }
+        "x64-msbuild"     { $Msvc = $true; $Msbuild = $true; $Arch = "x64" }
     }
 }
 
