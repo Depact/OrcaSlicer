@@ -11,7 +11,9 @@ function Capture-VsEnvironment {
     $vcArch = if ($Arch -eq "ARM64") { "x64_arm64" } else { "x64" }
 
     try {
-        $body = "@echo off`r\ncall `"$vcvarsall`" $vcArch >nul 2>&1`r\nset > `"$tempEnv`" 2>&1`r\n"
+        # Backtick-n, not \n: a literal backslash-n leaves the generated .bat on one
+        # logical line, so vcvarsall never runs and the captured env is the parent's.
+        $body = "@echo off`r`ncall `"$vcvarsall`" $vcArch >nul 2>&1`r`nset > `"$tempEnv`" 2>&1`r`n"
         [IO.File]::WriteAllText($tempBat, $body, [Text.Encoding]::ASCII)
         & cmd.exe /d /c "call `"$tempBat`""
         if (-not (Test-Path $tempEnv)) {

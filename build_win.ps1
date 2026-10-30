@@ -351,15 +351,19 @@ try {
         Write-Status "clang-cl" $clangClExe
     }
     if ($Msvc) {
-        $clExe = Get-Command cl -ErrorAction SilentlyContinue | Select-Object -First 1
-        if (-not $clExe) {
-            # Join-Path does not glob, so resolve the toolset with Get-ChildItem. The
-            # host arch is the machine running the build, not the target.
-            $hostArch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "x64" }
-            $targetArch = if ($Arch -eq "ARM64") { "arm64" } else { "x64" }
-            $vsCl = Get-ChildItem -Path (Join-Path $vsInstall "VC\Tools\MSVC\*\bin\Host$hostArch\$targetArch\cl.exe") -ErrorAction SilentlyContinue |
-                Sort-Object FullName -Descending | Select-Object -First 1
-            if ($vsCl) { $clExe = $vsCl.FullName }
+        # Prefer the toolset belonging to the VS that vswhere selected. A stale x86
+        # entry on PATH otherwise wins and CMake happily configures a 32-bit compiler.
+        # Join-Path does not glob, so resolve the toolset with Get-ChildItem. The host
+        # arch is the machine running the build, not the target.
+        $hostArch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "x64" }
+        $targetArch = if ($Arch -eq "ARM64") { "arm64" } else { "x64" }
+        $vsCl = Get-ChildItem -Path (Join-Path $vsInstall "VC\Tools\MSVC\*\bin\Host$hostArch\$targetArch\cl.exe") -ErrorAction SilentlyContinue |
+            Sort-Object FullName -Descending | Select-Object -First 1
+        if ($vsCl) {
+            $clExe = $vsCl.FullName
+        } else {
+            $clCmd = Get-Command cl -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($clCmd) { $clExe = $clCmd.Source }
         }
         if (-not $clExe) {
             throw "cl.exe was not found. Install Visual Studio with the C++ workload, or set --msvc with a valid VS installation."
