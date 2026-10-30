@@ -162,7 +162,7 @@ jobs:
             # explicitly prepend Strawberry's bins after installing. Chocolatey
             # has permission issues on this self-hosted runner, so download the
             # portable zip directly instead.
-            $spUrl = "https://strawberryperl.com/download/5.42.2.1/strawberry-perl-5.42.2.1-64bit-portable.zip"
+            $spUrl = "https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/SP_54221_64bit/strawberry-perl-5.42.2.1-64bit-portable.zip"
             $spZip = "$env:TEMP\strawberry-perl.zip"
             Invoke-WebRequest -Uri $spUrl -OutFile $spZip -TimeoutSec 300
             Expand-Archive -Path $spZip -DestinationPath C:\ -Force
