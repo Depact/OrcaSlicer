@@ -828,7 +828,7 @@ jobs:
           key: ${{ env.CCACHE_ENTRY }}
 
       - name: Drop older compiler cache entries
-        if: ${{ always() && steps.ccache_save.outcome == 'success' }}
+        if: ${{ always() && steps.ccache_save.outcome == 'success' && runner.os != 'Windows' }}
         # A read-only token (fork PRs) cannot delete; that only costs storage.
         # Older means a lower run id, so two runs finishing close together keep
         # the newer entry whichever of them cleans up last.
