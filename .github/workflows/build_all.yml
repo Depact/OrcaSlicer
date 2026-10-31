@@ -127,9 +127,10 @@ jobs:
       # build_win.ps1 (candidate) for perf comparison.
       matrix:
         # TEMPORARY: Single entry for debugging. Restore full matrix after fix.
-        # Self-hosted runner HOME-LAPTOP name matches directly
+        # Self-hosted runner HOME-LAPTOP has labels: self-hosted, Windows, X64
+        # Use "self-hosted" label which matches our runner
         include: ${{ fromJSON(vars.SELF_HOSTED
-          && '[{"arch":"x64","os":"HOME-LAPTOP","compiler":"msvc","preset":"x64-msvc","flags":"--msvc --ninja","script":"ps1"}]'
+          && '[{"arch":"x64","os":"self-hosted","compiler":"msvc","preset":"x64-msvc","flags":"--msvc --ninja","script":"ps1"}]'
           || '[{"arch":"x64","os":"windows-latest","compiler":"msvc","preset":"x64-msvc","flags":"--msvc --ninja","script":"ps1"}]') }}
     needs: check_build_script
     # Don't run scheduled builds on forks:
