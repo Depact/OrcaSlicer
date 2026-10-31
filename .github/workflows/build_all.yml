@@ -112,8 +112,6 @@ jobs:
         include: ${{ fromJSON(vars.SELF_HOSTED
           && '[{"arch":"","os":"orca-lnx-server"}]'
           || '[{"arch":"","os":"ubuntu-24.04"},{"arch":"aarch64","os":"ubuntu-24.04-arm"}]') }}
-    # Don't run scheduled builds on forks:
-    if: ${{ false }}
     uses: ./.github/workflows/build_check_cache.yml
     with:
       os: ${{ matrix.os }}
@@ -155,8 +153,6 @@ jobs:
         arch:
           - arm64
           - x86_64
-    # Don't run scheduled builds on forks:
-    if: ${{ false }}
     uses: ./.github/workflows/build_check_cache.yml
     with:
       os: ${{ vars.SELF_HOSTED && 'orca-macos-arm64' || 'macos-15' }}
@@ -169,7 +165,6 @@ jobs:
     if: ${{ false }}
     name: Build macOS Universal
     needs: build_macos_arch
-    if: ${{ false }}
     uses: ./.github/workflows/build_orca.yml
     with:
       os: ${{ vars.SELF_HOSTED && 'orca-macos-arm64' || 'macos-15' }}
@@ -182,7 +177,6 @@ jobs:
     if: ${{ false }}
     name: Linux x86_64
     needs: build_linux
-    if: ${{ false }}
     uses: ./.github/workflows/unit_tests.yml
     with:
       os: ${{ vars.SELF_HOSTED && 'orca-lnx-server' || 'ubuntu-24.04' }}
@@ -192,7 +186,6 @@ jobs:
     if: ${{ false }}
     name: Linux aarch64
     needs: build_linux
-    if: ${{ false }}
     uses: ./.github/workflows/unit_tests.yml
     with:
       os: ubuntu-24.04-arm
@@ -243,7 +236,6 @@ jobs:
     if: ${{ false }}
     name: macOS arm64
     needs: build_macos_arch
-    if: ${{ false }}
     uses: ./.github/workflows/unit_tests.yml
     with:
       os: ${{ vars.SELF_HOSTED && 'orca-macos-arm64' || 'macos-15' }}
@@ -261,7 +253,6 @@ jobs:
     if: ${{ false }}
     name: Slice check (Linux ${{ vars.SELF_HOSTED && 'x86_64' || 'aarch64' }})
     needs: build_linux
-    if: ${{ false }}
     # Follows whichever Linux leg built the validator.
     runs-on: ${{ vars.SELF_HOSTED && 'orca-lnx-server' || 'ubuntu-24.04-arm' }}
     steps:
@@ -364,7 +355,6 @@ jobs:
           - arch: aarch64
             runner: ubuntu-24.04-arm
     # Don't run scheduled builds on forks; skip entirely on self-hosted runners
-    if: ${{ false }}
 
     runs-on: ${{ matrix.variant.runner }}
     env:
@@ -585,7 +575,6 @@ jobs:
     if: ${{ false }}
     name: Flatpak x86_64
     needs: flatpak
-    if: ${{ false }}
     uses: ./.github/workflows/unit_tests_flatpak.yml
     with:
       os: ubuntu-24.04
@@ -595,7 +584,6 @@ jobs:
     if: ${{ false }}
     name: Flatpak aarch64
     needs: flatpak
-    if: ${{ false }}
     uses: ./.github/workflows/unit_tests_flatpak.yml
     with:
       os: ubuntu-24.04-arm
