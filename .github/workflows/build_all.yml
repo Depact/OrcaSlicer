@@ -169,7 +169,6 @@ jobs:
     # TEMPORARILY DISABLED: Windows-only testing for build-performance matrix
     if: ${{ false }}
     name: Build macOS Universal
-    needs: build_macos_arch
     uses: ./.github/workflows/build_orca.yml
     with:
       os: ${{ vars.SELF_HOSTED && 'orca-macos-arm64' || 'macos-15' }}
@@ -181,7 +180,6 @@ jobs:
     # TEMPORARILY DISABLED: Windows-only testing
     if: ${{ false }}
     name: Linux x86_64
-    needs: build_linux
     uses: ./.github/workflows/unit_tests.yml
     with:
       os: ${{ vars.SELF_HOSTED && 'orca-lnx-server' || 'ubuntu-24.04' }}
@@ -190,7 +188,6 @@ jobs:
     # TEMPORARILY DISABLED: Windows-only testing
     if: ${{ false }}
     name: Linux aarch64
-    needs: build_linux
     uses: ./.github/workflows/unit_tests.yml
     with:
       os: ubuntu-24.04-arm
@@ -240,7 +237,6 @@ jobs:
     # TEMPORARILY DISABLED: Windows-only testing
     if: ${{ false }}
     name: macOS arm64
-    needs: build_macos_arch
     uses: ./.github/workflows/unit_tests.yml
     with:
       os: ${{ vars.SELF_HOSTED && 'orca-macos-arm64' || 'macos-15' }}
@@ -257,7 +253,6 @@ jobs:
     # TEMPORARILY DISABLED: Windows-only testing
     if: ${{ false }}
     name: Slice check (Linux ${{ vars.SELF_HOSTED && 'x86_64' || 'aarch64' }})
-    needs: build_linux
     # Follows whichever Linux leg built the validator.
     runs-on: ${{ vars.SELF_HOSTED && 'orca-lnx-server' || 'ubuntu-24.04-arm' }}
     steps:
@@ -579,7 +574,6 @@ jobs:
     # TEMPORARILY DISABLED: Windows-only testing
     if: ${{ false }}
     name: Flatpak x86_64
-    needs: flatpak
     uses: ./.github/workflows/unit_tests_flatpak.yml
     with:
       os: ubuntu-24.04
@@ -588,7 +582,6 @@ jobs:
     # TEMPORARILY DISABLED: Windows-only testing
     if: ${{ false }}
     name: Flatpak aarch64
-    needs: flatpak
     uses: ./.github/workflows/unit_tests_flatpak.yml
     with:
       os: ubuntu-24.04-arm
