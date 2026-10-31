@@ -570,6 +570,10 @@ try {
         $strawberryDir = Join-Path $env:RUNNER_TEMP 'Strawberry'
         if (Test-Path $strawberryDir -PathType Container) {
             $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike "*$strawberryDir*" }) -join ';'
+            # Delete the Strawberry directory entirely so CMake can't find its
+            # stale jpeglib.h through any other mechanism (registry, default
+            # system search, etc.).
+            Remove-Item $strawberryDir -Recurse -Force -ErrorAction SilentlyContinue
         }
         $timing = Configure-Build -Cmake $cmake -BuildDir $buildDir -Config $Config -Target $Target `
                                   -UnityTest:$UnityTestLibslic3r -MaxJobs $MaxJobs `
