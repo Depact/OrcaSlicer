@@ -562,18 +562,13 @@ try {
         if ($env:INCLUDE) {
             $env:INCLUDE = ($env:INCLUDE -split ';' | Where-Object { $_ -notlike '*Strawberry*' }) -join ';'
         }
-        # Remove Strawberry Perl from PATH for the slicer build. Strawberry Perl is
-        # only needed for the deps build (OpenSSL Configure), not for the slicer
-        # build itself. Leaving it on PATH causes CMake to pick up Strawberry's
-        # c\include (older jpeglib.h without JCS_EXT_RGBA) ahead of deps'
-        # libjpeg-turbo headers in the compiler include path.
-        $strawberryDir = Join-Path $env:RUNNER_TEMP 'Strawberry'
-        if (Test-Path $strawberryDir -PathType Container) {
-            $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike "*$strawberryDir*" }) -join ';'
-            # Delete the Strawberry directory entirely so CMake can't find its
-            # stale jpeglib.h through any other mechanism (registry, default
-            # system search, etc.).
-            Remove-Item $strawberryDir -Recurse -Force -ErrorAction SilentlyContinue
+        # Strawberry Perl is needed for cmake.exe (used by Configure-Build), but
+        # its c\include dir contains an older jpeglib.h (no JCS_EXT_RGBA) that
+        # shadows deps' libjpeg-turbo. Delete only c\include so cmake.exe keeps
+        # working but CMake can't find the stale JPEG header.
+        $strawberryInclude = Join-Path $env:RUNNER_TEMP 'Strawberry\c\include'
+        if (Test-Path $strawberryInclude -PathType Container) {
+            Remove-Item $strawberryInclude -Recurse -Force -ErrorAction SilentlyContinue
         }
         $timing = Configure-Build -Cmake $cmake -BuildDir $buildDir -Config $Config -Target $Target `
                                   -UnityTest:$UnityTestLibslic3r -MaxJobs $MaxJobs `
