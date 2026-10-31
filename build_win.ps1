@@ -562,6 +562,15 @@ try {
         if ($env:INCLUDE) {
             $env:INCLUDE = ($env:INCLUDE -split ';' | Where-Object { $_ -notlike '*Strawberry*' }) -join ';'
         }
+        # Remove Strawberry Perl from PATH for the slicer build. Strawberry Perl is
+        # only needed for the deps build (OpenSSL Configure), not for the slicer
+        # build itself. Leaving it on PATH causes CMake to pick up Strawberry's
+        # c\include (older jpeglib.h without JCS_EXT_RGBA) ahead of deps'
+        # libjpeg-turbo headers in the compiler include path.
+        $strawberryDir = Join-Path $env:RUNNER_TEMP 'Strawberry'
+        if (Test-Path $strawberryDir -PathType Container) {
+            $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike "*$strawberryDir*" }) -join ';'
+        }
         $timing = Configure-Build -Cmake $cmake -BuildDir $buildDir -Config $Config -Target $Target `
                                   -UnityTest:$UnityTestLibslic3r -MaxJobs $MaxJobs `
                                   -Generator $generator -Compiler $compiler -CMakeArgs $cmakeArgs
