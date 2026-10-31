@@ -373,10 +373,10 @@ try {
     # Strawberry Perl's c\bin\cmake.exe shadows the official CMake on PATH (Strawberry
     # is prepended to PATH by the CI workflow). Strawberry's cmake has a broken
     # FindIconv.cmake that fails the slicer CMake configure (missing Iconv_INCLUDE_DIR)
-    # and tries to download "uv" over SSL. Strip Strawberry bin dirs from PATH before
-    # resolving cmake so the official CMake is used. The slicer build doesn't need
-    # Strawberry's Perl at all — deps are already built/cached by this point.
-    $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike '*Strawberry*' }) -join ';'
+    # and tries to download "uv" over SSL. Strip only Strawberry's c\bin from PATH
+    # (where cmake.exe lives) but keep c\perl\bin (needed for Perl scripts in dep
+    # builds like OpenSSL configure).
+    $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike '*Strawberry\c\bin' }) -join ';'
 
     try {
         $cmake = Resolve-Tool "cmake" "ORCA_CMAKE" "Install CMake 3.21 or newer and add it to PATH, or set ORCA_CMAKE."
