@@ -84,23 +84,27 @@ function Show-BuildSummary {
             $stats = & $CcachePath -s
             $hitRate = 0
             $cacheSize = ""
-            $hits = 0; $misses = 0
+            $hits = 0; $misses = 0; $total = 0; $calls = 0
             foreach ($line in $stats) {
                 if ($line -match '^\s*Cacheable calls:\s+([\d,]+)\s*/\s*([\d,]+)') {
                     $calls = [int]($matches[1].Replace(',',''))
-                    $total = [int]($matches[2].Replace(',',''))
                 }
                 elseif ($line -match '^\s*Hits:\s+([\d,]+)\s*/\s*([\d,]+)') {
                     $hits = [int]($matches[1].Replace(',',''))
-                    $misses = [int]($matches[2].Replace(',','')) - $hits
-                    if ($calls -gt 0) { $hitRate = [math]::Round(100 * $hits / $calls, 1) }
                 }
-                elseif ($line -match 'Cache size \(GB\):\s+([\d.]+)') {
-                    $cacheSize = $matches[1]
+                elseif ($line -match '^\s*Misses:\s+([\d,]+)\s*/\s*([\d,]+)') {
+                    $misses = [int]($matches[1].Replace(',',''))
+                }
+                elseif ($line -match '^\s*Total:\s+([\d,]+)') {
+                    $total = [int]($matches[1].Replace(',',''))
+                }
+                elseif ($line -match '^\s*Cache size \(GB\):\s+([\d.]+)\s*/\s*([\d.]+)\s*\(([\d.]+)%\)') {
+                    $cacheSize = ("{0} / {1} ({2}%)" -f $matches[1], $matches[2], $matches[3])
                 }
             }
             if ($calls) {
-                Write-Host ("  ccache: {0}% hit rate ({1}/{2}), {3} GB used" -f $hitRate, $hits, $calls, $cacheSize) -ForegroundColor Cyan
+                $hitRate = if ($calls -gt 0) { [math]::Round(100 * $hits / $calls, 1) } else { 0 }
+                Write-Host ("  ccache: {0}% hit rate ({1}/{2}), {3}" -f $hitRate, $hits, $calls, $cacheSize) -ForegroundColor Cyan
             }
         } catch { }
     }
