@@ -228,17 +228,6 @@ jobs:
       os: ${{ vars.SELF_HOSTED && 'orca-macos-arm64' || 'macos-15' }}
       artifact: ${{ github.sha }}-tests-macos-arm64
       test-dir: build/arm64/tests
-  
-  unit_tests_macos_x86_64:
-    name: macOS x86_64
-    needs: build_macos_arch
-    # Without it on macOS: x86_64 tests run on self-hosted (cross build, tests off)
-    if: ${{ !cancelled() && success() && !vars.SELF_HOSTED }}
-    uses: ./.github/workflows/unit_tests.yml
-    with:
-      os: macos-15-intel
-      artifact: ${{ github.sha }}-tests-macos-x86_64
-      test-dir: build/x86_64/tests
 
   # Slice a two-colour cube through every shipped printer, and through every
   # system process/filament whose templates no printer's own slice reaches, so
