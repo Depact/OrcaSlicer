@@ -70,7 +70,7 @@ function Show-CcacheStats {
 
 function Show-BuildSummary {
     param(
-        [TimeSpan]$Timing,
+        $Timing,
         [TimeSpan]$InstallTime,
         [string]$CcachePath
     )

@@ -205,7 +205,9 @@ if ($LaunchWait) { $Launch = $true }
 if ($Launch) { if (-not $InstallSlicer) { Write-Status "auto" "InstallSlicer enabled (required by -Launch/-LaunchWait)"; $InstallSlicer = $true } }
 . (Join-Path $UnitsDir "build_win_launch.ps1")
 
-if ($env:RUNNER_TEMP) { $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike '*Strawberry\c\bin' }) -join ';' }
+# Strip Strawberry Perl's c\bin from PATH unconditionally: its cmake.exe shadows the
+# real CMake and has a broken FindIconv.cmake. This must run before toolchain resolution.
+$env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike '*Strawberry\c\bin' }) -join ';'
 
 if (-not $Cache -or $Cache -eq "") {
     $ccacheCmd = Get-Command ccache -ErrorAction SilentlyContinue | Select-Object -First 1
