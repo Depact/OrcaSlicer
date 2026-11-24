@@ -162,8 +162,9 @@ foreach ($target in $TargetDir) {
         $vendorDir = Join-Path $target $vendor
 
         if (Test-Path $vendorDir -PathType Container) {
-            # Prune the vendor directory: it reads the profile's preset list,
-            # and with -PruneSource the profile is the target's own.
+            # Prune preset JSONs the vendor profile lists so the cache (.opc)
+            # replaces them. The vendor profile carries its own preset list,
+            # so we only delete the files it actually references.
             $vendorJson = Join-Path $Profiles "$vendor.json"
             if (Test-Path $vendorJson) {
                 $profile = Get-Content -LiteralPath $vendorJson -Raw -Encoding UTF8 | ConvertFrom-Json
