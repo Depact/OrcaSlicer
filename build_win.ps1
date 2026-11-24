@@ -206,27 +206,21 @@ if ($Launch) { if (-not $InstallSlicer) { Write-Status "auto" "InstallSlicer ena
 . (Join-Path $UnitsDir "build_win_launch.ps1")
 
 # Strip Strawberry Perl's c\bin from PATH: its cmake.exe shadows the real CMake
-# and has a broken FindIconv.cmake. But first, preserve ccache if present by
-# copying it to a clean location (so we don't bring back the bad cmake/ninja).
+# and has a broken FindIconv.cmake. ccache is resolved explicitly BEFORE stripping
+# and passed via CMAKE_C_COMPILER_LAUNCHER (full path), so it doesn't need PATH.
 $ccachePath = $null
 $ccacheCmd = Get-Command ccache -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($ccacheCmd) { $ccachePath = $ccacheCmd.Source }
 
 $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike '*Strawberry\c\bin' }) -join ';'
 
-# Restore ccache to a clean PATH location if we found it
-if ($ccachePath) {
-    $cleanBin = Join-Path $env:TEMP "orca-clean-bin"
-    if (-not (Test-Path $cleanBin)) { New-Item -ItemType Directory -Force -Path $cleanBin | Out-Null }
-    $cleanCcache = Join-Path $cleanBin "ccache.exe"
-    Copy-Item -Path $ccachePath -Destination $cleanCcache -Force
-    $env:PATH = $cleanBin + ";" + $env:PATH
-}
-
 if (-not $Cache -or $Cache -eq "") {
-    $ccacheCmd = Get-Command ccache -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($ccacheCmd) { $Cache = "ccache"; Write-Status "ccache" "Auto-enabled (found at $($ccacheCmd.Source))" }
-    else { Write-Warning "ccache not found in PATH - incremental builds will not be cached. Install with 'winget install ccache' for faster rebuilds." }
+    if ($ccachePath) {
+        $Cache = "ccache"
+        Write-Status "ccache" "Auto-enabled (found at $ccachePath)"
+    } else {
+        Write-Warning "ccache not found in PATH - incremental builds will not be cached. Install with 'winget install ccache' for faster rebuilds."
+    }
 }
 
 if ($Cache -and $Cache -ne "off") {
@@ -242,7 +236,7 @@ $started = Get-Date; $global:BuildStarted = $started; $buildSucceeded = $false
 Push-Location $RepoRoot
 try {
     Write-Step "[1/7] Locating Visual Studio and tools..."
-    $tools = Resolve-Toolchain -ClangCl $ClangCl -Msvc $Msvc -Ninja $Ninja -Cache $Cache -Arch $Arch
+    $tools = Resolve-Toolchain -ClangCl $ClangCl -Msvc $Msvc -Ninja $Ninja -Cache $Cache -Arch $Arch -CcachePath $ccachePath
     $vsInstall = $tools.VsInstall; $clangClExe = $tools.ClangClExe; $clExe = $tools.ClExe; $cmake = $tools.Cmake; $ninjaExe = $tools.NinjaExe; $ccacheExe = $tools.CcacheExe
     Write-Status "vs" $vsInstall; if ($clExe) { Write-Status "cl" $clExe }; Write-Status "cmake" $cmake; Write-Status "ninja" $ninjaExe; if ($ccacheExe) { Write-Status "ccache" $ccacheExe }
 
@@ -274,6 +268,8 @@ try {
     Write-Status "generator" $generator
 
     $configureCompiler = if ($Msbuild) { $null } elseif ($ClangCl) { $clangClExe } else { $clExe }
+    # Strip Strawberry one final time: VS env capture may have added it back
+    $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike '*Strawberry\c\bin' }) -join ';'
     $result = Invoke-ConfigureAndBuild -Cmake $cmake -BuildDir $buildDir -Config $Config -Target $Target -MaxJobs $MaxJobs -Generator $generator -Compiler $configureCompiler -CMakeArgs $cmakeArgs -NoConfigure:$NoConfigure -InstallSlicer:$InstallSlicer
     $timing = $result.Timing; $installTime = $result.InstallTime
 

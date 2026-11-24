@@ -111,7 +111,8 @@ function Resolve-Toolchain {
         [switch] $Msvc,
         [switch] $Ninja,
         [string] $Cache,
-        [string] $Arch
+        [string] $Arch,
+        [string] $CcachePath
     )
 
     $vsInstall = Find-VsInstall
@@ -130,6 +131,8 @@ function Resolve-Toolchain {
         if ($env:ORCA_CCACHE) {
             if (-not (Test-Path $env:ORCA_CCACHE)) { throw "ORCA_CCACHE points at '$env:ORCA_CCACHE', which does not exist." }
             $ccacheExe = (Resolve-Path $env:ORCA_CCACHE).Path
+        } elseif ($CcachePath) {
+            $ccacheExe = $CcachePath
         } else {
             $ccacheCmd = Get-Command ccache -ErrorAction SilentlyContinue | Select-Object -First 1
             if ($ccacheCmd) { $ccacheExe = $ccacheCmd.Source }
