@@ -193,17 +193,17 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $UnitsDir = Join-Path $RepoRoot "scripts\build_win_steps"
 
-. (Join-Path $UnitsDir "BuildOrchestrator.ps1")
-. (Join-Path $UnitsDir "ToolchainResolver.ps1")
-. (Join-Path $UnitsDir "BuildLayoutResolver.ps1")
-. (Join-Path $UnitsDir "VsEnvironmentCapture.ps1")
-. (Join-Path $UnitsDir "DependencyTasks.ps1")
-. (Join-Path $UnitsDir "CmakeInvocation.ps1")
-. (Join-Path $UnitsDir "ConsoleOutput.ps1")
-. (Join-Path $UnitsDir "SlicerArgBuilder.ps1")
+. (Join-Path $UnitsDir "build_win_orchestrator.ps1")
+. (Join-Path $UnitsDir "build_win_toolchain_resolver.ps1")
+. (Join-Path $UnitsDir "build_win_build_layout_resolver.ps1")
+. (Join-Path $UnitsDir "build_win_vs_environment_capture.ps1")
+. (Join-Path $UnitsDir "build_win_dependency_tasks.ps1")
+. (Join-Path $UnitsDir "build_win_cmake_invocation.ps1")
+. (Join-Path $UnitsDir "build_win_console_output.ps1")
+. (Join-Path $UnitsDir "build_win_slicer_arg_builder.ps1")
 if ($LaunchWait) { $Launch = $true }
 if ($Launch) { if (-not $InstallSlicer) { Write-Status "auto" "InstallSlicer enabled (required by -Launch/-LaunchWait)"; $InstallSlicer = $true } }
-. (Join-Path $UnitsDir "Launch.ps1")
+. (Join-Path $UnitsDir "build_win_launch.ps1")
 
 if ($env:RUNNER_TEMP) { $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike '*Strawberry\c\bin' }) -join ';' }
 
