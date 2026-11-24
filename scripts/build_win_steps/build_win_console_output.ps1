@@ -78,14 +78,31 @@ function Show-BuildSummary {
     Write-Host ""
     Write-Step "[7/7] Build finished"
 
-    # Show ccache status after build
+    # Compact ccache status after build
     if ($CcachePath) {
-        Write-Host ""
-        Write-Host "=== ccache status ==="
-        Write-Host "  Executable: $CcachePath"
-        try { & $CcachePath -s | ForEach-Object { Write-Host "  $_" } } catch { Write-Host "  (unable to query stats)" }
-        Write-Host "======================"
-        Write-Host ""
+        try {
+            $stats = & $CcachePath -s
+            $hitRate = 0
+            $cacheSize = ""
+            $hits = 0; $misses = 0
+            foreach ($line in $stats) {
+                if ($line -match '^\s*Cacheable calls:\s+([\d,]+)\s*/\s*([\d,]+)') {
+                    $calls = [int]($matches[1].Replace(',',''))
+                    $total = [int]($matches[2].Replace(',',''))
+                }
+                elseif ($line -match '^\s*Hits:\s+([\d,]+)\s*/\s*([\d,]+)') {
+                    $hits = [int]($matches[1].Replace(',',''))
+                    $misses = [int]($matches[2].Replace(',','')) - $hits
+                    if ($calls -gt 0) { $hitRate = [math]::Round(100 * $hits / $calls, 1) }
+                }
+                elseif ($line -match 'Cache size \(GB\):\s+([\d.]+)') {
+                    $cacheSize = $matches[1]
+                }
+            }
+            if ($calls) {
+                Write-Host ("  ccache: {0}% hit rate ({1}/{2}), {3} GB used" -f $hitRate, $hits, $calls, $cacheSize) -ForegroundColor Cyan
+            }
+        } catch { }
     }
 
     # Resource summary
