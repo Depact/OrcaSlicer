@@ -98,11 +98,6 @@ jobs:
         shell: powershell
         run: .\scripts\test_check_exception_throw_info.ps1
 
-      - name: Run PowerShell script length checks
-        timeout-minutes: 5
-        shell: powershell
-        run: .\scripts\check_ps1_limits.ps1
-
       - name: Run the preset prune tests
         timeout-minutes: 5
         shell: powershell

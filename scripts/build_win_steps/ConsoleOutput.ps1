@@ -68,7 +68,6 @@ function Show-CcacheStats {
     }
 }
 
-# Show build summary with timing, install time, and ccache stats
 function Show-BuildSummary {
     param(
         [TimeSpan]$Timing,
@@ -99,4 +98,3 @@ function Show-BuildSummary {
     }
 }
 
-# Rendering (Write-Step, Write-Status, Format-Sparkline) lives in render.ps1.
