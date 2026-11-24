@@ -78,33 +78,39 @@ function Show-BuildSummary {
     Write-Host ""
     Write-Step "[7/7] Build finished"
 
-    # Compact ccache status after build
+    # Compact ccache status after build (using --print-stats for machine-parsable output)
     if ($CcachePath) {
         try {
-            $stats = & $CcachePath -s
-            $hitRate = 0
-            $cacheSize = ""
-            $hits = 0; $misses = 0; $total = 0; $calls = 0
+            $stats = & $CcachePath --print-stats
+            $calls = 0; $hits = 0; $misses = 0; $cacheKiB = 0; $maxCacheKiB = 0
             foreach ($line in $stats) {
-                if ($line -match '^\s*Cacheable calls:\s+([\d,]+)\s*/\s*([\d,]+)') {
-                    $calls = [int]($matches[1].Replace(',',''))
-                }
-                elseif ($line -match '^\s*Hits:\s+([\d,]+)\s*/\s*([\d,]+)') {
-                    $hits = [int]($matches[1].Replace(',',''))
-                }
-                elseif ($line -match '^\s*Misses:\s+([\d,]+)\s*/\s*([\d,]+)') {
-                    $misses = [int]($matches[1].Replace(',',''))
-                }
-                elseif ($line -match '^\s*Total:\s+([\d,]+)') {
-                    $total = [int]($matches[1].Replace(',',''))
-                }
-                elseif ($line -match '^\s*Cache size \(GB\):\s+([\d.]+)\s*/\s*([\d.]+)\s*\(([\d.]+)%\)') {
-                    $cacheSize = ("{0} / {1} ({2}%)" -f $matches[1], $matches[2], $matches[3])
+                if ($line -match '^(\w+)\t(\d+)$') {
+                    $key = $matches[1]
+                    $val = [int]$matches[2]
+                    switch ($key) {
+                        'called_for_link' { }
+                        'called_for_preprocessing' { }
+                        'cache_miss' { $misses = $val }
+                        'cache_size_kibibyte' { $cacheKiB = $val }
+                        'called_for_link' { }
+                        'cleanup_performed' { }
+                        'compile_failed' { }
+                        'direct_cache_hit' { $hits += $val }
+                        'direct_cache_miss' { $misses += $val }
+                        'cleanup_performed' { }
+                        'local_storage_hit' { $hits += $val }
+                        'local_storage_miss' { $misses += $val }
+                        'max_cache_size_kibibyte' { $maxCacheKiB = $val }
+                    }
                 }
             }
-            if ($calls) {
-                $hitRate = if ($calls -gt 0) { [math]::Round(100 * $hits / $calls, 1) } else { 0 }
-                Write-Host ("  ccache: {0}% hit rate ({1}/{2}), {3}" -f $hitRate, $hits, $calls, $cacheSize) -ForegroundColor Cyan
+            $calls = $hits + $misses
+            if ($calls -gt 0) {
+                $hitRate = [math]::Round(100 * $hits / $calls, 1)
+                $cacheGB = "{0:N1}" -f ($cacheKiB / 1024 / 1024)
+                $maxGB = "{0:N1}" -f ($maxCacheKiB / 1024 / 1024)
+                $pct = if ($maxCacheKiB -gt 0) { [math]::Round(100 * $cacheKiB / $maxCacheKiB, 2) } else { 0 }
+                Write-Host ("  ccache: {0}% hit rate ({1}/{2}), {3} / {4} ({5}%)" -f $hitRate, $hits, $calls, $cacheGB, $maxGB, $pct) -ForegroundColor Cyan
             }
         } catch { }
     }
