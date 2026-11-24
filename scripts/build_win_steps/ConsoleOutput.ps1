@@ -1,8 +1,6 @@
 # Unit: Console rendering. Native PowerShell only: no Spectre, no Python, no CSV.
 # Sparklines turn the samples collected by native.ps1 into a readable shape.
 
-# Block glyphs are single bytes in UTF-8 but multi-byte in the OEM code page that
-# PS 5.1 defaults to when stdout is redirected, which is how CI captures it.
 try { [Console]::OutputEncoding = [Text.Encoding]::UTF8 } catch { }
 
 function Get-TimeStamp {
@@ -34,8 +32,6 @@ function Format-Duration {
     return "{0}s" -f [math]::Round($Span.TotalSeconds)
 }
 
-# Renders values as one block glyph per column. Columns are fixed so the CPU,
-# RAM and disk charts line up; a short build is not stretched to full width.
 function Format-Sparkline {
     param(
         [double[]]$Values,
@@ -71,3 +67,36 @@ function Show-CcacheStats {
         Write-Status "ccache" "unavailable: $($_.Exception.Message)" "Yellow"
     }
 }
+
+# Show build summary with timing, install time, and ccache stats
+function Show-BuildSummary {
+    param(
+        [TimeSpan]$Timing,
+        [TimeSpan]$InstallTime,
+        [string]$CcachePath
+    )
+    Write-Host ""
+    Write-Host ""
+    Write-Step "[7/7] Build finished"
+
+    Show-CcacheStats -CcachePath $CcachePath
+
+    # Resource summary
+    Stop-ResourceMonitor
+    Show-ResourceSummary
+
+    # Success summary
+    $total = $timing.ConfigureTime + $timing.BuildTime + $installTime
+    $configureStr = Format-Duration $timing.ConfigureTime
+    $buildStr     = Format-Duration $timing.BuildTime
+    $totalStr     = Format-Duration $total
+
+    Write-Host ("  Total:     {0}" -f $totalStr)
+    Write-Host ("  Configure: {0}" -f $configureStr)
+    Write-Host ("  Build:     {0}" -f $buildStr)
+    if ($installTime.TotalSeconds -ge 1) {
+        Write-Host ("  Install:   {0}" -f (Format-Duration $installTime))
+    }
+}
+
+# Rendering (Write-Step, Write-Status, Format-Sparkline) lives in render.ps1.

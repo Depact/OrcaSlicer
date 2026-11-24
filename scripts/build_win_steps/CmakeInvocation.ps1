@@ -27,6 +27,71 @@ function Format-CommandLine {
     return ($lines -join "`n")
 }
 
+function Get-ConfigureArgs {
+    param([string]$BuildDir, [string]$Config, [string]$Generator, [string]$Compiler, [string[]]$CMakeArgs)
+
+    $configureArgs = @("-S", (Get-Location).Path, "-B", $BuildDir, "-G", $Generator)
+    if ($Compiler) {
+        $configureArgs += "-DCMAKE_C_COMPILER=$Compiler"
+        $configureArgs += "-DCMAKE_CXX_COMPILER=$Compiler"
+    }
+    if ($CMakeArgs) { $configureArgs += $CMakeArgs }
+    $configureArgs += "-DCMAKE_BUILD_TYPE=$Config"
+    return $configureArgs
+}
+
+function Invoke-ConfigureStep {
+    param(
+        [string]   $Cmake,
+        [string]   $BuildDir,
+        [string]   $Config,
+        [switch]   $NoConfigure,
+        [string]   $Generator = "Ninja Multi-Config",
+        [string]   $Compiler,
+        [string[]] $CMakeArgs
+    )
+
+    # -NoConfigure only skips when the tree can actually be built: a missing
+    # build dir or CMakeCache means configure has to run regardless.
+    $cmakeCache = Join-Path $BuildDir "CMakeCache.txt"
+    if ($NoConfigure -and (Test-Path $cmakeCache)) {
+        Write-Status "configure" "Skipped (-NoConfigure)"
+        return [TimeSpan]::Zero
+    }
+    if ($NoConfigure) {
+        Write-Status "configure" "Build dir missing or no CMakeCache - running configure anyway"
+    }
+
+    $started = Get-Date
+    # Drop the cache to force a fresh configure: a preset or compiler change
+    # otherwise fails with "variables changed" instead of reconfiguring.
+    if (Test-Path $cmakeCache) {
+        Remove-Item $cmakeCache -Force -ErrorAction SilentlyContinue
+    }
+    $configureArgs = Get-ConfigureArgs -BuildDir $BuildDir -Config $Config -Generator $Generator `
+        -Compiler $Compiler -CMakeArgs $CMakeArgs
+
+    $ts = Get-TimeStamp
+    Write-Host "[$ts] >>> $Cmake`n$(Format-CommandLine $configureArgs)"
+    Invoke-BuildStep -Label "CMake configure" -LogPath (New-BuildLogPath "configure") `
+                     -Command $Cmake -Arguments $configureArgs
+    return (Get-Date) - $started
+}
+
+function Invoke-BuildTarget {
+    param([string]$Cmake, [string]$BuildDir, [string]$Config, [string]$Target, [int]$MaxJobs)
+
+    $started = Get-Date
+    $buildArgs = @("--build", $BuildDir, "--config", $Config, "--target", $Target)
+    if ($MaxJobs -gt 0) { $buildArgs += @("--", "-j", "$MaxJobs") }
+
+    $ts = Get-TimeStamp
+    Write-Host "[$ts] >>> $Cmake`n$(Format-CommandLine $buildArgs)"
+    Invoke-BuildStep -Label "Build" -LogPath (New-BuildLogPath "build") `
+                     -Command $Cmake -Arguments $buildArgs
+    return (Get-Date) - $started
+}
+
 function Configure-Build {
     param(
         [string]   $Cmake,
@@ -41,49 +106,12 @@ function Configure-Build {
     )
     Write-Host ""
 
-    # -NoConfigure only skips when the tree can actually be built: a missing
-    # build dir or CMakeCache means configure has to run regardless.
-    $cmakeCache = Join-Path $BuildDir "CMakeCache.txt"
-    $shouldConfigure = -not $NoConfigure -or -not (Test-Path $cmakeCache)
-
-    $configureTime = [TimeSpan]::Zero
-    if ($shouldConfigure) {
-        if ($NoConfigure) {
-            Write-Status "configure" "Build dir missing or no CMakeCache - running configure anyway"
-        }
-        $configureStarted = Get-Date
-        # Drop the cache to force a fresh configure: a preset or compiler change
-        # otherwise fails with "variables changed" instead of reconfiguring.
-        if (Test-Path $cmakeCache) {
-            Remove-Item $cmakeCache -Force -ErrorAction SilentlyContinue
-        }
-        $configureArgs = @("-S", (Get-Location).Path, "-B", $BuildDir, "-G", $Generator)
-        if ($Compiler) {
-            $configureArgs += "-DCMAKE_C_COMPILER=$Compiler"
-            $configureArgs += "-DCMAKE_CXX_COMPILER=$Compiler"
-        }
-        if ($CMakeArgs) { $configureArgs += $CMakeArgs }
-        $configureArgs += "-DCMAKE_BUILD_TYPE=$Config"
-
-        $ts = Get-TimeStamp
-        Write-Host "[$ts] >>> $Cmake`n$(Format-CommandLine $configureArgs)"
-        Invoke-BuildStep -Label "CMake configure" -LogPath (New-BuildLogPath "configure") `
-                         -Command $Cmake -Arguments $configureArgs
-        $configureTime = (Get-Date) - $configureStarted
-    } else {
-        Write-Status "configure" "Skipped (-NoConfigure)"
-    }
+    $configureTime = Invoke-ConfigureStep -Cmake $Cmake -BuildDir $BuildDir -Config $Config `
+        -NoConfigure:$NoConfigure -Generator $Generator -Compiler $Compiler -CMakeArgs $CMakeArgs
 
     Write-Host ""
-    $buildStarted = Get-Date
-    $buildArgs = @("--build", $BuildDir, "--config", $Config, "--target", $Target)
-    if ($MaxJobs -gt 0) { $buildArgs += @("--", "-j", "$MaxJobs") }
-
-    $ts = Get-TimeStamp
-    Write-Host "[$ts] >>> $Cmake`n$(Format-CommandLine $buildArgs)"
-    Invoke-BuildStep -Label "Build" -LogPath (New-BuildLogPath "build") `
-                     -Command $Cmake -Arguments $buildArgs
-    $buildTime = (Get-Date) - $buildStarted
+    $buildTime = Invoke-BuildTarget -Cmake $Cmake -BuildDir $BuildDir -Config $Config `
+        -Target $Target -MaxJobs $MaxJobs
 
     return @{
         ConfigureTime = $configureTime

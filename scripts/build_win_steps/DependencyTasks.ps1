@@ -21,26 +21,20 @@ function Get-DepsManifestHash {
     return [BitConverter]::ToString($sha.ComputeHash($manifestBytes)).Replace("-", "").ToLower()
 }
 
-function Check-Dependencies {
-    param([string]$Cmake, [string]$Compiler, [string]$Config, [switch]$ForceRebuild, [string]$DepsBuildDir, [int]$MaxJobs = 0)
-    if (-not $DepsBuildDir) { $DepsBuildDir = "deps/build" }
-    $depsPrefix   = "$DepsBuildDir/OrcaSlicer_dep/usr/local"
-    # Keep the manifest inside OrcaSlicer_dep so it travels with the CI cache and
-    # deps artifact, which archive only that directory.
-    $depsManifest = "$DepsBuildDir/OrcaSlicer_dep/.deps-manifest"
+function Test-DepsTree {
+    param([string]$DepsPrefix, [string]$DepsManifest, [switch]$ForceRebuild)
 
     $currentHash = Get-DepsManifestHash
-    $storedHash = $null
-    if (Test-Path $depsManifest) { $storedHash = Get-Content $depsManifest -TotalCount 1 }
+    $storedHash = if (Test-Path $DepsManifest) { Get-Content $DepsManifest -TotalCount 1 } else { $null }
 
-    $needsRebuild = $ForceRebuild -or -not (Test-Path $depsPrefix -PathType Container)
+    $needsRebuild = $ForceRebuild -or -not (Test-Path $DepsPrefix -PathType Container)
     if (-not $needsRebuild -and -not $storedHash) {
         # CI caches only deps/build/OrcaSlicer_dep, so a cache-restored tree arrives
         # without the manifest that used to live in its parent. Treating that as
         # "never completed" rebuilt every dependency from source on every CI job -
         # hours of work that stalled the self-hosted runner. Adopt the tree and
         # record its hash; only a missing prefix counts as incomplete.
-        $currentHash | Set-Content $depsManifest -Encoding ASCII
+        $currentHash | Set-Content $DepsManifest -Encoding ASCII
         $storedHash = $currentHash
     }
     if (-not $needsRebuild -and $storedHash -and $currentHash -ne $storedHash) {
@@ -48,46 +42,67 @@ function Check-Dependencies {
         Write-Host "  [deps] Dependency source changed since last build; rebuilding..."
     }
 
-    if ($needsRebuild) {
-        # The deps CMakeLists still declare a policy version below 3.5.
-        $env:CMAKE_POLICY_VERSION_MINIMUM = "3.5"
-        # Ninja and Make honour this for the deps build.
-        if ($MaxJobs -gt 0) {
-            $env:CMAKE_BUILD_PARALLEL_LEVEL = $MaxJobs.ToString()
-        }
+    return [pscustomobject]@{ Hash = $currentHash; NeedsRebuild = [bool]$needsRebuild }
+}
 
-        $depsConfigureArgs = @("-S", "deps", "-B", $DepsBuildDir, "-G", "Ninja Multi-Config")
-        if ($Compiler) {
-            # Pass as separate array elements so paths with spaces (e.g.
-            # "C:\Program Files\LLVM\bin\clang-cl.exe") survive intact.
-            $depsConfigureArgs += "-DCMAKE_C_COMPILER=$Compiler"
-            $depsConfigureArgs += "-DCMAKE_CXX_COMPILER=$Compiler"
-            # Do NOT explicitly pass MASM compiler; let cmake auto-detect from VS env
-        }
-        Write-Host "  [deps] Building dependencies..."
-        Invoke-BuildStep -Label "Dependency configuration" -Command $Cmake -Arguments $depsConfigureArgs -LogPath (New-BuildLogPath "deps-configure")
-        $buildArgs = @("--build", $DepsBuildDir, "--config", $Config, "--target", "deps")
-        if ($MaxJobs -gt 0) {
-            $buildArgs += "--parallel"
-            $buildArgs += $MaxJobs.ToString()
-        }
-        $buildArgs += "--verbose"
-        Invoke-BuildStep -Label "Dependency build" -Command $Cmake -Arguments $buildArgs -LogPath (New-BuildLogPath "deps-build")
-        $currentHash | Set-Content $depsManifest -Encoding ASCII
-        Write-Host "  [deps] Dependencies built successfully" -ForegroundColor Green
-    } else {
-        if (-not (Test-Path $depsManifest)) {
-            $currentHash | Set-Content $depsManifest -Encoding ASCII
-        }
-        # Check if Boost is available system-wide before using deps
-        $boostLibPath = "${depsPrefix}/lib/libboost*.lib"
-        if (-not (Get-ChildItem $boostLibPath -ErrorAction SilentlyContinue)) {
-            Write-Host "  [deps] WARNING: No Boost libraries found in deps. This may indicate a build" -ForegroundColor Yellow
-            Write-Host "         failure or partial installation. OrcaSlicer requires Boost to build." -ForegroundColor Yellow
-            Write-Host "         Try rebuilding dependencies or install Boost system-wide." -ForegroundColor Yellow
-        }
-        Write-Host "  [deps] Found at $depsPrefix (manifest matches)" -ForegroundColor DarkGray
+function Invoke-DepsBuild {
+    param([string]$Cmake, [string]$Compiler, [string]$Config, [string]$DepsBuildDir, [int]$MaxJobs)
+
+    # The deps CMakeLists still declare a policy version below 3.5.
+    $env:CMAKE_POLICY_VERSION_MINIMUM = "3.5"
+    # Ninja and Make honour this for the deps build.
+    if ($MaxJobs -gt 0) {
+        $env:CMAKE_BUILD_PARALLEL_LEVEL = $MaxJobs.ToString()
     }
+
+    $configureArgs = @("-S", "deps", "-B", $DepsBuildDir, "-G", "Ninja Multi-Config")
+    if ($Compiler) {
+        # Pass as separate array elements so paths with spaces (e.g.
+        # "C:\Program Files\LLVM\bin\clang-cl.exe") survive intact.
+        $configureArgs += "-DCMAKE_C_COMPILER=$Compiler"
+        $configureArgs += "-DCMAKE_CXX_COMPILER=$Compiler"
+        # Do NOT explicitly pass MASM compiler; let cmake auto-detect from VS env
+    }
+    Write-Host "  [deps] Building dependencies..."
+    Invoke-BuildStep -Label "Dependency configuration" -Command $Cmake -Arguments $configureArgs -LogPath (New-BuildLogPath "deps-configure")
+
+    $buildArgs = @("--build", $DepsBuildDir, "--config", $Config, "--target", "deps")
+    if ($MaxJobs -gt 0) {
+        $buildArgs += "--parallel"
+        $buildArgs += $MaxJobs.ToString()
+    }
+    $buildArgs += "--verbose"
+    Invoke-BuildStep -Label "Dependency build" -Command $Cmake -Arguments $buildArgs -LogPath (New-BuildLogPath "deps-build")
+}
+
+function Check-Dependencies {
+    param([string]$Cmake, [string]$Compiler, [string]$Config, [switch]$ForceRebuild, [string]$DepsBuildDir, [int]$MaxJobs = 0)
+    if (-not $DepsBuildDir) { $DepsBuildDir = "deps/build" }
+    $depsPrefix = "$DepsBuildDir/OrcaSlicer_dep/usr/local"
+    # Keep the manifest inside OrcaSlicer_dep so it travels with the CI cache and
+    # deps artifact, which archive only that directory.
+    $depsManifest = "$DepsBuildDir/OrcaSlicer_dep/.deps-manifest"
+
+    $state = Test-DepsTree -DepsPrefix $depsPrefix -DepsManifest $depsManifest -ForceRebuild:$ForceRebuild
+    if ($state.NeedsRebuild) {
+        Invoke-DepsBuild -Cmake $Cmake -Compiler $Compiler -Config $Config -DepsBuildDir $DepsBuildDir -MaxJobs $MaxJobs
+        $state.Hash | Set-Content $depsManifest -Encoding ASCII
+        Write-Host "  [deps] Dependencies built successfully" -ForegroundColor Green
+        return
+    }
+
+    if (-not (Test-Path $depsManifest)) {
+        $state.Hash | Set-Content $depsManifest -Encoding ASCII
+    }
+    # A deps tree without Boost usually means a failed or partial install, and
+    # the error at configure time does not say so.
+    $boostLibPath = "${depsPrefix}/lib/libboost*.lib"
+    if (-not (Get-ChildItem $boostLibPath -ErrorAction SilentlyContinue)) {
+        Write-Host "  [deps] WARNING: No Boost libraries found in deps. This may indicate a build" -ForegroundColor Yellow
+        Write-Host "         failure or partial installation. OrcaSlicer requires Boost to build." -ForegroundColor Yellow
+        Write-Host "         Try rebuilding dependencies or install Boost system-wide." -ForegroundColor Yellow
+    }
+    Write-Host "  [deps] Found at $depsPrefix (manifest matches)" -ForegroundColor DarkGray
 }
 
 function Pack-Dependencies {
