@@ -103,7 +103,7 @@ function Start-ResourceMonitor {
     param([int]$IntervalSeconds = 15)
     $global:ResourceSamples = @()
     $global:ResourceMonitorStarted = $true
-    $global:ResourceMonitorJob = Start-Job -FilePath (Join-Path $PSScriptRoot "sampler.ps1") `
+    $global:ResourceMonitorJob = Start-Job -FilePath (Join-Path $PSScriptRoot "build_win_resource_sampler.ps1") `
         -ArgumentList $IntervalSeconds
     Write-Status "sampler" "build-tree CPU and RAM every ${IntervalSeconds}s"
 }
