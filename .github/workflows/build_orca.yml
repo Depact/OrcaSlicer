@@ -169,7 +169,7 @@ jobs:
             ccache-${{ env.CCACHE_LEG }}-
 
       - name: Enable compiler cache
-        if: ${{ steps.ccache.outcome == 'success' && runner.os != 'Windows' }}
+        if: ${{ steps.ccache.outcome == 'success' }}
         shell: bash
         run: |
           echo "CMAKE_C_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
