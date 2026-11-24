@@ -167,19 +167,32 @@ $Profiles = (Get-Item $Profiles).FullName
 
 # Add the slicer's runtime DLL directory to PATH so generate_system_cache.exe
 # can resolve its dependencies (TKernel.dll etc.) without a full install step.
+$dllDirs = @()
 $dllDir = Get-ChildItem -Path $BuildDir -Filter "TKernel.dll" -Recurse -ErrorAction SilentlyContinue |
     Select-Object -First 1
 if ($dllDir) {
     $dllPath = (Split-Path -Parent $dllDir.FullName)
     Write-Host "Found TKernel.dll at: $dllPath"
-    $env:PATH = $dllPath + ";" + $env:PATH
+    $dllDirs += $dllPath
 } else {
     Write-Warning "TKernel.dll NOT FOUND under $BuildDir - generate_system_cache.exe may fail to load dependencies"
-    # Search for any DLLs in the build dir
-    $dlls = Get-ChildItem -Path $BuildDir -Filter "*.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 10
-    Write-Host "Found DLLs in build dir:"
-    $dlls | ForEach-Object { Write-Host "  $($_.FullName)" }
 }
+
+# Also find all DLL directories to ensure all dependencies are resolvable
+$allDllDirs = Get-ChildItem -Path $BuildDir -Filter "*.dll" -Recurse -ErrorAction SilentlyContinue |
+    ForEach-Object { Split-Path -Parent $_.FullName } |
+    Sort-Object -Unique
+foreach ($dir in $allDllDirs) {
+    if ($dllDirs -notcontains $dir) {
+        $dllDirs += $dir
+    }
+}
+
+foreach ($dir in $dllDirs) {
+    Write-Host "Adding DLL directory to PATH: $dir"
+    $env:PATH = $dir + ";" + $env:PATH
+}
+
 Write-Host "PATH for generate_system_cache.exe: $env:PATH"
 
 # Also check if the tool itself exists and is executable
