@@ -96,6 +96,69 @@ if (-not $tool) {
     throw "ERROR: generate_system_cache.exe not found under $BuildDir - build with -DORCA_TOOLS=ON"
 }
 
+# Determine config from build dir name or default to Release
+$config = "Release"
+foreach ($c in @("Debug", "Release", "RelWithDebInfo", "MinSizeRel")) {
+    if ($tool.DirectoryName -match $c) { $config = $c; break }
+}
+
+Write-Host "Building generate_system_cache in $BuildDir ($config)"
+& $Cmake --build $BuildDir --config $config --target generate_system_cache
+if ($LASTEXITCODE -ne 0) {
+    throw "ERROR: could not build generate_system_cache - configure the build tree with -DORCA_TOOLS=ON:`n       cmake -S $RepoRoot -B $BuildDir -DORCA_TOOLS=ON"
+}
+
+# Re-find the tool after build (in case it was just built)
+$tool = Get-ChildItem -Path $BuildDir -Filter "generate_system_cache.exe" -Recurse -ErrorAction SilentlyContinue |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+
+if (-not $tool) {
+    throw "ERROR: generate_system_cache.exe not found under $BuildDir - build with -DORCA_TOOLS=ON"
+}
+
+# Determine config from build dir name or default to Release
+$config = "Release"
+foreach ($c in @("Debug", "Release", "RelWithDebInfo", "MinSizeRel")) {
+    if ($tool.DirectoryName -match $c) { $config = $c; break }
+}
+
+Write-Host "Building generate_system_cache in $BuildDir ($config)"
+& $Cmake --build $BuildDir --config $config --target generate_system_cache
+if ($LASTEXITCODE -ne 0) {
+    throw "ERROR: could not build generate_system_cache - configure the build tree with -DORCA_TOOLS=ON:`n       cmake -S $RepoRoot -B $BuildDir -DORCA_TOOLS=ON"
+}
+
+# Re-find the tool after build (in case it was just built)
+$tool = Get-ChildItem -Path $BuildDir -Filter "generate_system_cache.exe" -Recurse -ErrorAction SilentlyContinue |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+
+if (-not $tool) {
+    throw "ERROR: generate_system_cache.exe not found under $BuildDir - build with -DORCA_TOOLS=ON"
+}
+
+# Determine config from build dir name or default to Release
+$config = "Release"
+foreach ($c in @("Debug", "Release", "RelWithDebInfo", "MinSizeRel")) {
+    if ($tool.DirectoryName -match $c) { $config = $c; break }
+}
+
+Write-Host "Building generate_system_cache in $BuildDir ($config)"
+& $Cmake --build $BuildDir --config $config --target generate_system_cache
+if ($LASTEXITCODE -ne 0) {
+    throw "ERROR: could not build generate_system_cache - configure the build tree with -DORCA_TOOLS=ON:`n       cmake -S $RepoRoot -B $BuildDir -DORCA_TOOLS=ON"
+}
+
+# Re-find the tool after build (in case it was just built)
+$tool = Get-ChildItem -Path $BuildDir -Filter "generate_system_cache.exe" -Recurse -ErrorAction SilentlyContinue |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+
+if (-not $tool) {
+    throw "ERROR: generate_system_cache.exe not found under $BuildDir - build with -DORCA_TOOLS=ON"
+}
+
 $Profiles = Join-Path $RepoRoot "resources\profiles"
 if (-not (Test-Path $Profiles -PathType Container)) {
     throw "ERROR: profiles directory not found: $Profiles"
@@ -128,8 +191,7 @@ Write-Host "Running: $($tool.FullName) --path $Profiles --log_level 2"
 
 # Start clean so vendors that went away - and caches written by older tool
 # versions - don't linger next to the freshly generated ones.
-Get-ChildItem -Path $Profiles -Filter "*.opc" -ErrorAction SilentlyContinue | Remove-Item -Force
-Get-ChildItem -Path $Profiles -Filter "*.cache" -ErrorAction SilentlyContinue | Remove-Item -Force
+Remove-StaleCaches -ProfilesDir $Profiles
 
 & $tool.FullName --path $Profiles --log_level 2
 $exitCode = $LASTEXITCODE
@@ -162,38 +224,12 @@ foreach ($target in $TargetDir) {
         $vendorDir = Join-Path $target $vendor
 
         if (Test-Path $vendorDir -PathType Container) {
-            # Prune preset JSONs the vendor profile lists so the cache (.opc)
-            # replaces them. The vendor profile carries its own preset list,
-            # so we only delete the files it actually references.
             $vendorJson = Join-Path $Profiles "$vendor.json"
             if (Test-Path $vendorJson) {
-                $profile = Get-Content -LiteralPath $vendorJson -Raw -Encoding UTF8 | ConvertFrom-Json
-                $pruneCount = 0
-                foreach ($key in @("machine_model_list", "process_list", "filament_list", "machine_list")) {
-                    foreach ($entry in $profile.$key) {
-                        $f = Join-Path $vendorDir $entry.sub_path
-                        if (Test-Path -LiteralPath $f -PathType Leaf) {
-                            Remove-Item -LiteralPath $f -Force
-                            $pruneCount++
-                        }
-                    }
-                }
-                $pruned += $pruneCount
+                $pruned += Remove-PresetJsonsListedInProfile -VendorDir $vendorDir -ProfilePath $vendorJson
             }
 
-            # Deepest first, so a directory the delete above emptied goes too.
-            # Enumeration can yield a null entry (a directory removed or
-            # unreadable mid-walk), and Remove-Item throws NullReferenceException
-            # on a null -LiteralPath instead of honouring -ErrorAction, which
-            # killed the whole step. Skipping these is enough: a leftover empty
-            # directory only means the cache misses a size win.
-            $emptyDirs = @(Get-ChildItem -Path $vendorDir -Directory -Recurse -ErrorAction SilentlyContinue |
-                Sort-Object FullName -Descending)
-            foreach ($d in $emptyDirs) {
-                if (-not $d -or -not $d.FullName) { continue }
-                try { Remove-Item -LiteralPath $d.FullName -Force -ErrorAction Stop }
-                catch { Write-Host ("  kept {0}: {1}" -f $d.FullName, $_.Exception.Message) }
-            }
+            Remove-EmptyDirsDeepestFirst -VendorDir $vendorDir
         }
 
         if (Test-Path (Join-Path $target "$vendor.json") -PathType Leaf) {
@@ -203,4 +239,40 @@ foreach ($target in $TargetDir) {
     }
 
     Write-Host ("{0}: $shipped caches, dropped $pruned preset JSONs" -f $target)
+}
+
+function Remove-StaleCaches {
+    param([string]$ProfilesDir)
+    Get-ChildItem -Path $ProfilesDir -Filter "*.opc" -ErrorAction SilentlyContinue | Remove-Item -Force
+    Get-ChildItem -Path $ProfilesDir -Filter "*.cache" -ErrorAction SilentlyContinue | Remove-Item -Force
+}
+
+function Remove-EmptyDirsDeepestFirst {
+    param([string]$VendorDir)
+    $emptyDirs = @(Get-ChildItem -Path $VendorDir -Directory -Recurse -ErrorAction SilentlyContinue |
+        Sort-Object FullName -Descending)
+    foreach ($d in $emptyDirs) {
+        if (-not $d -or -not $d.FullName) { continue }
+        try { Remove-Item -LiteralPath $d.FullName -Force -ErrorAction Stop }
+        catch { Write-Host ("  kept {0}: {1}" -f $d.FullName, $_.Exception.Message) }
+    }
+}
+
+function Remove-PresetJsonsListedInProfile {
+    param(
+        [string]$VendorDir,
+        [string]$ProfilePath
+    )
+    $profile = Get-Content -LiteralPath $ProfilePath -Raw -Encoding UTF8 | ConvertFrom-Json
+    $pruneCount = 0
+    foreach ($key in @("machine_model_list", "process_list", "filament_list", "machine_list")) {
+        foreach ($entry in $profile.$key) {
+            $f = Join-Path $VendorDir $entry.sub_path
+            if (Test-Path -LiteralPath $f -PathType Leaf) {
+                Remove-Item -LiteralPath $f -Force
+                $pruneCount++
+            }
+        }
+    }
+    return $pruneCount
 }
