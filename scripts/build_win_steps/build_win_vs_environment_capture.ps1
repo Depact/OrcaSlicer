@@ -25,7 +25,8 @@ function Ensure-Ml64InPath {
 function Resolve-VcvarsallArch {
     param([string]$Arch)
     # x64 for x64, x64_arm64 for x64-hosted ARM64 cross
-    return if ($Arch -eq "ARM64") { "x64_arm64" } else { "x64" }
+    if ($Arch -eq "ARM64") { return "x64_arm64" }
+    return "x64"
 }
 
 function Build-VcvarsallBatchBody {
