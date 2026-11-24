@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 <picture>
   <img alt="OrcaSlicer logo" src="resources/images/OrcaSlicer.png" width="15%" height="15%">
@@ -9,7 +9,7 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/OrcaSlicer/OrcaSlicer)](https://github.com/OrcaSlicer/OrcaSlicer/stargazers) [![Build all](https://img.shields.io/github/actions/workflow/status/OrcaSlicer/OrcaSlicer/main_build_status.yml?label=Build%20all)](https://github.com/OrcaSlicer/OrcaSlicer/actions/workflows/build_all.yml)
 
 OrcaSlicer: an open source Next-Gen Slicing Software for Precision 3D Prints.  
-Optimize your prints with ultra-fast slicing, intelligent support generation, and seamless printer compatibilityтАФengineered for perfection.
+Optimize your prints with ultra-fast slicing, intelligent support generation, and seamless printer compatibility—engineered for perfection.
 
 # Official links and community
 
@@ -33,7 +33,7 @@ Optimize your prints with ultra-fast slicing, intelligent support generation, an
 <table border="2" style="border-color: #ffa500; background-color:rgb(232, 220, 180); color: #856404;">
 <tr>
 <td>
-<strong>тЪая╕П CAUTION:</strong><br>
+<strong>⚠️ CAUTION:</strong><br>
 Several clickbait and malicious websites, such as <b>orca-slicer[.]com</b> and <b>orcaslicer[.]net</b>, are pretending to be the official OrcaSlicer site. These sites may redirect you to dangerous downloads or contain misleading information.<br>
 <b>Our only official website is <a href="https://www.orcaslicer.com/">www.orcaslicer.com</a>.</b><br><br>
 If you come across any of these in search results, please <b>report them</b> as unsafe or phishing to help keep the community secure with:<br>
@@ -85,20 +85,20 @@ The [wiki](https://www.orcaslicer.com/wiki) aims to provide a detailed explanati
 
 ## Stable Release
 
-ЁЯУе **[Download the Latest Stable Release](https://github.com/OrcaSlicer/OrcaSlicer/releases/latest)**  
+📥 **[Download the Latest Stable Release](https://github.com/OrcaSlicer/OrcaSlicer/releases/latest)**  
 Visit our GitHub Releases page for the latest stable version of OrcaSlicer, recommended for most users.  
 Windows and macOS release and nightly builds are code signed.
 
 ## Nightly Builds
 
-ЁЯМЩ **[Download the Latest Nightly Build](https://github.com/OrcaSlicer/OrcaSlicer/releases/tag/nightly-builds)**  
+🌙 **[Download the Latest Nightly Build](https://github.com/OrcaSlicer/OrcaSlicer/releases/tag/nightly-builds)**  
 Explore the latest developments in OrcaSlicer with our nightly builds. Feedback on these versions is highly appreciated.
 
 # How to install
 
 ## Windows
 
-Download the **Windows Installer exe** for your preferred version from the [releases page](https://github.com/OrcaSlicer/OrcaSlicer/releases). Both `x64` and `arm64` installers are published тАФ pick the one matching your CPU.
+Download the **Windows Installer exe** for your preferred version from the [releases page](https://github.com/OrcaSlicer/OrcaSlicer/releases). Both `x64` and `arm64` installers are published — pick the one matching your CPU.
 
 - *For convenience there is also a portable build available.*
     <details>
@@ -177,7 +177,7 @@ It can also be installed through graphical software managers (KDE Discover, GNOM
 
 ### AppImage
 
-AppImages are published for both **x86_64** and **aarch64** (ARM64). Pick the file matching your CPU тАФ the ARM64 build has `aarch64` in its name (e.g. `OrcaSlicer_Linux_AppImage_Ubuntu2404_aarch64_*.AppImage`).
+AppImages are published for both **x86_64** and **aarch64** (ARM64). Pick the file matching your CPU — the ARM64 build has `aarch64` in its name (e.g. `OrcaSlicer_Linux_AppImage_Ubuntu2404_aarch64_*.AppImage`).
 
  1. Download App image from the [releases page](https://github.com/OrcaSlicer/OrcaSlicer/releases).
  2. Double click the downloaded file to run it.
@@ -250,6 +250,12 @@ clang-cl + Ninja enabled by default because during GitHub windows runner tests N
 | `Strawberry Perl missing` | Script auto-downloads portable Strawberry Perl                   |
 | `Iconv not found`         | Uses deps cache v2 (built-in, no system Iconv needed)            |
 
+# Supports
+
+**OrcaSlicer** is an open-source project, and we're deeply grateful to all our sponsors and backers.  
+Their generous support helps fund filaments and other essential 3D printing materials for the project.  
+Thank you! :)
+
 ## Sponsors
 
 <table>
@@ -269,7 +275,7 @@ clang-cl + Ninja enabled by default because during GitHub windows runner tests N
 
 ## Backers:
 
-**Ko-fi supporters** тШХ: [Backers list](https://github.com/user-attachments/files/16147016/Supporters_638561417699952499.csv)
+**Ko-fi supporters** ☕: [Backers list](https://github.com/user-attachments/files/16147016/Supporters_638561417699952499.csv)
 
 ## Support the project
 
@@ -281,7 +287,7 @@ clang-cl + Ninja enabled by default because during GitHub windows runner tests N
 
 Open-source slicing has always been built on a tradition of collaboration and attribution. [Slic3r](https://github.com/Slic3r/Slic3r), created by Alessandro Ranellucci and the RepRap community, laid the foundation. [PrusaSlicer](https://github.com/prusa3d/PrusaSlicer) by Prusa Research built on Slic3r and acknowledged that heritage. [Bambu Studio](https://github.com/bambulab/BambuStudio) in turn forked from PrusaSlicer, and [SuperSlicer](https://github.com/supermerill/SuperSlicer) by @supermerill extended PrusaSlicer with community-driven enhancements. Each project carried the work of its predecessors forward, crediting those who came before.
 
-OrcaSlicer began in that same spirit, drawing from BambuStudio, PrusaSlicer, and ideas inspired by CuraSlicer and SuperSlicer. But it has since grown far beyond its origins. Through relentless innovation тАФ introducing advanced calibration tools, precise wall and seam control, tree supports, adaptive slicing, and hundreds of other features тАФ OrcaSlicer has become the most widely used and actively developed open-source slicer in the 3D printing community. Many of its innovations have been adopted by other slicers, making it a driving force for the entire industry.
+OrcaSlicer began in that same spirit, drawing from BambuStudio, PrusaSlicer, and ideas inspired by CuraSlicer and SuperSlicer. But it has since grown far beyond its origins. Through relentless innovation — introducing advanced calibration tools, precise wall and seam control, tree supports, adaptive slicing, and hundreds of other features — OrcaSlicer has become the most widely used and actively developed open-source slicer in the 3D printing community. Many of its innovations have been adopted by other slicers, making it a driving force for the entire industry.
 
 The OrcaSlicer logo was designed by community member [Justin Levine](https://github.com/jal-co).
 
