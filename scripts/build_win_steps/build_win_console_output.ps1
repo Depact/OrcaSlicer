@@ -78,7 +78,15 @@ function Show-BuildSummary {
     Write-Host ""
     Write-Step "[7/7] Build finished"
 
-    Show-CcacheStats -CcachePath $CcachePath
+    # Show ccache status after build
+    if ($CcachePath) {
+        Write-Host ""
+        Write-Host "=== ccache status ==="
+        Write-Host "  Executable: $CcachePath"
+        try { & $CcachePath -s | ForEach-Object { Write-Host "  $_" } } catch { Write-Host "  (unable to query stats)" }
+        Write-Host "======================"
+        Write-Host ""
+    }
 
     # Resource summary
     Stop-ResourceMonitor
