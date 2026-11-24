@@ -205,9 +205,23 @@ if ($LaunchWait) { $Launch = $true }
 if ($Launch) { if (-not $InstallSlicer) { Write-Status "auto" "InstallSlicer enabled (required by -Launch/-LaunchWait)"; $InstallSlicer = $true } }
 . (Join-Path $UnitsDir "build_win_launch.ps1")
 
-# Strip Strawberry Perl's c\bin from PATH unconditionally: its cmake.exe shadows the
-# real CMake and has a broken FindIconv.cmake. This must run before toolchain resolution.
+# Strip Strawberry Perl's c\bin from PATH: its cmake.exe shadows the real CMake
+# and has a broken FindIconv.cmake. But first, preserve ccache if present by
+# copying it to a clean location (so we don't bring back the bad cmake/ninja).
+$ccachePath = $null
+$ccacheCmd = Get-Command ccache -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($ccacheCmd) { $ccachePath = $ccacheCmd.Source }
+
 $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike '*Strawberry\c\bin' }) -join ';'
+
+# Restore ccache to a clean PATH location if we found it
+if ($ccachePath) {
+    $cleanBin = Join-Path $env:TEMP "orca-clean-bin"
+    if (-not (Test-Path $cleanBin)) { New-Item -ItemType Directory -Force -Path $cleanBin | Out-Null }
+    $cleanCcache = Join-Path $cleanBin "ccache.exe"
+    Copy-Item -Path $ccachePath -Destination $cleanCcache -Force
+    $env:PATH = $cleanBin + ";" + $env:PATH
+}
 
 if (-not $Cache -or $Cache -eq "") {
     $ccacheCmd = Get-Command ccache -ErrorAction SilentlyContinue | Select-Object -First 1
