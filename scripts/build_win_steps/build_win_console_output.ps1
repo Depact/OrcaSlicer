@@ -110,7 +110,7 @@ function Show-BuildSummary {
                 $cacheGB = "{0:N1}" -f ($cacheKiB / 1024 / 1024)
                 $maxGB = "{0:N1}" -f ($maxCacheKiB / 1024 / 1024)
                 $pct = if ($maxCacheKiB -gt 0) { [math]::Round(100 * $cacheKiB / $maxCacheKiB, 2) } else { 0 }
-                Write-Host ("  ccache: {0}% hit rate ({1}/{2}), {3} / {4} ({5}%)" -f $hitRate, $hits, $calls, $cacheGB, $maxGB, $pct) -ForegroundColor Cyan
+                Write-Host ("  ccache: {0}% hit rate ({1}/{2}), {3} / {4} ({5}%)" -f $hitRate, $hits, $calls, $cacheGB, $maxGB, $pct)
             }
         } catch { }
     }
