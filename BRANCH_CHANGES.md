@@ -75,32 +75,7 @@ Files changed: 25 files, +2617/-2864 lines
 
 ## ⚠️ NEEDS FIXING / REVIEW
 
-### 1. Windows ccache Save (Critical)
-**File**: `.github/workflows/build_orca.yml` line 1077
-```yaml
-if: ${{ always() && !vars.SELF_HOSTED && steps.ccache_save.outcome == 'success' && runner.os != 'Windows' }}
-```
-**Issue**: `runner.os != 'Windows'` prevents cache cleanup on Windows. Windows cache entries never pruned → storage growth.
-**Fix**: Remove `runner.os != 'Windows'` or add Windows-specific cleanup.
-
-### 2. Windows ccache Save (Missing)
-**File**: `.github/workflows/build_orca.yml` line 1068-1074
-```yaml
-- name: Save compiler cache (GitHub-hosted cloud)
-  if: ${{ always() && !vars.SELF_HOSTED && steps.ccache_restore.outcome == 'success' && github.event_name != 'pull_request' }}
-```
-**Issue**: Windows ccache saved but never cleaned. The "Drop older" step (line 1077) skips Windows.
-**Fix**: Add Windows cleanup or document intentional retention.
-
-### 3. ccache Stats on Windows
-**File**: `.github/workflows/build_orca.yml` line 1048
-```yaml
-if: ${{ always() && steps.ccache.outcome == 'success' && runner.os != 'Windows' }}
-```
-**Issue**: ccache stats not printed on Windows. Stats useful for debugging.
-**Fix**: Remove `runner.os != 'Windows'` or add Windows-specific stats step.
-
-### 4. Windows `build_win.ps1` Strawberry Perl PATH
+### 1. Windows `build_win.ps1` Strawberry Perl PATH
 **File**: `build_win.ps1` line 208
 ```powershell
 $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike '*Strawberry\c\bin' }) -join ';'
@@ -108,64 +83,17 @@ $env:PATH = ($env:PATH -split ';' | Where-Object { $_ -notlike '*Strawberry\c\bi
 **Issue**: Removes Strawberry `c\bin` but keeps `perl\bin`. However ccache.exe lives in `c\bin`. Current code finds ccache BEFORE stripping, then passes full path via `CMAKE_C_COMPILER_LAUNCHER`. Works but fragile.
 **Review**: Ensure ccache path resolution happens before PATH strip.
 
-### 5. `build_check_cache.yml` Uses `actions/checkout@v4`
-**File**: `.github/workflows/build_check_cache.yml` line 58
-```yaml
-uses: actions/checkout@v4
-```
-**Issue**: All other workflows use `v7`. v4 works but inconsistent.
-**Fix**: Upgrade to `v7` for consistency (supports larger files, better sparse-checkout).
-
-### 6. Windows ccache Save - Missing `enableCrossOsArchive`
-**File**: `.github/workflows/build_orca.yml` line 1071-1074
-```yaml
-- name: Save compiler cache (GitHub-hosted cloud)
-  uses: actions/cache/save@v6
-  with:
-    path: ${{ github.workspace }}/.ccache
-    key: ${{ env.CCACHE_ENTRY }}
-```
-**Issue**: Missing `enableCrossOsArchive: true` (present in self-hosted save at line 1066).
-**Fix**: Add `enableCrossOsArchive: true` for cross-platform cache restore.
-
-### 7. Linux ccache Stats Exclusion
-**File**: `.github/workflows/build_orca.yml` line 1048
-```yaml
-if: ${{ always() && steps.ccache.outcome == 'success' && runner.os != 'Windows' }}
-```
-**Note**: Stats only on Linux/macOS. Acceptable but worth documenting why.
-
-### 8. `build_optional.yml` Windows MSVC Runner
-**File**: `.github/workflows/build_optional.yml` line 186
-```yaml
-os: windows-2022
-```
-**Note**: Changed from `windows-latest` to `windows-2022`. Explicit version is good but verify VS2022 has MSVC components.
-
-### 9. `build_optional.yml` ARM64 Runner
+### 2. `build_optional.yml` ARM64 Runner
 **File**: `.github/workflows/build_optional.yml` line 153, 168
 ```yaml
 os: windows-11-vs2026-arm
 ```
 **Note**: Uses `windows-11-vs2026-arm` (preview). May be unstable. Verify availability.
 
-### 10. Removed Files (Breaking?)
+### 3. Removed Files (Breaking?)
 - `build_win.bat` - Deleted (replaced by `build_win.ps1`)
 - `scripts/test_build_win.ps1` - Deleted (replaced by `scripts/test_check_exception_throw_info.ps1` + `scripts/test_prune_cached_presets.ps1`)
 - `scripts/test_build_win.ps1` tests removed - ensure coverage maintained
-
----
-
-## 📋 PRIORITY FIXES (Before Merge)
-
-| Priority | Issue | File | Effort |
-|----------|-------|------|--------|
-| **P0** | Windows ccache cleanup missing | `build_orca.yml` line 1077 | 5 min |
-| **P0** | Windows ccache stats missing | `build_orca.yml` line 1048 | 1 min |
-| **P1** | `enableCrossOsArchive` missing on Windows save | `build_orca.yml` line 1071 | 1 min |
-| **P1** | `build_check_cache.yml` checkout v4→v7 | `build_check_cache.yml` | 5 min |
-| **P2** | Document Windows ccache behavior | README/comments | 10 min |
-| **P3** | `windows-11-vs2026-arm` stability | `build_optional.yml` | Research |
 
 ---
 
