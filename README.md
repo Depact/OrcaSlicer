@@ -250,6 +250,19 @@ clang-cl + Ninja enabled by default because during GitHub windows runner tests N
 | `Strawberry Perl missing` | Script auto-downloads portable Strawberry Perl                   |
 | `Iconv not found`         | Uses deps cache v2 (built-in, no system Iconv needed)            |
 
+# Klipper Note
+
+If you're running Klipper, it's recommended to add the following configuration to your `printer.cfg` file.
+
+```gcode
+# Enable object exclusion
+[exclude_object]
+
+# Enable arcs support
+[gcode_arcs]
+resolution: 0.1
+```
+
 # Supports
 
 **OrcaSlicer** is an open-source project, and we're deeply grateful to all our sponsors and backers.  
