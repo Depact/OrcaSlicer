@@ -5096,6 +5096,8 @@ void GLCanvas3D::on_key(wxKeyEvent& evt)
                         m_mouse.ignore_left_up = true;
                         m_dirty = true;
                     }
+                    else if (m_is_touchpad_navigation && m_mouse.drag.camera_pan_anchor.has_value())
+                        mouse_up_cleanup();
 //                    set_cursor(Standard);
                 }
                 else if (keyCode == WXK_ALT) {
@@ -5105,13 +5107,11 @@ void GLCanvas3D::on_key(wxKeyEvent& evt)
                         m_mouse.ignore_left_up = true;
                         m_dirty = true;
                     }
+                    // Orbit stores its last pointer position in the 3D slot. A pan or a new button press sets the 2D slot.
+                    else if (m_is_touchpad_navigation && m_camera_movement && m_mouse.is_start_position_3D_defined() &&
+                             !m_mouse.is_start_position_2D_defined())
+                        mouse_up_cleanup();
 //                    set_cursor(Standard);
-#ifdef __WXMSW__
-                    if (m_camera_movement && m_is_touchpad_navigation) {
-                        m_camera_movement = false;
-                        m_mouse.set_start_position_3D_as_invalid();
-                    }
-#endif
                 }
                 else if (keyCode == WXK_CONTROL)
                     m_dirty = true;
@@ -6159,7 +6159,9 @@ void GLCanvas3D::on_mouse(wxMouseEvent& evt)
             // forces a frame render to ensure that m_hover_volume_idxs is updated even when the user right clicks while
             // the context menu is already shown
             render();
-            if (!m_hover_volume_idxs.empty()) {
+            // Orca: do not select the hovered volume when ending a camera pan/rotation
+            const bool camera_dragged = m_mouse.ignore_right_up;
+            if (!camera_dragged && !m_hover_volume_idxs.empty()) {
                 // if right clicking on volume, propagate event through callback (shows context menu)
                 int volume_idx = get_first_hover_volume_idx();
                 if (!m_volumes.volumes[volume_idx]->is_wipe_tower // no context menu for the wipe tower
