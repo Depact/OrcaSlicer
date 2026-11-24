@@ -50,22 +50,15 @@ function Get-BaseCmakeArgs {
     return $cmakeArgs
 }
 
-function Apply-JpegPinAndEnv {
+function Pin-JpegToDeps {
     param(
         [string[]] $CmakeArgs,
-        [string] $DepsDir,
-        [string] $ccacheExe,
-        [string] $IncludeEnv,
-        [string] $RunnerTemp
+        [string] $DepsDir
     )
 
     $cmakeArgs = $CmakeArgs
 
-    # Point CMake at the deps install dir so find_package(JPEG) etc. find
-    # libjpeg-turbo (with JCS_EXT_RGBA) from deps instead of system libjpeg.
-    # Strawberry Perl's c\include is added to the compiler include path and
-    # contains an older jpeglib.h (no JCS_EXT_RGBA) that wins over deps'
-    # libjpeg-turbo due to include-path ordering. Explicitly pin JPEG to deps.
+    # Pin JPEG to deps so find_package finds libjpeg-turbo with JCS_EXT_RGBA
     $depsInstallRoot = $DepsDir
     $depsInstallDir = Join-Path $depsInstallRoot "OrcaSlicer_dep/usr/local"
     if (Test-Path $depsInstallDir -PathType Container) {
@@ -81,30 +74,63 @@ function Apply-JpegPinAndEnv {
         }
     }
 
-    # CMake only routes a compile through a cache when it is named as the
-    # launcher. Without these two the cache dir stays untouched and the stats
-    # printed at the end describe someone else's builds.
+    return $cmakeArgs
+}
+
+function Add-CcacheLaunchers {
+    param(
+        [string[]] $CmakeArgs,
+        [string] $ccacheExe
+    )
+
+    $cmakeArgs = $CmakeArgs
+
+    # CMake routes compiles through cache only when named as launcher
     if ($ccacheExe) {
         $cmakeArgs += "-DCMAKE_C_COMPILER_LAUNCHER=$ccacheExe"
         $cmakeArgs += "-DCMAKE_CXX_COMPILER_LAUNCHER=$ccacheExe"
     }
 
-    # Strip Strawberry Perl's MinGW include dir from INCLUDE env var so it
-    # can't shadow deps' libjpeg-turbo headers during compilation.
+    return $cmakeArgs
+}
+
+function Strip-StrawberryIncludeFromIncludeEnv {
+    param(
+        [string] $IncludeEnv
+    )
+
+    # Strip Strawberry Perl's MinGW include dir so it can't shadow deps' libjpeg-turbo
     if ($IncludeEnv) {
         $env:INCLUDE = ($IncludeEnv -split ';' | Where-Object { $_ -notlike '*Strawberry*' }) -join ';'
     }
+}
 
-    # Strawberry Perl is needed for cmake.exe (used by Configure-Build), but
-    # its c\include dir contains an older jpeglib.h (no JCS_EXT_RGBA) that
-    # shadows deps' libjpeg-turbo. Delete only c\include so cmake.exe keeps
-    # working but CMake can't find the stale JPEG header.
+function Remove-StrawberryJpegInclude {
+    param([string]$RunnerTemp)
+
+    # Strawberry's c\include has stale jpeglib.h; delete only c\include, keep perl for cmake.exe
     if ($RunnerTemp) {
         $strawberryInclude = Join-Path $RunnerTemp 'Strawberry\c\include'
         if (Test-Path $strawberryInclude -PathType Container) {
             Remove-Item $strawberryInclude -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
+}
+
+function Apply-JpegPinAndEnv {
+    param(
+        [string[]] $CmakeArgs,
+        [string] $DepsDir,
+        [string] $ccacheExe,
+        [string] $IncludeEnv,
+        [string] $RunnerTemp
+    )
+
+    $cmakeArgs = $CmakeArgs
+    $cmakeArgs = Pin-JpegToDeps -CmakeArgs $cmakeArgs -DepsDir $DepsDir
+    $cmakeArgs = Add-CcacheLaunchers -CmakeArgs $cmakeArgs -ccacheExe $ccacheExe
+    Strip-StrawberryIncludeFromIncludeEnv -IncludeEnv $IncludeEnv
+    Remove-StrawberryJpegInclude -RunnerTemp $RunnerTemp
 
     return $cmakeArgs
 }

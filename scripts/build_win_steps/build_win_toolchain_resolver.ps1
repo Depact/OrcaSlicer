@@ -74,26 +74,30 @@ function Resolve-Compiler {
     [pscustomobject]@{ ClangClExe = $clangClExe; ClExe = $clExe }
 }
 
+function Download-CmakeFromGitHub {
+    # Official CMake not on PATH after stripping Strawberry's bin dirs.
+    # Strawberry's cmake has a broken FindIconv.cmake that fails slicer configure.
+    Write-Warning "Official CMake not found on PATH. Downloading CMake from GitHub releases..."
+    $cmakeVersion = "3.29.3"
+    $cmakeDir = Join-Path $(if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { $env:TEMP }) "CMake-$cmakeVersion"
+    $cmakeZip = Join-Path $env:TEMP "cmake-$cmakeVersion-windows-x86_64.zip"
+    $cmakeUrl = "https://github.com/Kitware/CMake/releases/download/v$cmakeVersion/cmake-$cmakeVersion-windows-x86_64.zip"
+    if (-not (Test-Path $cmakeDir)) {
+        Invoke-WebRequest -Uri $cmakeUrl -OutFile $cmakeZip -TimeoutSec 300
+        Expand-Archive -Path $cmakeZip -DestinationPath $env:TEMP -Force
+        Rename-Item -Path (Join-Path $env:TEMP "cmake-$cmakeVersion-windows-x86_64") -NewName $cmakeDir -Force
+    }
+    $cmake = Join-Path $cmakeDir "bin\cmake.exe"
+    if (-not (Test-Path $cmake)) { throw "Downloaded CMake not found at $cmake" }
+    Write-Status "cmake" "$cmake (downloaded from GitHub releases)"
+    return $cmake
+}
+
 function Resolve-Cmake {
     try {
         $cmake = Resolve-Tool "cmake" "ORCA_CMAKE" "Install CMake 3.21 or newer and add it to PATH, or set ORCA_CMAKE."
     } catch {
-        # Official CMake not on PATH after stripping Strawberry's bin dirs. Download it
-        # from GitHub releases so the slicer build has a working CMake (Strawberry's
-        # cmake has a broken FindIconv.cmake that fails the slicer configure).
-        Write-Warning "Official CMake not found on PATH. Downloading CMake from GitHub releases..."
-        $cmakeVersion = "3.29.3"
-        $cmakeDir = Join-Path $(if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { $env:TEMP }) "CMake-$cmakeVersion"
-        $cmakeZip = Join-Path $env:TEMP "cmake-$cmakeVersion-windows-x86_64.zip"
-        $cmakeUrl = "https://github.com/Kitware/CMake/releases/download/v$cmakeVersion/cmake-$cmakeVersion-windows-x86_64.zip"
-        if (-not (Test-Path $cmakeDir)) {
-            Invoke-WebRequest -Uri $cmakeUrl -OutFile $cmakeZip -TimeoutSec 300
-            Expand-Archive -Path $cmakeZip -DestinationPath $env:TEMP -Force
-            Rename-Item -Path (Join-Path $env:TEMP "cmake-$cmakeVersion-windows-x86_64") -NewName $cmakeDir -Force
-        }
-        $cmake = Join-Path $cmakeDir "bin\cmake.exe"
-        if (-not (Test-Path $cmake)) { throw "Downloaded CMake not found at $cmake" }
-        Write-Status "cmake" "$cmake (downloaded from GitHub releases)"
+        $cmake = Download-CmakeFromGitHub
     }
 
     $cmakeVersion = (& $cmake --version | Select-Object -First 1)

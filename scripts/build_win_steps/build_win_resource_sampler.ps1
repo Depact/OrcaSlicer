@@ -70,12 +70,10 @@ while ($true) {
             $rssNow += $currentRss[$processId]
             $rssBy[$currentCategory[$processId]] += $currentRss[$processId]
         }
+
         # Freeze the split at the peak instant: taking it at report time
         # would mix instants and the parts would not add up to the total.
-        if ($rssNow -gt $peakRss) {
-            $peakRss = $rssNow
-            foreach ($category in $categories) { $peakRssBy[$category] = $rssBy[$category] }
-        }
+        Update-PeakRssSplit -RssNow $rssNow -RssBy $rssBy -Categories $categories -RefPeakRss ([ref]$peakRss) -RefPeakRssBy ([ref]$peakRssBy)
 
         if ($window -ge $ReportInterval) {
             $cores = @()
@@ -104,4 +102,20 @@ while ($true) {
     # that or the process is never seen and its CPU goes uncounted. The
     # report interval is unrelated: it only sets chart resolution.
     Start-Sleep -Milliseconds 250
+}
+
+function Update-PeakRssSplit {
+    param(
+        [double]$RssNow,
+        $RssBy,
+        $Categories,
+        [ref]$RefPeakRss,
+        [ref]$RefPeakRssBy
+    )
+    # Freeze the split at the peak instant: taking it at report time
+    # would mix instants and the parts would not add up to the total.
+    if ($RssNow -gt $RefPeakRss.Value) {
+        $RefPeakRss.Value = $RssNow
+        foreach ($category in $Categories) { $RefPeakRssBy.Value[$category] = $RssBy[$category] }
+    }
 }

@@ -11,7 +11,7 @@ function Import-VsEnvironmentFile {
     }
 }
 
-function Add-Ml64ToPath {
+function Ensure-Ml64InPath {
     # vcvarsall.bat should put ml64.exe there, but make it explicit so cmake's
     # Boost build cannot pick a stale/wrong MASM from the parent PATH instead.
     $ml64 = Get-Command ml64.exe -ErrorAction SilentlyContinue
@@ -22,7 +22,20 @@ function Add-Ml64ToPath {
     }
 }
 
-function Repair-VsLibPath {
+function Resolve-VcvarsallArch {
+    param([string]$Arch)
+    # x64 for x64, x64_arm64 for x64-hosted ARM64 cross
+    return if ($Arch -eq "ARM64") { "x64_arm64" } else { "x64" }
+}
+
+function Build-VcvarsallBatchBody {
+    param([string]$Vcvarsall, [string]$VcArch)
+    # Backtick-n, not \n: a literal backslash-n leaves the generated .bat on one
+    # logical line, so vcvarsall never runs and the captured env is the parent's.
+    return "@echo off`r`ncall `"$Vcvarsall`" $VcArch >nul 2>&1`r`nset > `"$tempEnv`" 2>&1`r`n"
+}
+
+function Ensure-VsLibPathHasArch {
     param([string]$VsInstall, [string]$Arch, [string]$Vcvarsall, [string]$VcArch)
 
     # vcvarsall prints a benign VsDevCmd error and can still end up with an
@@ -61,21 +74,19 @@ function Capture-VsEnvironment {
     $tempBat = Join-Path $env:TEMP "orca-vcvars-$PID.bat"
     $tempEnv = Join-Path $env:TEMP "orca-vcvars-$PID.txt"
 
-    # vcvarsall.bat architecture argument: x64 for x64, x64_arm64 for x64-hosted ARM64 cross
-    $vcArch = if ($Arch -eq "ARM64") { "x64_arm64" } else { "x64" }
+    $vcArch = Resolve-VcvarsallArch -Arch $Arch
 
     try {
-        # Backtick-n, not \n: a literal backslash-n leaves the generated .bat on one
-        # logical line, so vcvarsall never runs and the captured env is the parent's.
-        $body = "@echo off`r`ncall `"$vcvarsall`" $vcArch >nul 2>&1`r`nset > `"$tempEnv`" 2>&1`r`n"
+        $body = Build-VcvarsallBatchBody -Vcvarsall $vcvarsall -VcArch $vcArch
+        $tempEnv = $tempEnv # ensure variable exists
         [IO.File]::WriteAllText($tempBat, $body, [Text.Encoding]::ASCII)
         & cmd.exe /d /c "call `"$tempBat`""
         if (-not (Test-Path $tempEnv)) {
             throw "vcvarsall.bat did not produce an environment file. Run '`"$vcvarsall`" $vcArch' to see the error."
         }
         Import-VsEnvironmentFile -Path $tempEnv
-        Add-Ml64ToPath
-        Repair-VsLibPath -VsInstall $VsInstall -Arch $Arch -Vcvarsall $vcvarsall -VcArch $vcArch
+        Ensure-Ml64InPath
+        Ensure-VsLibPathHasArch -VsInstall $VsInstall -Arch $Arch -Vcvarsall $vcvarsall -VcArch $vcArch
     } finally {
         Remove-Item $tempBat, $tempEnv -ErrorAction SilentlyContinue
     }
