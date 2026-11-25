@@ -1079,9 +1079,12 @@ jobs:
           key: ${{ env.CCACHE_ENTRY }}
           enableCrossOsArchive: true
 
+      # A read-only token (fork PRs, and this fork's default) cannot delete;
+      # that only costs storage, since GitHub evicts the least recently used
+      # entries at the repository cache limit. Say so once instead of printing
+      # an error per entry.
       - name: Drop older compiler cache entries
         if: ${{ always() && !vars.SELF_HOSTED && steps.ccache_save.outcome == 'success' }}
-        # A read-only token (fork PRs) cannot delete; that only costs storage.
         # Older means a lower run id, so two runs finishing close together keep
         # the newer entry whichever of them cleans up last.
         continue-on-error: true
@@ -1096,8 +1099,13 @@ jobs:
             echo "$CCACHE_ENTRY was not saved; keeping the older entries."
             exit 0
           fi
-          gh cache list --ref "$GITHUB_REF" --key "ccache-$CCACHE_LEG-" --limit 100 --json id,key \
+          stale=$(gh cache list --ref "$GITHUB_REF" --key "ccache-$CCACHE_LEG-" --limit 100 --json id,key \
             | jq -r --arg prefix "ccache-$CCACHE_LEG-" --argjson run "$GITHUB_RUN_ID" \
                 '.[] | select((.key | ltrimstr($prefix) | split("-")[0] | tonumber?) < $run) | .id' \
-            | tr -d '\r' \
-            | while read -r id; do gh cache delete "$id" 2>/dev/null || true; done
+            | tr -d '\r')
+          for id in $stale; do
+            if ! gh cache delete "$id"; then
+              echo "Cannot delete cache $id with this token; leaving it for GitHub to evict."
+              exit 0
+            fi
+          done
