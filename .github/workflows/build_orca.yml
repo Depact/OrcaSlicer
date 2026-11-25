@@ -1064,9 +1064,26 @@ jobs:
       # leaves the previous entry in place. A cancelled or failed build saves
       # too, since what it compiled is still valid; a restore that did not
       # finish does not, since the directory may be a truncated copy.
+      - name: Measure compiler cache
+        id: ccache_size
+        if: ${{ always() && steps.ccache.outcome == 'success' }}
+        shell: bash
+        run: |
+          bytes=$(du -sb "${CCACHE_DIR:-$GITHUB_WORKSPACE/.ccache}" 2>/dev/null | cut -f1 || echo 0)
+          echo "Compiler cache holds ${bytes:-0} bytes"
+          # A run cancelled minutes in has compiled nothing. Saving its
+          # few-kilobyte directory made it the newest entry for the leg, and
+          # the next restore prefers the newest one, so it shadowed the full
+          # cache and cost a whole build in hits.
+          if [ "${bytes:-0}" -gt 50000000 ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Save compiler cache (self-hosted local)
         id: ccache_save_local
-        if: ${{ vars.SELF_HOSTED && steps.ccache_restore_local.outcome == 'success' && github.event_name != 'pull_request' }}
+        if: ${{ vars.SELF_HOSTED && steps.ccache_restore_local.outcome == 'success' && steps.ccache_size.outputs.ok == 'true' && github.event_name != 'pull_request' }}
         uses: actions/cache/save@v6
         with:
           path: ${{ github.workspace }}/.ccache
@@ -1075,7 +1092,7 @@ jobs:
 
       - name: Save compiler cache (GitHub-hosted cloud)
         id: ccache_save
-        if: ${{ always() && !vars.SELF_HOSTED && steps.ccache_restore.outcome == 'success' && github.event_name != 'pull_request' }}
+        if: ${{ always() && !vars.SELF_HOSTED && steps.ccache_restore.outcome == 'success' && steps.ccache_size.outputs.ok == 'true' && github.event_name != 'pull_request' }}
         uses: actions/cache/save@v6
         with:
           path: ${{ github.workspace }}/.ccache
