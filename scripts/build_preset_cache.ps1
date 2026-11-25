@@ -38,11 +38,50 @@ $ErrorActionPreference = "Stop"
 # the step died in two seconds. Siblings resolve the root from $PSScriptRoot.
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 
+# Declared before the first call: PowerShell resolves a command when it reaches
+# it, so a function written below its caller does not exist yet at that point.
+function Remove-StaleCaches {
+    param([string]$ProfilesDir)
+    Get-ChildItem -Path $ProfilesDir -Filter "*.opc" -ErrorAction SilentlyContinue | Remove-Item -Force
+    Get-ChildItem -Path $ProfilesDir -Filter "*.cache" -ErrorAction SilentlyContinue | Remove-Item -Force
+}
+
+function Remove-EmptyDirsDeepestFirst {
+    param([string]$VendorDir)
+    # Children sort after their parent in full-path order, so descending order
+    # empties each directory before its parent is tested.
+    $emptyDirs = @(Get-ChildItem -Path $VendorDir -Directory -Recurse -ErrorAction SilentlyContinue |
+        Sort-Object FullName -Descending)
+    foreach ($d in $emptyDirs) {
+        if (-not $d -or -not $d.FullName) { continue }
+        try { Remove-Item -LiteralPath $d.FullName -Force -ErrorAction Stop }
+        catch { Write-Host ("  kept {0}: {1}" -f $d.FullName, $_.Exception.Message) }
+    }
+}
+
+function Remove-PresetJsonsListedInProfile {
+    param(
+        [string]$VendorDir,
+        [string]$ProfilePath
+    )
+    $profile = Get-Content -LiteralPath $ProfilePath -Raw -Encoding UTF8 | ConvertFrom-Json
+    $pruneCount = 0
+    foreach ($key in @("machine_model_list", "process_list", "filament_list", "machine_list")) {
+        foreach ($entry in $profile.$key) {
+            $f = Join-Path $VendorDir $entry.sub_path
+            if (Test-Path -LiteralPath $f -PathType Leaf) {
+                Remove-Item -LiteralPath $f -Force
+                $pruneCount++
+            }
+        }
+    }
+    return $pruneCount
+}
+
 if (-not $BuildDir) { $BuildDir = "build" }
 # Resolve relative to the repo so the tree is found regardless of the caller's cwd.
 if (-not [IO.Path]::IsPathRooted($BuildDir)) { $BuildDir = Join-Path $RepoRoot $BuildDir }
 
-# Validate build tree exists
 if (-not (Test-Path $BuildDir -PathType Container)) {
     throw "ERROR: build tree not found: $BuildDir"
 }
@@ -67,15 +106,20 @@ if (-not $Cmake) {
 }
 
 # Newest match wins: a stale binary silently produces a stale cache layout.
-$tool = Get-ChildItem -Path $BuildDir -Filter "generate_system_cache.exe" -Recurse -ErrorAction SilentlyContinue |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 1
+function Find-GenerateSystemCache {
+    param([string]$BuildRoot)
+    Get-ChildItem -Path $BuildRoot -Filter "generate_system_cache.exe" -Recurse -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+}
 
+$tool = Find-GenerateSystemCache -BuildRoot $BuildDir
 if (-not $tool) {
     throw "ERROR: generate_system_cache.exe not found under $BuildDir - build with -DORCA_TOOLS=ON`n       cmake -S $RepoRoot -B $BuildDir -DORCA_TOOLS=ON"
 }
 
-# Determine config from build dir name or default to Release
+# The tool is multi-config on Windows, so its own directory names the config;
+# anything else means it was built single-config.
 $config = "Release"
 foreach ($c in @("Debug", "Release", "RelWithDebInfo", "MinSizeRel")) {
     if ($tool.DirectoryName -match $c) { $config = $c; break }
@@ -87,74 +131,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "ERROR: could not build generate_system_cache - configure the build tree with -DORCA_TOOLS=ON:`n       cmake -S $RepoRoot -B $BuildDir -DORCA_TOOLS=ON"
 }
 
-# Re-find the tool after build (in case it was just built)
-$tool = Get-ChildItem -Path $BuildDir -Filter "generate_system_cache.exe" -Recurse -ErrorAction SilentlyContinue |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 1
-
-if (-not $tool) {
-    throw "ERROR: generate_system_cache.exe not found under $BuildDir - build with -DORCA_TOOLS=ON"
-}
-
-# Determine config from build dir name or default to Release
-$config = "Release"
-foreach ($c in @("Debug", "Release", "RelWithDebInfo", "MinSizeRel")) {
-    if ($tool.DirectoryName -match $c) { $config = $c; break }
-}
-
-Write-Host "Building generate_system_cache in $BuildDir ($config)"
-& $Cmake --build $BuildDir --config $config --target generate_system_cache
-if ($LASTEXITCODE -ne 0) {
-    throw "ERROR: could not build generate_system_cache - configure the build tree with -DORCA_TOOLS=ON:`n       cmake -S $RepoRoot -B $BuildDir -DORCA_TOOLS=ON"
-}
-
-# Re-find the tool after build (in case it was just built)
-$tool = Get-ChildItem -Path $BuildDir -Filter "generate_system_cache.exe" -Recurse -ErrorAction SilentlyContinue |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 1
-
-if (-not $tool) {
-    throw "ERROR: generate_system_cache.exe not found under $BuildDir - build with -DORCA_TOOLS=ON"
-}
-
-# Determine config from build dir name or default to Release
-$config = "Release"
-foreach ($c in @("Debug", "Release", "RelWithDebInfo", "MinSizeRel")) {
-    if ($tool.DirectoryName -match $c) { $config = $c; break }
-}
-
-Write-Host "Building generate_system_cache in $BuildDir ($config)"
-& $Cmake --build $BuildDir --config $config --target generate_system_cache
-if ($LASTEXITCODE -ne 0) {
-    throw "ERROR: could not build generate_system_cache - configure the build tree with -DORCA_TOOLS=ON:`n       cmake -S $RepoRoot -B $BuildDir -DORCA_TOOLS=ON"
-}
-
-# Re-find the tool after build (in case it was just built)
-$tool = Get-ChildItem -Path $BuildDir -Filter "generate_system_cache.exe" -Recurse -ErrorAction SilentlyContinue |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 1
-
-if (-not $tool) {
-    throw "ERROR: generate_system_cache.exe not found under $BuildDir - build with -DORCA_TOOLS=ON"
-}
-
-# Determine config from build dir name or default to Release
-$config = "Release"
-foreach ($c in @("Debug", "Release", "RelWithDebInfo", "MinSizeRel")) {
-    if ($tool.DirectoryName -match $c) { $config = $c; break }
-}
-
-Write-Host "Building generate_system_cache in $BuildDir ($config)"
-& $Cmake --build $BuildDir --config $config --target generate_system_cache
-if ($LASTEXITCODE -ne 0) {
-    throw "ERROR: could not build generate_system_cache - configure the build tree with -DORCA_TOOLS=ON:`n       cmake -S $RepoRoot -B $BuildDir -DORCA_TOOLS=ON"
-}
-
-# Re-find the tool after build (in case it was just built)
-$tool = Get-ChildItem -Path $BuildDir -Filter "generate_system_cache.exe" -Recurse -ErrorAction SilentlyContinue |
-    Sort-Object LastWriteTime -Descending |
-    Select-Object -First 1
-
+$tool = Find-GenerateSystemCache -BuildRoot $BuildDir
 if (-not $tool) {
     throw "ERROR: generate_system_cache.exe not found under $BuildDir - build with -DORCA_TOOLS=ON"
 }
@@ -165,53 +142,32 @@ if (-not (Test-Path $Profiles -PathType Container)) {
 }
 $Profiles = (Get-Item $Profiles).FullName
 
-# Add the slicer's runtime DLL directory to PATH so generate_system_cache.exe
-# can resolve its dependencies (TKernel.dll etc.) without a full install step.
-$dllDirs = @()
-$dllDir = Get-ChildItem -Path $BuildDir -Filter "TKernel.dll" -Recurse -ErrorAction SilentlyContinue |
+# The tool links libslic3r, whose OCCT/CGAL dependencies are not next to it.
+# Both its own directory and the one TKernel.dll landed in go on PATH; a
+# full-tree scan added thirty directories and bought nothing.
+$dllDirs = @((Split-Path -Parent $tool.FullName))
+$tkernel = Get-ChildItem -Path $BuildDir -Filter "TKernel.dll" -Recurse -ErrorAction SilentlyContinue |
     Select-Object -First 1
-if ($dllDir) {
-    $dllPath = (Split-Path -Parent $dllDir.FullName)
-    Write-Host "Found TKernel.dll at: $dllPath"
-    $dllDirs += $dllPath
+if ($tkernel) {
+    $dllDirs += (Split-Path -Parent $tkernel.FullName)
 } else {
     Write-Warning "TKernel.dll NOT FOUND under $BuildDir - generate_system_cache.exe may fail to load dependencies"
 }
-
-# Also find all DLL directories to ensure all dependencies are resolvable
-$allDllDirs = Get-ChildItem -Path $BuildDir -Filter "*.dll" -Recurse -ErrorAction SilentlyContinue |
-    ForEach-Object { Split-Path -Parent $_.FullName } |
-    Sort-Object -Unique
-foreach ($dir in $allDllDirs) {
-    if ($dllDirs -notcontains $dir) {
-        $dllDirs += $dir
-    }
-}
-
-foreach ($dir in $dllDirs) {
-    Write-Host "Adding DLL directory to PATH: $dir"
+foreach ($dir in ($dllDirs | Select-Object -Unique)) {
     $env:PATH = $dir + ";" + $env:PATH
 }
-
-Write-Host "PATH for generate_system_cache.exe: $env:PATH"
-
-# Also check if the tool itself exists and is executable
-Write-Host "Tool path: $($tool.FullName)"
-Write-Host "Tool exists: $(Test-Path $tool.FullName)"
-
-Write-Host "Generating per-vendor preset caches in $Profiles"
-Write-Host "Running: $($tool.FullName) --path $Profiles --log_level 2"
+Write-Host ("DLL directories on PATH: {0}" -f (($dllDirs | Select-Object -Unique) -join "; "))
 
 # Start clean so vendors that went away - and caches written by older tool
 # versions - don't linger next to the freshly generated ones.
 Remove-StaleCaches -ProfilesDir $Profiles
 
+Write-Host ("Running {0} --path {1}" -f $tool.FullName, $Profiles)
 & $tool.FullName --path $Profiles --log_level 2
 $exitCode = $LASTEXITCODE
 Write-Host "generate_system_cache.exe exited with code: $exitCode"
 if ($exitCode -ne 0) { exit $exitCode }
 
-# Process each target directory
 foreach ($target in $TargetDir) {
     if (-not (Test-Path $target -PathType Container)) {
         Write-Host ("WARNING: target profiles directory not found, skipping: $target")
@@ -252,40 +208,4 @@ foreach ($target in $TargetDir) {
     }
 
     Write-Host ("{0}: $shipped caches, dropped $pruned preset JSONs" -f $target)
-}
-
-function Remove-StaleCaches {
-    param([string]$ProfilesDir)
-    Get-ChildItem -Path $ProfilesDir -Filter "*.opc" -ErrorAction SilentlyContinue | Remove-Item -Force
-    Get-ChildItem -Path $ProfilesDir -Filter "*.cache" -ErrorAction SilentlyContinue | Remove-Item -Force
-}
-
-function Remove-EmptyDirsDeepestFirst {
-    param([string]$VendorDir)
-    $emptyDirs = @(Get-ChildItem -Path $VendorDir -Directory -Recurse -ErrorAction SilentlyContinue |
-        Sort-Object FullName -Descending)
-    foreach ($d in $emptyDirs) {
-        if (-not $d -or -not $d.FullName) { continue }
-        try { Remove-Item -LiteralPath $d.FullName -Force -ErrorAction Stop }
-        catch { Write-Host ("  kept {0}: {1}" -f $d.FullName, $_.Exception.Message) }
-    }
-}
-
-function Remove-PresetJsonsListedInProfile {
-    param(
-        [string]$VendorDir,
-        [string]$ProfilePath
-    )
-    $profile = Get-Content -LiteralPath $ProfilePath -Raw -Encoding UTF8 | ConvertFrom-Json
-    $pruneCount = 0
-    foreach ($key in @("machine_model_list", "process_list", "filament_list", "machine_list")) {
-        foreach ($entry in $profile.$key) {
-            $f = Join-Path $VendorDir $entry.sub_path
-            if (Test-Path -LiteralPath $f -PathType Leaf) {
-                Remove-Item -LiteralPath $f -Force
-                $pruneCount++
-            }
-        }
-    }
-    return $pruneCount
 }

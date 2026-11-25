@@ -174,6 +174,11 @@ jobs:
         run: |
           echo "CMAKE_C_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
           echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
+          # actions/cache only matches entries saved under the identical path,
+          # and ccache otherwise writes to %LOCALAPPDATA%\ccache on Windows and
+          # ~/.cache/ccache on Linux, neither of which is the path restored
+          # below. Every run then saved an empty directory and hit nothing.
+          echo "CCACHE_DIR=${{ github.workspace }}/.ccache" >> "$GITHUB_ENV"
           # Headers a fresh checkout has just written, the few files that
           # use __DATE__ or __TIME__, and the precompiled header, whose
           # macros ccache cannot see.
@@ -1095,4 +1100,4 @@ jobs:
             | jq -r --arg prefix "ccache-$CCACHE_LEG-" --argjson run "$GITHUB_RUN_ID" \
                 '.[] | select((.key | ltrimstr($prefix) | split("-")[0] | tonumber?) < $run) | .id' \
             | tr -d '\r' \
-            | while read -r id; do gh cache delete "$id"; done
+            | while read -r id; do gh cache delete "$id" 2>/dev/null || true; done
