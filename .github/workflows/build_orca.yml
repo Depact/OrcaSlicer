@@ -167,6 +167,9 @@ jobs:
             ccache-${{ env.CCACHE_LEG }}-${{ github.base_ref }}-
             ccache-${{ env.CCACHE_LEG }}-main-
             ccache-${{ env.CCACHE_LEG }}-
+          # Part of the cache version, so it has to match the save below or the
+          # entry is invisible no matter which key it was stored under.
+          enableCrossOsArchive: true
 
       - name: Enable compiler cache
         if: ${{ steps.ccache.outcome == 'success' }}
